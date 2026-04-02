@@ -27,14 +27,18 @@ export function HomePage() {
     <motion.div className="page" variants={stagger} initial="hidden" animate="show">
       {/* Header */}
       <motion.div variants={fadeUp} style={{ marginBottom: 20 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{greeting},</p>
             <h1 style={{ fontSize: 22, fontWeight: 700, marginTop: 2 }}>
               Emmanuil Amsterdam
             </h1>
           </div>
-          <span style={{ fontSize: 13, color: 'var(--text-tertiary)', marginTop: 4 }}>{userName}</span>
+          <span style={{
+            fontSize: 12, color: 'var(--text-tertiary)', marginTop: 4,
+            maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            flexShrink: 0, textAlign: 'right',
+          }}>{userName}</span>
         </div>
         <p style={{ fontSize: 13, color: 'var(--text-tertiary)', marginTop: 4 }}>
           Міні-апп усіх важливих подій церкви
@@ -94,7 +98,7 @@ export function HomePage() {
               Всі <ChevronRight size={14} style={{ verticalAlign: 'middle' }} />
             </button>
           </div>
-          <div style={{ display: 'flex', gap: 10, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 }}>
+          <div style={{ display: 'flex', gap: 10, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4, marginLeft: 0, marginRight: 0 }}>
             {upcomingEvents.map((ev) => (
               <button
                 key={ev.id}

@@ -10,8 +10,8 @@ import { MorePage } from '@/pages/MorePage';
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', maxWidth: 480, margin: '0 auto' }}>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', maxWidth: 480, margin: '0 auto', overflow: 'hidden' }}>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/schedule" element={<SchedulePage />} />
