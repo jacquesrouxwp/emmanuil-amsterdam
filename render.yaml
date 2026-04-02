@@ -2,6 +2,7 @@ services:
   - type: web
     name: emmanuil-amsterdam
     runtime: node
+    plan: free
     buildCommand: npm install && npm run build && cd server && npm install
     startCommand: node server/index.js
     envVars:
