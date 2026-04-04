@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Heart, Music, Users, Baby, Megaphone, Camera, Coffee, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Heart, Music, Baby, Megaphone, Mic2, CheckCircle } from 'lucide-react';
 import { hapticFeedback } from '@/lib/telegram';
 import { useT } from '@/i18n/translations';
 
@@ -14,12 +14,10 @@ interface Position {
 }
 
 const positions: Position[] = [
-  { icon: Music,     color: '#7C4DFF', ua: 'Музиканти та вокал',    ru: 'Музыканты и вокал',     en: 'Musicians & worship' },
-  { icon: Users,     color: '#5E9ED6', ua: 'Зустріч гостей',        ru: 'Встреча гостей',         en: 'Guest welcome team' },
-  { icon: Baby,      color: '#FF7F50', ua: 'Дитяче служіння',       ru: 'Детское служение',       en: 'Children\'s ministry' },
-  { icon: Megaphone, color: '#C9A96E', ua: 'Медіа та соцмережі',    ru: 'Медиа и соцсети',        en: 'Media & social media' },
-  { icon: Camera,    color: '#EF4444', ua: 'Фото та відео',         ru: 'Фото и видео',           en: 'Photo & video' },
-  { icon: Coffee,    color: '#4CAF50', ua: 'Гостинність',           ru: 'Гостеприимство',         en: 'Hospitality' },
+  { icon: Music,     color: '#7C4DFF', ua: 'Група прославлення', ru: 'Группа прославления',  en: 'Worship team' },
+  { icon: Baby,      color: '#FF7F50', ua: 'Дитяче служіння',    ru: 'Детское служение',     en: 'Children\'s ministry' },
+  { icon: Megaphone, color: '#C9A96E', ua: 'Медіа та соцмережі', ru: 'Медиа и соцсети',      en: 'Media & social media' },
+  { icon: Mic2,      color: '#EF4444', ua: 'Євангелізація',      ru: 'Евангелизация',         en: 'Evangelism' },
 ];
 
 const fadeUp = {
@@ -37,7 +35,6 @@ export function VolunteerPage() {
   const t = useT();
 
   const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
   const [comment, setComment] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
@@ -73,7 +70,6 @@ export function VolunteerPage() {
 
       <AnimatePresence mode="wait">
         {submitted ? (
-          /* Success screen */
           <motion.div
             key="success"
             initial={{ opacity: 0, scale: 0.95 }}
@@ -158,27 +154,11 @@ export function VolunteerPage() {
                     width: '100%',
                   }}
                 />
-                <input
-                  type="text"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder={t.volunteer.phonePlaceholder}
-                  style={{
-                    padding: '12px 14px',
-                    borderRadius: 10,
-                    border: '1px solid var(--border-light)',
-                    background: 'var(--surface)',
-                    fontSize: 14,
-                    color: 'var(--text)',
-                    outline: 'none',
-                    width: '100%',
-                  }}
-                />
                 <textarea
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   placeholder={t.volunteer.commentPlaceholder}
-                  rows={3}
+                  rows={4}
                   style={{
                     padding: '12px 14px',
                     borderRadius: 10,
