@@ -162,20 +162,6 @@ export function SchedulePage() {
                         {g.leader && <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)' }}><User size={13} color={typeColors.group} />{g.leader}</div>}
                         {g.phone && <a href={`tel:${g.phone.replace(/\s/g, '')}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--primary)', textDecoration: 'none' }}><Phone size={13} />{g.phone}</a>}
                         <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
-                          {/* Google Maps */}
-                          <button
-                            onClick={(e) => { e.stopPropagation(); hapticFeedback('light'); openLink(`https://maps.google.com/?q=${encodeURIComponent(g.address)}`); }}
-                            title="Google Maps"
-                            style={{
-                              width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              background: 'rgba(66,133,244,0.10)',
-                              border: '1.5px solid rgba(66,133,244,0.22)',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            <Navigation size={16} color="#4285F4" />
-                          </button>
                           {/* Буду */}
                           <button
                             onClick={(e) => handleAttend(e, g.id)}
@@ -192,6 +178,20 @@ export function SchedulePage() {
                             }}
                           >
                             {isLoading ? '...' : isAttending ? t.schedule.willAttendConfirm : t.schedule.willAttend}
+                          </button>
+                          {/* Google Maps */}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); hapticFeedback('light'); openLink(`https://maps.google.com/?q=${encodeURIComponent(g.address)}`); }}
+                            title="Google Maps"
+                            style={{
+                              width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              background: 'rgba(66,133,244,0.10)',
+                              border: '1.5px solid rgba(66,133,244,0.22)',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            <Navigation size={16} color="#4285F4" />
                           </button>
                         </div>
                       </div>
