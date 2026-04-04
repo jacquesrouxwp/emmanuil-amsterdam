@@ -66,8 +66,8 @@ export type DayOfWeek = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 export type ScheduleType = 'service' | 'prayer' | 'youth' | 'kids' | 'study' | 'worship' | 'other';
 
 export interface ScriptureQuote {
-  text: string;
-  reference: string;
+  text: { ua: string; ru: string; en: string };
+  reference: { ua: string; ru: string; en: string };
 }
 
 export interface DonationGoal {

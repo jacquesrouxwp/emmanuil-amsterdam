@@ -1,12 +1,16 @@
 import { motion } from 'framer-motion';
 import { getTodayScripture } from '@/data/scripture';
+import { useLang } from '@/i18n/translations';
 
 interface Props {
   compact?: boolean;
 }
 
 export function ScriptureQuote({ compact }: Props) {
-  const quote = getTodayScripture();
+  const lang = useLang();
+  const scripture = getTodayScripture();
+  const text = scripture.text[lang];
+  const reference = scripture.reference[lang];
 
   if (compact) {
     return (
@@ -22,10 +26,10 @@ export function ScriptureQuote({ compact }: Props) {
         }}
       >
         <p style={{ fontSize: 12, fontStyle: 'italic', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-          {quote.text}
+          {text}
         </p>
         <p style={{ fontSize: 11, color: 'var(--accent-gold)', fontWeight: 600, marginTop: 4 }}>
-          — {quote.reference}
+          — {reference}
         </p>
       </motion.div>
     );
@@ -38,8 +42,8 @@ export function ScriptureQuote({ compact }: Props) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
     >
-      <p className="scripture-text">{quote.text}</p>
-      <p className="scripture-ref">— {quote.reference}</p>
+      <p className="scripture-text">{text}</p>
+      <p className="scripture-ref">— {reference}</p>
     </motion.div>
   );
 }
