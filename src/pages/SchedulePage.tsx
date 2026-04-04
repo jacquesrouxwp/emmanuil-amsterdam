@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, MapPin, Phone, User, Users, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { Clock, MapPin, Phone, User, Users, ChevronDown, ChevronUp, Info, Navigation } from 'lucide-react';
 import { services, homeGroups, typeColors } from '@/data/schedule';
-import { hapticFeedback, getUserName, getTelegramUser } from '@/lib/telegram';
+import { hapticFeedback, getUserName, getTelegramUser, openLink } from '@/lib/telegram';
 import { fetchAllAttendance, toggleAttendance, type GroupAttendance } from '@/lib/api';
 import { useT, useLang, loc } from '@/i18n/translations';
 import { useEffect, useCallback } from 'react';
@@ -161,9 +161,39 @@ export function SchedulePage() {
                         </div>
                         {g.leader && <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)' }}><User size={13} color={typeColors.group} />{g.leader}</div>}
                         {g.phone && <a href={`tel:${g.phone.replace(/\s/g, '')}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--primary)', textDecoration: 'none' }}><Phone size={13} />{g.phone}</a>}
-                        <button onClick={(e) => handleAttend(e, g.id)} disabled={isLoading} style={{ marginTop: 6, padding: '8px 0', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: isLoading ? 'wait' : 'pointer', transition: 'all 0.2s', background: isAttending ? typeColors.group : `${typeColors.group}12`, color: isAttending ? '#fff' : typeColors.group, border: `1.5px solid ${isAttending ? typeColors.group : `${typeColors.group}30`}`, opacity: isLoading ? 0.7 : 1 }}>
-                          {isLoading ? '...' : isAttending ? t.schedule.willAttendConfirm : t.schedule.willAttend}
-                        </button>
+                        <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+                          {/* Google Maps */}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); hapticFeedback('light'); openLink(`https://maps.google.com/?q=${encodeURIComponent(g.address)}`); }}
+                            title="Google Maps"
+                            style={{
+                              width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              background: 'rgba(66,133,244,0.10)',
+                              border: '1.5px solid rgba(66,133,244,0.22)',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            <Navigation size={16} color="#4285F4" />
+                          </button>
+                          {/* Буду */}
+                          <button
+                            onClick={(e) => handleAttend(e, g.id)}
+                            disabled={isLoading}
+                            style={{
+                              flex: 1, height: 40, borderRadius: 10,
+                              fontSize: 14, fontWeight: 600,
+                              cursor: isLoading ? 'wait' : 'pointer',
+                              transition: 'all 0.2s',
+                              background: isAttending ? typeColors.group : `${typeColors.group}12`,
+                              color: isAttending ? '#fff' : typeColors.group,
+                              border: `1.5px solid ${isAttending ? typeColors.group : `${typeColors.group}30`}`,
+                              opacity: isLoading ? 0.7 : 1,
+                            }}
+                          >
+                            {isLoading ? '...' : isAttending ? t.schedule.willAttendConfirm : t.schedule.willAttend}
+                          </button>
+                        </div>
                       </div>
                     </motion.div>
                   )}
