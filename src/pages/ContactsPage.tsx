@@ -3,6 +3,7 @@ import { Instagram, ExternalLink } from 'lucide-react';
 import { hapticFeedback, openLink } from '@/lib/telegram';
 import { PersonCard } from '@/components/shared/PersonCard';
 import { pastors } from '@/data/people';
+import { useT } from '@/i18n/translations';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 14 },
@@ -15,6 +16,8 @@ const stagger = {
 };
 
 export function ContactsPage() {
+  const t = useT();
+
   return (
     <motion.div
       className="page"
@@ -23,12 +26,12 @@ export function ContactsPage() {
       animate="show"
     >
       <motion.div variants={fadeUp}>
-        <h1 className="page-title">Контакти</h1>
-        <p className="page-subtitle">Зв'яжіться з нами</p>
+        <h1 className="page-title">{t.contacts.title}</h1>
+        <p className="page-subtitle">{t.contacts.subtitle}</p>
       </motion.div>
 
       <motion.div variants={fadeUp} className="section">
-        <h3 className="section-title" style={{ marginBottom: 12 }}>Пастор</h3>
+        <h3 className="section-title" style={{ marginBottom: 12 }}>{t.contacts.pastor}</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {pastors.map((p, i) => (
             <PersonCard key={p.id} person={p} index={i} showActions />
@@ -37,7 +40,7 @@ export function ContactsPage() {
       </motion.div>
 
       <motion.div variants={fadeUp} className="section">
-        <h3 className="section-title" style={{ marginBottom: 12 }}>Соцмережі</h3>
+        <h3 className="section-title" style={{ marginBottom: 12 }}>{t.contacts.socials}</h3>
         <button
           className="card"
           onClick={() => {

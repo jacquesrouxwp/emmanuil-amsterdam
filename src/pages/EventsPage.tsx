@@ -2,17 +2,18 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, MapPin, ChevronDown, ChevronUp } from 'lucide-react';
 import { upcomingEvents } from '@/data/events';
+import { useT, loc } from '@/i18n/translations';
 
 export function EventsPage() {
+  const t = useT();
   const [expandedId, setExpandedId] = useState<string | null>(null);
-
   const toggle = (id: string) => setExpandedId((prev) => (prev === id ? null : id));
 
   return (
     <div className="page">
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="page-title">Важливі події</h1>
-        <p className="page-subtitle">Найближчі заходи церкви</p>
+        <h1 className="page-title">{t.events.title}</h1>
+        <p className="page-subtitle">{t.events.subtitle}</p>
       </motion.div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -61,14 +62,14 @@ export function EventsPage() {
               {/* Content */}
               <div style={{ padding: 16 }}>
                 <span className="badge" style={{ background: `${ev.color}18`, color: ev.color, marginBottom: 8 }}>
-                  {ev.badge}
+                  {loc(ev.badge, t.lang)}
                 </span>
-                <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>{ev.title}</h3>
+                <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>{loc(ev.title, t.lang)}</h3>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 10 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)' }}>
                     <Calendar size={14} color={ev.color} />
-                    {ev.date}{ev.time ? `, ${ev.time}` : ''}
+                    {loc(ev.date, t.lang)}{ev.time ? `, ${ev.time}` : ''}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)' }}>
                     <MapPin size={14} color={ev.color} />
@@ -77,7 +78,7 @@ export function EventsPage() {
                 </div>
 
                 <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 10 }}>
-                  {ev.shortDesc}
+                  {loc(ev.shortDesc, t.lang)}
                 </p>
 
                 <button
@@ -92,7 +93,7 @@ export function EventsPage() {
                     cursor: 'pointer',
                   }}
                 >
-                  {isOpen ? 'Згорнути' : 'Детальніше'}
+                  {isOpen ? t.events.collapse : t.events.details}
                   {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </button>
 
@@ -111,7 +112,7 @@ export function EventsPage() {
                         borderTop: '1px solid var(--border-light)',
                       }}>
                         <p style={{ fontSize: 14, color: 'var(--text)', lineHeight: 1.7 }}>
-                          {ev.fullDesc}
+                          {loc(ev.fullDesc, t.lang)}
                         </p>
                       </div>
                     </motion.div>
@@ -125,7 +126,7 @@ export function EventsPage() {
 
       {upcomingEvents.length === 0 && (
         <div className="empty-state">
-          <p>Поки що немає запланованих подій</p>
+          <p>{t.events.empty}</p>
         </div>
       )}
     </div>

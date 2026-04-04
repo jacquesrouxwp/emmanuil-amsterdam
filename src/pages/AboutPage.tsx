@@ -3,15 +3,7 @@ import { Church, Eye, BookOpen, MapPin, ExternalLink } from 'lucide-react';
 import { hapticFeedback, openLink } from '@/lib/telegram';
 import { PersonCard } from '@/components/shared/PersonCard';
 import { pastors } from '@/data/people';
-
-const beliefs = [
-  'Ми віримо в єдиного Бога, який вічно існує в трьох Особах: Отець, Син і Святий Дух.',
-  'Ми віримо, що Біблія є богонатхненним, непохибним Словом Божим.',
-  'Ми віримо у спасіння з благодаті через віру в Ісуса Христа.',
-  'Ми віримо у водне хрещення та хрещення Святим Духом.',
-  'Ми віримо у Друге пришестя Господа Ісуса Христа.',
-  'Ми віримо в силу молитви та божественне зцілення.',
-];
+import { useT } from '@/i18n/translations';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 14 },
@@ -24,6 +16,8 @@ const stagger = {
 };
 
 export function AboutPage() {
+  const t = useT();
+
   return (
     <motion.div
       className="page"
@@ -32,8 +26,8 @@ export function AboutPage() {
       animate="show"
     >
       <motion.div variants={fadeUp}>
-        <h1 className="page-title">Про церкву</h1>
-        <p className="page-subtitle">Emmanuil Amsterdam</p>
+        <h1 className="page-title">{t.about.title}</h1>
+        <p className="page-subtitle">{t.about.subtitle}</p>
       </motion.div>
 
       {/* Hero Card */}
@@ -64,8 +58,7 @@ export function AboutPage() {
           Emmanuil Amsterdam
         </h2>
         <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-          Ми — жива, зростаюча церква в серці Амстердама. Наша місія — нести любов Христа
-          кожній людині, створюючи тепле суспільство, де кожен може знайти віру, надію та сім'ю.
+          {t.about.description}
         </p>
       </motion.div>
 
@@ -79,13 +72,11 @@ export function AboutPage() {
           }}>
             <Eye size={18} color="var(--accent-gold)" />
           </div>
-          <h3 className="section-title">Наше бачення</h3>
+          <h3 className="section-title">{t.about.vision}</h3>
         </div>
         <div className="card">
           <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-            Ми прагнемо бути церквою, яка впливає на місто та країну, виховуючи учнів Христа,
-            зміцнюючи сім'ї та служачи суспільству з любов'ю. Ми віримо, що Бог покликав нас бути світлом
-            у Нідерландах та за їхніми межами.
+            {t.about.visionDesc}
           </p>
         </div>
       </motion.div>
@@ -100,10 +91,10 @@ export function AboutPage() {
           }}>
             <BookOpen size={18} color="var(--primary)" />
           </div>
-          <h3 className="section-title">Віровчення</h3>
+          <h3 className="section-title">{t.about.beliefs}</h3>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {beliefs.map((belief, i) => (
+          {t.beliefs.map((belief, i) => (
             <div key={i} className="card" style={{ padding: 14 }}>
               <div style={{ display: 'flex', gap: 10 }}>
                 <span style={{
@@ -125,7 +116,7 @@ export function AboutPage() {
 
       {/* Pastor */}
       <motion.div variants={fadeUp} className="section">
-        <h3 className="section-title" style={{ marginBottom: 12 }}>Пастор</h3>
+        <h3 className="section-title" style={{ marginBottom: 12 }}>{t.about.pastor}</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {pastors.map((person, i) => (
             <PersonCard key={person.id} person={person} index={i} />
@@ -143,7 +134,7 @@ export function AboutPage() {
           }}>
             <MapPin size={18} color="var(--primary)" />
           </div>
-          <h3 className="section-title">Як нас знайти</h3>
+          <h3 className="section-title">{t.about.location}</h3>
         </div>
         <div className="card" style={{ padding: 20 }}>
           <p style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>Emmanuil Amsterdam</p>
@@ -158,7 +149,7 @@ export function AboutPage() {
             }}
           >
             <ExternalLink size={16} />
-            Відкрити на карті
+            {t.about.openMap}
           </button>
         </div>
       </motion.div>

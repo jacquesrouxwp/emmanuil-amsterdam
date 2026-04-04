@@ -42,9 +42,9 @@ export interface HomeGroup {
 export interface Person {
   id: string;
   name: string;
-  role: string;
+  role: string | { ua: string; ru: string; en: string };
   photo?: string;
-  description?: string;
+  description?: string | { ua: string; ru: string; en: string };
   phone?: string;
   telegram?: string;
 }

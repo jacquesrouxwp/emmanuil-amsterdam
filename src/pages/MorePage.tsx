@@ -1,12 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Church, Phone, Share2, Info, ChevronRight } from 'lucide-react';
+import { Church, Phone, Share2, Info, ChevronRight, Heart } from 'lucide-react';
 import { hapticFeedback, shareUrl } from '@/lib/telegram';
-
-const menuItems = [
-  { icon: Church, label: 'Про церкву', path: '/about', color: '#C9A96E' },
-  { icon: Phone, label: 'Контакти', path: '/contacts', color: '#5E9ED6' },
-];
+import { useT } from '@/i18n/translations';
+import { useAppStore } from '@/store/appStore';
+import type { Lang } from '@/i18n/translations';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
@@ -18,16 +16,65 @@ const stagger = {
   show: { transition: { staggerChildren: 0.06 } },
 };
 
+const LANGS: { code: Lang; label: string }[] = [
+  { code: 'ua', label: 'УКР' },
+  { code: 'ru', label: 'РУС' },
+  { code: 'en', label: 'ENG' },
+];
+
 export function MorePage() {
   const navigate = useNavigate();
+  const t = useT();
+  const { lang, setLang } = useAppStore();
+
+  const menuItems = [
+    { icon: Church, label: t.more.aboutChurch, path: '/about', color: '#C9A96E' },
+    { icon: Phone, label: t.more.contacts, path: '/contacts', color: '#5E9ED6' },
+  ];
 
   return (
     <motion.div className="page" variants={stagger} initial="hidden" animate="show">
       <motion.div variants={fadeUp}>
-        <h1 className="page-title">Ще</h1>
+        <h1 className="page-title">{t.more.title}</h1>
         <p className="page-subtitle">Emmanuil Amsterdam</p>
       </motion.div>
 
+      {/* Language toggle */}
+      <motion.div variants={fadeUp} style={{ marginBottom: 14 }}>
+        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-tertiary)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+          {t.more.language}
+        </p>
+        <div style={{
+          display: 'flex',
+          background: 'var(--surface)',
+          borderRadius: 12,
+          padding: 4,
+          gap: 4,
+          border: '1px solid var(--border-light)',
+        }}>
+          {LANGS.map(({ code, label }) => (
+            <button
+              key={code}
+              onClick={() => { hapticFeedback('light'); setLang(code); }}
+              style={{
+                flex: 1,
+                padding: '8px 0',
+                borderRadius: 9,
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.18s ease',
+                background: lang === code ? 'var(--primary)' : 'transparent',
+                color: lang === code ? '#fff' : 'var(--text-secondary)',
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Main menu */}
       <motion.div
         variants={fadeUp}
         className="card"
@@ -56,6 +103,29 @@ export function MorePage() {
         ))}
       </motion.div>
 
+      {/* Volunteer button */}
+      <motion.div variants={fadeUp}>
+        <button
+          className="card"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 14,
+            padding: '14px 16px', width: '100%', textAlign: 'left', cursor: 'pointer', marginBottom: 14,
+          }}
+          onClick={() => { hapticFeedback('medium'); navigate('/volunteer'); }}
+        >
+          <div style={{
+            width: 38, height: 38, borderRadius: 10,
+            background: 'rgba(239, 68, 68, 0.12)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Heart size={20} color="#EF4444" />
+          </div>
+          <span style={{ flex: 1, fontSize: 15, fontWeight: 500 }}>{t.more.volunteer}</span>
+          <ChevronRight size={18} color="var(--text-tertiary)" />
+        </button>
+      </motion.div>
+
+      {/* Share */}
       <motion.div variants={fadeUp}>
         <button
           className="card"
@@ -74,7 +144,7 @@ export function MorePage() {
           }}>
             <Share2 size={20} color="var(--primary)" />
           </div>
-          <span style={{ flex: 1, fontSize: 15, fontWeight: 500 }}>Поділитися додатком</span>
+          <span style={{ flex: 1, fontSize: 15, fontWeight: 500 }}>{t.more.share}</span>
           <ChevronRight size={18} color="var(--text-tertiary)" />
         </button>
       </motion.div>
@@ -85,7 +155,7 @@ export function MorePage() {
       >
         <Info size={16} style={{ marginBottom: 4, opacity: 0.5 }} />
         <p style={{ fontSize: 12 }}>Emmanuil Amsterdam v1.0.0</p>
-        <p style={{ fontSize: 11, marginTop: 2 }}>Створено з любов'ю та вірою</p>
+        <p style={{ fontSize: 11, marginTop: 2 }}>{t.more.version}</p>
       </motion.div>
     </motion.div>
   );

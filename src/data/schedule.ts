@@ -1,7 +1,9 @@
+import type { Localized } from '@/i18n/translations';
+
 export interface ServiceItem {
   id: string;
-  title: string;
-  day: string;
+  title: Localized;
+  day: Localized;
   time: string;
   address: string;
   type: 'service' | 'youth' | 'group';
@@ -15,8 +17,8 @@ export interface ServiceItem {
 export const services: ServiceItem[] = [
   {
     id: 'srv-1',
-    title: 'Воскресне служіння',
-    day: 'Неділя',
+    title: { ua: 'Воскресне служіння', ru: 'Воскресное служение', en: 'Sunday Service' },
+    day: { ua: 'Неділя', ru: 'Воскресенье', en: 'Sunday' },
     time: '17:00',
     address: 'Javastraat 118, Amsterdam',
     type: 'service',
@@ -25,8 +27,8 @@ export const services: ServiceItem[] = [
   },
   {
     id: 'srv-2',
-    title: 'Молодіжне служіння',
-    day: 'Субота',
+    title: { ua: 'Молодіжне служіння', ru: 'Молодёжное служение', en: 'Youth Service' },
+    day: { ua: 'Субота', ru: 'Суббота', en: 'Saturday' },
     time: '18:30',
     address: 'Javastraat 118, Amsterdam',
     type: 'youth',
@@ -38,8 +40,8 @@ export const services: ServiceItem[] = [
 export const homeGroups: ServiceItem[] = [
   {
     id: 'hg-1',
-    title: 'Домашня група',
-    day: 'Середа',
+    title: { ua: 'Домашня група', ru: 'Домашняя группа', en: 'Home Group' },
+    day: { ua: 'Середа', ru: 'Среда', en: 'Wednesday' },
     time: '19:00',
     address: 'Piet Mondriaanstraat 75, Amsterdam',
     type: 'group',
@@ -48,8 +50,8 @@ export const homeGroups: ServiceItem[] = [
   },
   {
     id: 'hg-2',
-    title: 'Домашня група',
-    day: 'Середа',
+    title: { ua: 'Домашня група', ru: 'Домашняя группа', en: 'Home Group' },
+    day: { ua: 'Середа', ru: 'Среда', en: 'Wednesday' },
     time: '19:00',
     address: 'Leerbroekse Kerkweg 5, Leerbroek',
     type: 'group',
@@ -58,8 +60,8 @@ export const homeGroups: ServiceItem[] = [
   },
   {
     id: 'hg-3',
-    title: 'Домашня група',
-    day: 'Четвер',
+    title: { ua: 'Домашня група', ru: 'Домашняя группа', en: 'Home Group' },
+    day: { ua: 'Четвер', ru: 'Четверг', en: 'Thursday' },
     time: '19:00',
     address: 'Mandelaplein 1, Almere',
     type: 'group',
@@ -67,8 +69,8 @@ export const homeGroups: ServiceItem[] = [
   },
   {
     id: 'hg-4',
-    title: 'Домашня група',
-    day: 'Четвер',
+    title: { ua: 'Домашня група', ru: 'Домашняя группа', en: 'Home Group' },
+    day: { ua: 'Четвер', ru: 'Четверг', en: 'Thursday' },
     time: '18:00',
     address: 'Wolfheze 4:96 (біля Арнема та Еде)',
     type: 'group',
@@ -78,10 +80,10 @@ export const homeGroups: ServiceItem[] = [
   },
   {
     id: 'hg-5',
-    title: 'Домашня група',
-    day: 'Уточнюється',
-    time: 'Уточнюється',
-    address: 'Роттердам (адреса уточнюється)',
+    title: { ua: 'Домашня група', ru: 'Домашняя группа', en: 'Home Group' },
+    day: { ua: 'Уточнюється', ru: 'Уточняется', en: 'TBD' },
+    time: '—',
+    address: 'Роттердам',
     type: 'group',
     leader: 'Oleksandr',
     phone: '+380 68 648 16 80',

@@ -3,6 +3,9 @@ import { persist } from 'zustand/middleware';
 import type { Donation } from '@/types';
 
 interface AppState {
+  lang: 'ua' | 'ru' | 'en';
+  setLang: (lang: 'ua' | 'ru' | 'en') => void;
+
   userName: string;
   setUserName: (name: string) => void;
 
@@ -31,6 +34,9 @@ interface AppState {
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
+      lang: 'ua',
+      setLang: (lang) => set({ lang }),
+
       userName: 'Гость',
       setUserName: (name) => set({ userName: name }),
 
@@ -69,6 +75,7 @@ export const useAppStore = create<AppState>()(
     {
       name: 'emmanuil-app-store',
       partialize: (state) => ({
+        lang: state.lang,
         registeredEvents: state.registeredEvents,
         joinedGroups: state.joinedGroups,
       }),

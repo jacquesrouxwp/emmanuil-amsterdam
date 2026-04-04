@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { MessageCircle, Phone } from 'lucide-react';
 import { hapticFeedback, openTelegramLink } from '@/lib/telegram';
+import { useT, useLang } from '@/i18n/translations';
 import type { Person } from '@/types';
 
 interface PersonCardProps {
@@ -18,7 +19,14 @@ function getInitials(name: string): string {
     .toUpperCase();
 }
 
+function locStr(v: string | { ua: string; ru: string; en: string }, lang: 'ua' | 'ru' | 'en'): string {
+  return typeof v === 'string' ? v : v[lang];
+}
+
 export function PersonCard({ person, index = 0, showActions = true }: PersonCardProps) {
+  const t = useT();
+  const lang = useLang();
+
   return (
     <motion.div
       className="card"
@@ -37,11 +45,11 @@ export function PersonCard({ person, index = 0, showActions = true }: PersonCard
         <div style={{ flex: 1, minWidth: 0 }}>
           <h3 style={{ fontSize: 16, fontWeight: 600 }}>{person.name}</h3>
           <p style={{ fontSize: 13, color: 'var(--primary)', fontWeight: 500, marginBottom: 4 }}>
-            {person.role}
+            {locStr(person.role, lang)}
           </p>
           {person.description && (
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-              {person.description}
+              {locStr(person.description, lang)}
             </p>
           )}
         </div>
@@ -56,7 +64,6 @@ export function PersonCard({ person, index = 0, showActions = true }: PersonCard
               onClick={() => {
                 hapticFeedback('light');
                 const tg = person.telegram!;
-                // Support both @username and phone number formats
                 const link = tg.startsWith('+') || /^\d/.test(tg)
                   ? `https://t.me/${tg.replace(/[\s+()-]/g, '')}`
                   : `https://t.me/${tg.replace('@', '')}`;
@@ -64,7 +71,7 @@ export function PersonCard({ person, index = 0, showActions = true }: PersonCard
               }}
             >
               <MessageCircle size={16} />
-              Написати
+              {t.person.write}
             </button>
           )}
           {person.phone && (
@@ -75,7 +82,7 @@ export function PersonCard({ person, index = 0, showActions = true }: PersonCard
               onClick={() => hapticFeedback('light')}
             >
               <Phone size={16} />
-              Зателефонувати
+              {t.person.call}
             </a>
           )}
         </div>

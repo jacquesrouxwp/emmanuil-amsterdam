@@ -5,7 +5,7 @@
       "name": "emmanuil-amsterdam",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
-      "port": 3001,
+      "autoPort": true,
       "cwd": "C:/Users/User/OneDrive/Desktop/тоноре/church-app"
     }
   ]

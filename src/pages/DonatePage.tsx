@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { CreditCard, Landmark, ExternalLink } from 'lucide-react';
 import { hapticFeedback, openLink } from '@/lib/telegram';
+import { useT } from '@/i18n/translations';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
@@ -13,12 +14,14 @@ const stagger = {
 };
 
 export function DonatePage() {
+  const t = useT();
+
   return (
     <motion.div className="page" variants={stagger} initial="hidden" animate="show">
       <motion.div variants={fadeUp}>
-        <h1 className="page-title">Пожертвування</h1>
+        <h1 className="page-title">{t.donate.title}</h1>
         <p className="page-subtitle" style={{ fontStyle: 'italic', color: 'var(--accent-gold)' }}>
-          «Кожний нехай уділяє за розташуванням серця» — 2 Кор. 9:7
+          {t.donate.quote} {t.donate.quoteRef}
         </p>
       </motion.div>
 
@@ -48,9 +51,9 @@ export function DonatePage() {
             <CreditCard size={24} color="#00A651" />
           </div>
           <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 16, fontWeight: 600 }}>ПриватБанк</p>
+            <p style={{ fontSize: 16, fontWeight: 600 }}>{t.donate.privatbank}</p>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>
-              Переказ на картку (Україна)
+              {t.donate.privatbankDesc}
             </p>
           </div>
           <ExternalLink size={18} color="var(--text-tertiary)" />
@@ -81,9 +84,9 @@ export function DonatePage() {
             <Landmark size={24} color="#CC0066" />
           </div>
           <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 16, fontWeight: 600 }}>iDEAL</p>
+            <p style={{ fontSize: 16, fontWeight: 600 }}>{t.donate.ideal}</p>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>
-              Банківський переказ (Нідерланди)
+              {t.donate.idealDesc}
             </p>
           </div>
           <ExternalLink size={18} color="var(--text-tertiary)" />
@@ -96,9 +99,7 @@ export function DonatePage() {
         className="scripture-card"
         style={{ marginTop: 24 }}
       >
-        <p className="scripture-text">
-          Дякуємо за вашу щедрість! Ваші пожертвування підтримують служіння церкви, допомогу нужденним та місіонерські проєкти.
-        </p>
+        <p className="scripture-text">{t.donate.thanks}</p>
       </motion.div>
     </motion.div>
   );
