@@ -186,72 +186,57 @@ export function HomePage() {
         </div>
       </motion.div>
 
-      {/* Language modal */}
+      {/* Language dropdown */}
       <AnimatePresence>
         {langModalOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setLangModalOpen(false)}
-              style={{
-                position: 'fixed', inset: 0,
-                background: 'rgba(0,0,0,0.45)',
-                zIndex: 100,
-              }}
+              style={{ position: 'fixed', inset: 0, zIndex: 100 }}
             />
-            {/* Modal */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.92, y: 10 }}
+              initial={{ opacity: 0, scale: 0.88, y: -6 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.92, y: 10 }}
-              transition={{ duration: 0.18 }}
+              exit={{ opacity: 0, scale: 0.88, y: -6 }}
+              transition={{ duration: 0.14, ease: 'easeOut' }}
               style={{
                 position: 'fixed',
-                top: '50%', left: '50%',
-                transform: 'translate(-50%, -50%)',
+                top: 68, right: 16,
                 zIndex: 101,
-                background: 'var(--surface)',
-                borderRadius: 18,
-                padding: 20,
-                width: 260,
-                boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+                background: '#1c2a3a',
+                borderRadius: 14,
+                overflow: 'hidden',
+                boxShadow: '0 12px 40px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3)',
+                minWidth: 170,
+                border: '1px solid rgba(255,255,255,0.08)',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                <Globe size={18} color="var(--primary)" />
-                <p style={{ fontSize: 15, fontWeight: 700 }}>{t.more.language}</p>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {LANG_OPTIONS.map(({ code, label, native }) => (
-                  <button
-                    key={code}
-                    onClick={() => {
-                      hapticFeedback('light');
-                      setLang(code);
-                      setLangModalOpen(false);
-                    }}
-                    style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '12px 14px',
-                      borderRadius: 12,
-                      cursor: 'pointer',
-                      background: lang === code ? 'var(--primary-bg)' : 'var(--bg)',
-                      border: lang === code ? '1.5px solid var(--primary)' : '1.5px solid var(--border-light)',
-                      transition: 'all 0.15s',
-                    }}
-                  >
-                    <span style={{ fontSize: 14, fontWeight: lang === code ? 700 : 500, color: lang === code ? 'var(--primary)' : 'var(--text)' }}>
-                      {label}
-                    </span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: lang === code ? 'var(--primary)' : 'var(--text-tertiary)', letterSpacing: 0.5 }}>
+              {LANG_OPTIONS.map(({ code, label, native }, i) => (
+                <button
+                  key={code}
+                  onClick={() => { hapticFeedback('light'); setLang(code); setLangModalOpen(false); }}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '11px 14px',
+                    width: '100%', cursor: 'pointer',
+                    borderBottom: i < LANG_OPTIONS.length - 1 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+                    background: lang === code ? 'rgba(94,158,214,0.18)' : 'transparent',
+                    gap: 20,
+                  }}
+                >
+                  <span style={{ fontSize: 14, fontWeight: lang === code ? 700 : 400, color: lang === code ? '#5E9ED6' : 'rgba(255,255,255,0.85)' }}>
+                    {label}
+                  </span>
+                  {lang === code && (
+                    <span style={{ fontSize: 10, fontWeight: 700, color: '#5E9ED6', letterSpacing: 0.5, background: 'rgba(94,158,214,0.18)', padding: '2px 6px', borderRadius: 6 }}>
                       {native}
                     </span>
-                  </button>
-                ))}
-              </div>
+                  )}
+                </button>
+              ))}
             </motion.div>
           </>
         )}
