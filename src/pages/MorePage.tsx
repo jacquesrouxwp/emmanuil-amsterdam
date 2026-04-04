@@ -3,8 +3,6 @@ import { motion } from 'framer-motion';
 import { Church, Phone, Share2, Info, ChevronRight, Heart } from 'lucide-react';
 import { hapticFeedback, shareUrl } from '@/lib/telegram';
 import { useT } from '@/i18n/translations';
-import { useAppStore } from '@/store/appStore';
-import type { Lang } from '@/i18n/translations';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
@@ -16,16 +14,9 @@ const stagger = {
   show: { transition: { staggerChildren: 0.06 } },
 };
 
-const LANGS: { code: Lang; label: string }[] = [
-  { code: 'ua', label: 'УКР' },
-  { code: 'ru', label: 'РУС' },
-  { code: 'en', label: 'ENG' },
-];
-
 export function MorePage() {
   const navigate = useNavigate();
   const t = useT();
-  const { lang, setLang } = useAppStore();
 
   const menuItems = [
     { icon: Church, label: t.more.aboutChurch, path: '/about', color: '#C9A96E' },
@@ -37,41 +28,6 @@ export function MorePage() {
       <motion.div variants={fadeUp}>
         <h1 className="page-title">{t.more.title}</h1>
         <p className="page-subtitle">Emmanuil Amsterdam</p>
-      </motion.div>
-
-      {/* Language toggle */}
-      <motion.div variants={fadeUp} style={{ marginBottom: 14 }}>
-        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-tertiary)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-          {t.more.language}
-        </p>
-        <div style={{
-          display: 'flex',
-          background: 'var(--surface)',
-          borderRadius: 12,
-          padding: 4,
-          gap: 4,
-          border: '1px solid var(--border-light)',
-        }}>
-          {LANGS.map(({ code, label }) => (
-            <button
-              key={code}
-              onClick={() => { hapticFeedback('light'); setLang(code); }}
-              style={{
-                flex: 1,
-                padding: '8px 0',
-                borderRadius: 9,
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.18s ease',
-                background: lang === code ? 'var(--primary)' : 'transparent',
-                color: lang === code ? '#fff' : 'var(--text-secondary)',
-              }}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
       </motion.div>
 
       {/* Main menu */}

@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ChevronRight, MapPin, Clock, Calendar, Navigation } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronRight, MapPin, Clock, Calendar, Navigation, Globe } from 'lucide-react';
 import { getUserName, hapticFeedback, openLink } from '@/lib/telegram';
 import { ScriptureQuote } from '@/components/shared/ScriptureQuote';
 import { services } from '@/data/schedule';
 import { upcomingEvents } from '@/data/events';
 import { useT, useLang, loc } from '@/i18n/translations';
+import { useAppStore } from '@/store/appStore';
+import type { Lang } from '@/i18n/translations';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
@@ -17,14 +20,24 @@ const stagger = {
   show: { transition: { staggerChildren: 0.07 } },
 };
 
+const LANG_OPTIONS: { code: Lang; label: string; native: string }[] = [
+  { code: 'ua', label: 'Українська', native: 'УКР' },
+  { code: 'ru', label: 'Русский',    native: 'РУС' },
+  { code: 'en', label: 'English',    native: 'ENG' },
+];
+
 export function HomePage() {
   const navigate = useNavigate();
   const t = useT();
   const lang = useLang();
+  const { setLang } = useAppStore();
   const userName = getUserName();
   const hour = new Date().getHours();
   const greeting = hour < 12 ? t.home.greetingMorning : hour < 18 ? t.home.greetingDay : t.home.greetingEvening;
   const nextService = services[0];
+  const [langModalOpen, setLangModalOpen] = useState(false);
+
+  const currentLang = LANG_OPTIONS.find((l) => l.code === lang)!;
 
   return (
     <motion.div className="page" variants={stagger} initial="hidden" animate="show">
@@ -37,11 +50,29 @@ export function HomePage() {
               Emmanuil Amsterdam
             </h1>
           </div>
-          <span style={{
-            fontSize: 12, color: 'var(--text-tertiary)', marginTop: 4,
-            maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-            flexShrink: 0, textAlign: 'right',
-          }}>{userName}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+            <span style={{
+              fontSize: 12, color: 'var(--text-tertiary)',
+              maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              textAlign: 'right',
+            }}>{userName}</span>
+            {/* Language button */}
+            <button
+              onClick={() => { hapticFeedback('light'); setLangModalOpen(true); }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                padding: '4px 10px', borderRadius: 20,
+                background: 'var(--primary-bg)',
+                border: '1px solid var(--primary)',
+                cursor: 'pointer',
+              }}
+            >
+              <Globe size={12} color="var(--primary)" />
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--primary)', letterSpacing: 0.5 }}>
+                {currentLang.native}
+              </span>
+            </button>
+          </div>
         </div>
         <p style={{ fontSize: 13, color: 'var(--text-tertiary)', marginTop: 4 }}>
           {t.home.subtitle}
@@ -106,7 +137,7 @@ export function HomePage() {
               {t.home.all} <ChevronRight size={14} style={{ verticalAlign: 'middle' }} />
             </button>
           </div>
-          <div style={{ display: 'flex', gap: 10, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4, marginLeft: 0, marginRight: 0 }}>
+          <div style={{ display: 'flex', gap: 10, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 }}>
             {upcomingEvents.map((ev) => (
               <button
                 key={ev.id}
@@ -154,6 +185,77 @@ export function HomePage() {
           ))}
         </div>
       </motion.div>
+
+      {/* Language modal */}
+      <AnimatePresence>
+        {langModalOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setLangModalOpen(false)}
+              style={{
+                position: 'fixed', inset: 0,
+                background: 'rgba(0,0,0,0.45)',
+                zIndex: 100,
+              }}
+            />
+            {/* Modal */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 10 }}
+              transition={{ duration: 0.18 }}
+              style={{
+                position: 'fixed',
+                top: '50%', left: '50%',
+                transform: 'translate(-50%, -50%)',
+                zIndex: 101,
+                background: 'var(--surface)',
+                borderRadius: 18,
+                padding: 20,
+                width: 260,
+                boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                <Globe size={18} color="var(--primary)" />
+                <p style={{ fontSize: 15, fontWeight: 700 }}>{t.more.language}</p>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {LANG_OPTIONS.map(({ code, label, native }) => (
+                  <button
+                    key={code}
+                    onClick={() => {
+                      hapticFeedback('light');
+                      setLang(code);
+                      setLangModalOpen(false);
+                    }}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '12px 14px',
+                      borderRadius: 12,
+                      cursor: 'pointer',
+                      background: lang === code ? 'var(--primary-bg)' : 'var(--bg)',
+                      border: lang === code ? '1.5px solid var(--primary)' : '1.5px solid var(--border-light)',
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    <span style={{ fontSize: 14, fontWeight: lang === code ? 700 : 500, color: lang === code ? 'var(--primary)' : 'var(--text)' }}>
+                      {label}
+                    </span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: lang === code ? 'var(--primary)' : 'var(--text-tertiary)', letterSpacing: 0.5 }}>
+                      {native}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
