@@ -83,12 +83,26 @@ export function SchedulePage() {
             return (
               <motion.div key={s.id} className="card" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} style={{ padding: 0, overflow: 'hidden', flex: 1, minWidth: 0 }}>
                 {s.brandName && (
-                  <div style={{ height: 64, background: s.brandGradient, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ height: 64, background: s.brandGradient, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                     <div style={{ textAlign: 'center', color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.3)' }}>
                       {s.brandName.split('\n').map((line, li) => (
                         <div key={li} style={{ fontSize: li === 0 ? 13 : 10, fontWeight: 800, letterSpacing: li === 0 ? 2 : 1.5, lineHeight: 1.3 }}>{line}</div>
                       ))}
                     </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); hapticFeedback('light'); openLink(`https://maps.google.com/?q=${encodeURIComponent(s.address)}`); }}
+                      style={{
+                        position: 'absolute', top: 7, right: 7,
+                        width: 28, height: 28, borderRadius: 8,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: 'rgba(255,255,255,0.18)',
+                        border: '1px solid rgba(255,255,255,0.28)',
+                        cursor: 'pointer',
+                        backdropFilter: 'blur(4px)',
+                      }}
+                    >
+                      <Navigation size={13} color="#fff" />
+                    </button>
                   </div>
                 )}
                 <div style={{ padding: '10px 10px 12px' }}>
