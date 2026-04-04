@@ -1,28 +1,19 @@
 <!DOCTYPE html>
-<html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#5E9ED6" />
-    <title>Emmanuil Amsterdam</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <script type="module" crossorigin src="/emmanuil-amsterdam/assets/index-B5D3zd07.js"></script>
-    <link rel="stylesheet" crossorigin href="/emmanuil-amsterdam/assets/index-DmiLUOtl.css">
-  </head>
-  <body>
-    <script>
-      // SPA redirect handler for GitHub Pages
-      (function(){
-        var redirect = sessionStorage.redirect;
-        delete sessionStorage.redirect;
-        if (redirect && redirect !== location.href) {
-          history.replaceState(null, null, redirect);
-        }
-      })();
-    </script>
-    <div id="root"></div>
-  </body>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script>
+    // SPA redirect for GitHub Pages
+    var pathSegmentsToKeep = 1;
+    var l = window.location;
+    l.replace(
+      l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+      l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
+      l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+      (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+      l.hash
+    );
+  </script>
+</head>
+<body></body>
 </html>
