@@ -43,7 +43,7 @@ export const upcomingEvents: ChurchEvent[] = [
     address: 'Amsterdam & Netherlands',
     badge: { ua: 'Місія', ru: 'Миссия', en: 'Mission' },
     color: '#AF52DE',
-    brandName: 'МІСІЯ\nЛЮБОВІ',
+    brandName: 'ХТО ПОМОЖЕ\nОДНОМУ З МАЛИХ СИХ..',
     brandGradient: 'linear-gradient(135deg, #2d1b4e 0%, #5b2d8e 50%, #AF52DE 100%)',
     shortDesc: {
       ua: 'Раз на місяць їдемо послужити людям з інвалідністю — співаємо, читаємо Біблію та п\'ємо чай.',
