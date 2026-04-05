@@ -91,7 +91,7 @@ export function MorePage() {
           }}
           onClick={() => {
             hapticFeedback('light');
-            shareUrl('https://t.me/EmmanuiBot/app', 'Emmanuil Amsterdam — церква в Telegram!');
+            shareUrl('https://t.me/myconclaw_bot/app', 'Emmanuil Amsterdam — церква в Telegram!');
           }}
         >
           <div style={{
