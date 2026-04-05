@@ -120,13 +120,25 @@ app.post('/api/volunteer', async (req, res) => {
       const text =
         `🙋 <b>Нова заявка у служіння!</b>\n\n` +
         `📌 Напрямок: <b>${directionLabel}</b>\n` +
-        `${userLine}\n` +
-        (comment ? `💬 ${comment}` : '');
+        `${userLine}\n\n` +
+        (comment ? `💬 <i>${comment}</i>` : '');
+
+      // If we have the user's Telegram ID — add a button to open direct chat
+      const replyMarkup = telegramId ? {
+        inline_keyboard: [[
+          { text: `💬 Написати ${name}`, url: `tg://user?id=${telegramId}` }
+        ]]
+      } : undefined;
 
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
+        body: JSON.stringify({
+          chat_id: chatId,
+          text,
+          parse_mode: 'HTML',
+          ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
+        }),
       });
     }
 
