@@ -93,6 +93,50 @@ app.post('/api/attendance/:groupId/toggle', (req, res) => {
   }
 });
 
+// --- Volunteer form → send Telegram message to direction leader ---
+
+app.post('/api/volunteer', async (req, res) => {
+  try {
+    const { direction, directionLabel, name, comment, telegramUsername, telegramId } = req.body;
+    if (!direction || !name) return res.status(400).json({ error: 'direction and name required' });
+
+    const BOT_TOKEN = process.env.BOT_TOKEN;
+
+    // Each direction maps to its leader's Telegram chat_id env var
+    const leaderMap = {
+      worship:    process.env.LEADER_WORSHIP,
+      children:   process.env.LEADER_CHILDREN,
+      media:      process.env.LEADER_MEDIA,
+      evangelism: process.env.LEADER_EVANGELISM,
+    };
+
+    const chatId = leaderMap[direction] || process.env.LEADER_DEFAULT;
+
+    if (BOT_TOKEN && chatId) {
+      const userLine = telegramUsername
+        ? `👤 <b>${name}</b> (@${telegramUsername})`
+        : `👤 <b>${name}</b>`;
+
+      const text =
+        `🙋 <b>Нова заявка у служіння!</b>\n\n` +
+        `📌 Напрямок: <b>${directionLabel}</b>\n` +
+        `${userLine}\n` +
+        (comment ? `💬 ${comment}` : '');
+
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
+      });
+    }
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Volunteer error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // --- SPA fallback: serve index.html for all non-API routes ---
 if (existsSync(DIST_DIR)) {
   app.get('*', (_req, res) => {
