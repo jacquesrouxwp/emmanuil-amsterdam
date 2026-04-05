@@ -1,5 +1,6 @@
-import { motion } from 'framer-motion';
-import { Church, Eye, BookOpen, MapPin, ExternalLink, Globe } from 'lucide-react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Church, Eye, BookOpen, MapPin, ExternalLink, Globe, ChevronDown, ChevronUp } from 'lucide-react';
 import { hapticFeedback, openLink } from '@/lib/telegram';
 import { PersonCard } from '@/components/shared/PersonCard';
 import { pastors } from '@/data/people';
@@ -17,6 +18,7 @@ const stagger = {
 
 export function AboutPage() {
   const t = useT();
+  const [beliefsOpen, setBeliefsOpen] = useState(false);
 
   return (
     <motion.div
@@ -81,40 +83,7 @@ export function AboutPage() {
         </div>
       </motion.div>
 
-      {/* Beliefs */}
-      <motion.div variants={fadeUp} className="section">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: 10,
-            background: 'var(--primary-bg)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <BookOpen size={18} color="var(--primary)" />
-          </div>
-          <h3 className="section-title">{t.about.beliefs}</h3>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {t.beliefs.map((belief, i) => (
-            <div key={i} className="card" style={{ padding: 14 }}>
-              <div style={{ display: 'flex', gap: 10 }}>
-                <span style={{
-                  width: 24, height: 24, borderRadius: '50%',
-                  background: 'var(--primary-bg)', color: 'var(--primary)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 12, fontWeight: 600, flexShrink: 0,
-                }}>
-                  {i + 1}
-                </span>
-                <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                  {belief}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Gospel section */}
+      {/* Gospel section — right after Vision */}
       <motion.div variants={fadeUp} className="section">
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
           <div style={{
@@ -131,6 +100,65 @@ export function AboutPage() {
             {t.about.gospelDesc}
           </p>
         </div>
+      </motion.div>
+
+      {/* Beliefs — collapsible */}
+      <motion.div variants={fadeUp} className="section">
+        <button
+          onClick={() => { hapticFeedback('light'); setBeliefsOpen((v) => !v); }}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            width: '100%', padding: '12px 16px', borderRadius: 12,
+            background: 'var(--bg-card)', border: '1px solid var(--border-light)',
+            cursor: 'pointer', marginBottom: beliefsOpen ? 8 : 0,
+            transition: 'background 0.15s',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: 10,
+              background: 'var(--primary-bg)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <BookOpen size={18} color="var(--primary)" />
+            </div>
+            <h3 className="section-title" style={{ margin: 0 }}>{t.about.beliefs}</h3>
+          </div>
+          {beliefsOpen
+            ? <ChevronUp size={18} color="var(--text-tertiary)" />
+            : <ChevronDown size={18} color="var(--text-tertiary)" />}
+        </button>
+        <AnimatePresence>
+          {beliefsOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.22 }}
+              style={{ overflow: 'hidden' }}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {t.beliefs.map((belief, i) => (
+                  <div key={i} className="card" style={{ padding: 14 }}>
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      <span style={{
+                        width: 24, height: 24, borderRadius: '50%',
+                        background: 'var(--primary-bg)', color: 'var(--primary)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 12, fontWeight: 600, flexShrink: 0,
+                      }}>
+                        {i + 1}
+                      </span>
+                      <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                        {belief}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
       {/* Pastor */}

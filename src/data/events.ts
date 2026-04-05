@@ -37,6 +37,26 @@ export const upcomingEvents: ChurchEvent[] = [
     },
   },
   {
+    id: 'ev-disability',
+    title: { ua: 'Служіння для людей з інвалідністю', ru: 'Служение для людей с инвалидностью', en: 'Ministry for People with Disabilities' },
+    date: { ua: 'Раз на місяць', ru: 'Раз в месяц', en: 'Once a month' },
+    address: 'Amsterdam & Netherlands',
+    badge: { ua: 'Місія', ru: 'Миссия', en: 'Mission' },
+    color: '#AF52DE',
+    brandName: 'МІСІЯ\nЛЮБОВІ',
+    brandGradient: 'linear-gradient(135deg, #2d1b4e 0%, #5b2d8e 50%, #AF52DE 100%)',
+    shortDesc: {
+      ua: 'Раз на місяць їдемо послужити людям з інвалідністю — співаємо, читаємо Біблію та п\'ємо чай.',
+      ru: 'Раз в месяц едем послужить людям с инвалидностью — поём, читаем Библию и пьём чай.',
+      en: 'Once a month we go to serve people with disabilities — we sing, read the Bible and drink tea.',
+    },
+    fullDesc: {
+      ua: 'Раз на місяць наша команда вирушає на спеціальні локації, щоб послужити людям з інвалідністю. Ми разом співаємо пісні хвали, читаємо Біблію, проповідуємо Слово Боже — і звичайно ж п\'ємо чай! 🍵 Це служіння нагадує нам, що любов Христа не знає меж і кожна людина гідна уваги, турботи та Євангелія.',
+      ru: 'Раз в месяц наша команда отправляется на специальные локации, чтобы послужить людям с инвалидностью. Мы вместе поём песни хвалы, читаем Библию, проповедуем Слово Божье — и конечно же пьём чай! 🍵 Это служение напоминает нам, что любовь Христа не знает границ и каждый человек достоин внимания, заботы и Евангелия.',
+      en: 'Once a month our team goes to special locations to serve people with disabilities. We sing worship songs together, read the Bible, preach the Word of God — and of course drink tea! 🍵 This ministry reminds us that the love of Christ knows no bounds and every person deserves attention, care and the Gospel.',
+    },
+  },
+  {
     id: 'ev-2',
     title: { ua: 'Молодіжний табір', ru: 'Молодёжный лагерь', en: 'Youth Camp' },
     date: { ua: '4–8 серпня 2026', ru: '4–8 августа 2026', en: 'August 4–8, 2026' },
