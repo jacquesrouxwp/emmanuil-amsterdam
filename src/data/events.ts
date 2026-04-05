@@ -69,9 +69,9 @@ export const upcomingEvents: ChurchEvent[] = [
     badge: { ua: 'Місія', ru: 'Миссия', en: 'Mission' },
     color: '#AF52DE',
     brandName: {
-      ua: '«І той, хто допоможе\nодному з малих цих…\nотримає свою нагороду»',
-      ru: '«И тот, кто поможет\nодному из малых сих…\nполучит свою награду»',
-      en: '«Whoever helps\none of these little ones…\nshall receive his reward»',
+      ua: '«Оскільки ви зробили це\nодному з найменших\nбратів Моїх — ви зробили це Мені»',
+      ru: '«Так как вы сделали это\nодному из сих братьев\nМоих меньших, то сделали Мне»',
+      en: '«As you did it to one\nof the least of these\nMy brothers, you did it to Me»',
     },
     brandGradient: 'linear-gradient(135deg, #2d1b4e 0%, #5b2d8e 50%, #AF52DE 100%)',
     shortDesc: {
