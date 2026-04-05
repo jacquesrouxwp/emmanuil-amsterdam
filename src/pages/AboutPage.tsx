@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Church, Eye, BookOpen, MapPin, ExternalLink } from 'lucide-react';
+import { Church, Eye, BookOpen, MapPin, ExternalLink, Globe } from 'lucide-react';
 import { hapticFeedback, openLink } from '@/lib/telegram';
 import { PersonCard } from '@/components/shared/PersonCard';
 import { pastors } from '@/data/people';
@@ -111,6 +111,25 @@ export function AboutPage() {
               </div>
             </div>
           ))}
+        </div>
+      </motion.div>
+
+      {/* Gospel section */}
+      <motion.div variants={fadeUp} className="section">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: 10,
+            background: 'rgba(52,199,89,0.12)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Globe size={18} color="#34C759" />
+          </div>
+          <h3 className="section-title">{t.about.gospel}</h3>
+        </div>
+        <div className="card" style={{ padding: 16 }}>
+          <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+            {t.about.gospelDesc}
+          </p>
         </div>
       </motion.div>
 

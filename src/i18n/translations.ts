@@ -78,6 +78,8 @@ const t = {
       pastor: 'Пастор',
       location: 'Як нас знайти',
       openMap: 'Відкрити на карті',
+      gospel: 'Євангеліє по всьому світу',
+      gospelDesc: 'Ми віримо, що Євангеліє буде поширене по всьому світу, як обіцяє Писання. У нашій церкві є перекладачі з багатьох іноземних мов, а також сурдоперекладачі — ті, хто служать жестовою мовою для глухих та глухонімих людей. Ніхто не залишиться поза досяжністю Слова Божого.',
     },
     contacts: {
       title: 'Контакти',
@@ -182,6 +184,8 @@ const t = {
       pastor: 'Пастор',
       location: 'Как нас найти',
       openMap: 'Открыть на карте',
+      gospel: 'Евангелие по всему миру',
+      gospelDesc: 'Мы верим, что Евангелие будет распространено по всему миру, как обещает Писание. В нашей церкви есть переводчики со многих иностранных языков, а также сурдопереводчики — те, кто служат языком жестов для глухих и глухонемых людей. Никто не останется вне досягаемости Слова Божьего.',
     },
     contacts: {
       title: 'Контакты',
@@ -286,6 +290,8 @@ const t = {
       pastor: 'Pastor',
       location: 'Find us',
       openMap: 'Open on map',
+      gospel: 'The Gospel to All the World',
+      gospelDesc: 'We believe the Gospel will be spread throughout the whole world, as Scripture promises. Our church has translators from many foreign languages, as well as sign language interpreters who serve deaf and deaf-mute people. No one will be beyond the reach of God\'s Word.',
     },
     contacts: {
       title: 'Contacts',
