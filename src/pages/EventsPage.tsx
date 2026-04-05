@@ -43,7 +43,7 @@ export function EventsPage() {
                     color: '#fff',
                     textShadow: '0 2px 8px rgba(0,0,0,0.3)',
                   }}>
-                    {ev.brandName.split('\n').map((line, li) => (
+                    {loc(ev.brandName, t.lang).split('\n').map((line, li) => (
                       <div key={li} style={{
                         fontSize: li === 0 ? 22 : 18,
                         fontWeight: 800,

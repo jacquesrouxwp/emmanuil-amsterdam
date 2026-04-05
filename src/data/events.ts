@@ -10,7 +10,7 @@ export interface ChurchEvent {
   fullDesc: Localized;
   badge: Localized;
   color: string;
-  brandName?: string;
+  brandName?: Localized;
   brandGradient?: string;
 }
 
@@ -23,7 +23,7 @@ export const upcomingEvents: ChurchEvent[] = [
     address: 'Javastraat 118, Amsterdam',
     badge: { ua: 'Свято', ru: 'Праздник', en: 'Celebration' },
     color: '#5E9ED6',
-    brandName: 'EMMANUIL\nCHURCH',
+    brandName: { ua: 'EMMANUIL\nCHURCH', ru: 'EMMANUIL\nCHURCH', en: 'EMMANUIL\nCHURCH' },
     brandGradient: 'linear-gradient(135deg, #1a3a5c 0%, #2d5a8e 50%, #5E9ED6 100%)',
     shortDesc: {
       ua: 'Свято хрещення — люди каються і приходять до Христа.',
@@ -43,7 +43,11 @@ export const upcomingEvents: ChurchEvent[] = [
     address: 'Amsterdam & Netherlands',
     badge: { ua: 'Місія', ru: 'Миссия', en: 'Mission' },
     color: '#AF52DE',
-    brandName: '«И тот, кто поможет\nодному из малых сих…\nполучит свою награду»',
+    brandName: {
+      ua: '«І той, хто допоможе\nодному з малих цих…\nотримає свою нагороду»',
+      ru: '«И тот, кто поможет\nодному из малых сих…\nполучит свою награду»',
+      en: '«Whoever helps\none of these little ones…\nshall receive his reward»',
+    },
     brandGradient: 'linear-gradient(135deg, #2d1b4e 0%, #5b2d8e 50%, #AF52DE 100%)',
     shortDesc: {
       ua: 'Раз на місяць їдемо послужити людям з інвалідністю — співаємо, читаємо Біблію та п\'ємо чай.',
@@ -63,7 +67,11 @@ export const upcomingEvents: ChurchEvent[] = [
     address: 'Stadskanaal, Netherlands',
     badge: { ua: 'Табір', ru: 'Лагерь', en: 'Camp' },
     color: '#FF7F50',
-    brandName: "ОБ'ЄДНАНІ\nПРОБУДЖЕННЯМ",
+    brandName: {
+      ua: "ОБ'ЄДНАНІ\nПРОБУДЖЕННЯМ",
+      ru: 'ОБЪЕДИНЁННЫЕ\nПРОБУЖДЕНИЕМ',
+      en: 'UNITED BY\nREVIVAL',
+    },
     brandGradient: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
     shortDesc: {
       ua: "Табір для української молоді з Європи — «Об'єднані пробудженням».",
