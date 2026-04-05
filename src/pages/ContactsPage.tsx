@@ -41,32 +41,45 @@ export function ContactsPage() {
 
       <motion.div variants={fadeUp} className="section">
         <h3 className="section-title" style={{ marginBottom: 12 }}>{t.contacts.socials}</h3>
-        <button
-          className="card"
-          onClick={() => {
-            hapticFeedback('light');
-            openLink('https://www.instagram.com/emmanuil.amsterdam');
-          }}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 14,
-            padding: 16, width: '100%', textAlign: 'left', cursor: 'pointer',
-          }}
-        >
-          <div style={{
-            width: 44, height: 44, borderRadius: 12,
-            background: 'linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-          }}>
-            <Instagram size={22} color="#fff" />
-          </div>
-          <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 15, fontWeight: 600 }}>Instagram</p>
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 1 }}>
-              @emmanuil.amsterdam
-            </p>
-          </div>
-          <ExternalLink size={18} color="var(--text-tertiary)" />
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <button
+            className="card"
+            onClick={() => { hapticFeedback('light'); openLink('https://www.instagram.com/emmanuil.amsterdam'); }}
+            style={{ display: 'flex', alignItems: 'center', gap: 14, padding: 16, width: '100%', textAlign: 'left', cursor: 'pointer' }}
+          >
+            <div style={{
+              width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+              background: 'linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Instagram size={22} color="#fff" />
+            </div>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: 15, fontWeight: 600 }}>Instagram</p>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 1 }}>@emmanuil.amsterdam</p>
+            </div>
+            <ExternalLink size={18} color="var(--text-tertiary)" />
+          </button>
+
+          <button
+            className="card"
+            onClick={() => { hapticFeedback('light'); openLink('https://www.instagram.com/chosenyouth_emm'); }}
+            style={{ display: 'flex', alignItems: 'center', gap: 14, padding: 16, width: '100%', textAlign: 'left', cursor: 'pointer' }}
+          >
+            <div style={{
+              width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+              background: 'linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Instagram size={22} color="#fff" />
+            </div>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: 15, fontWeight: 600 }}>Instagram · Молодіжне</p>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 1 }}>@chosenyouth_emm</p>
+            </div>
+            <ExternalLink size={18} color="var(--text-tertiary)" />
+          </button>
+        </div>
       </motion.div>
     </motion.div>
   );
