@@ -5,7 +5,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const DATA_FILE = join(__dirname, 'data.json');
+const DATA_FILE = process.env.DATA_FILE || '/tmp/emmanuil-data.json';
 const DIST_DIR = join(__dirname, '..', 'dist');
 const PORT = process.env.PORT || 3002;
 
@@ -57,35 +57,40 @@ app.get('/api/attendance/:groupId', (req, res) => {
 });
 
 app.post('/api/attendance/:groupId/toggle', (req, res) => {
-  const { userId, name, photo } = req.body;
-  if (!userId || !name) {
-    return res.status(400).json({ error: 'userId and name required' });
+  try {
+    const { userId, name, photo } = req.body;
+    if (!userId || !name) {
+      return res.status(400).json({ error: 'userId and name required' });
+    }
+
+    const data = loadData();
+    if (!data.attendance[req.params.groupId]) {
+      data.attendance[req.params.groupId] = [];
+    }
+
+    const group = data.attendance[req.params.groupId];
+    const idx = group.findIndex((a) => a.userId === userId);
+
+    let isAttending;
+    if (idx >= 0) {
+      group.splice(idx, 1);
+      isAttending = false;
+    } else {
+      group.push({ userId, name, photo: photo || null });
+      isAttending = true;
+    }
+
+    saveData(data);
+
+    res.json({
+      isAttending,
+      count: group.length,
+      attendees: group.map(({ name, photo }) => ({ name, photo })),
+    });
+  } catch (err) {
+    console.error('Toggle error:', err);
+    res.status(500).json({ error: 'Server error', message: err.message });
   }
-
-  const data = loadData();
-  if (!data.attendance[req.params.groupId]) {
-    data.attendance[req.params.groupId] = [];
-  }
-
-  const group = data.attendance[req.params.groupId];
-  const idx = group.findIndex((a) => a.userId === userId);
-
-  let isAttending;
-  if (idx >= 0) {
-    group.splice(idx, 1);
-    isAttending = false;
-  } else {
-    group.push({ userId, name, photo: photo || null });
-    isAttending = true;
-  }
-
-  saveData(data);
-
-  res.json({
-    isAttending,
-    count: group.length,
-    attendees: group.map(({ name, photo }) => ({ name, photo })),
-  });
 });
 
 // --- SPA fallback: serve index.html for all non-API routes ---
