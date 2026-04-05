@@ -24,7 +24,7 @@ export const upcomingEvents: ChurchEvent[] = [
     address: 'Javastraat 118, Amsterdam',
     badge: { ua: 'Свято', ru: 'Праздник', en: 'Celebration' },
     color: '#5E9ED6',
-    brandName: { ua: 'EMMANUIL\nCHURCH', ru: 'EMMANUIL\nCHURCH', en: 'EMMANUIL\nCHURCH' },
+    brandName: { ua: 'ХРЕЩЕННЯ', ru: 'КРЕЩЕНИЕ', en: 'BAPTISM' },
     brandGradient: 'linear-gradient(135deg, #1a3a5c 0%, #2d5a8e 50%, #5E9ED6 100%)',
     shortDesc: {
       ua: 'Свято хрещення — люди каються і приходять до Христа.',
