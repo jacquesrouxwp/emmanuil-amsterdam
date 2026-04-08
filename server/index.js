@@ -21,11 +21,13 @@ if (existsSync(DIST_DIR)) {
 // --- Simple JSON file storage ---
 
 function loadData() {
-  if (!existsSync(DATA_FILE)) return { attendance: {} };
+  if (!existsSync(DATA_FILE)) return { attendance: {}, subscribers: [] };
   try {
-    return JSON.parse(readFileSync(DATA_FILE, 'utf-8'));
+    const d = JSON.parse(readFileSync(DATA_FILE, 'utf-8'));
+    if (!d.subscribers) d.subscribers = [];
+    return d;
   } catch {
-    return { attendance: {} };
+    return { attendance: {}, subscribers: [] };
   }
 }
 
@@ -91,6 +93,85 @@ app.post('/api/attendance/:groupId/toggle', (req, res) => {
     console.error('Toggle error:', err);
     res.status(500).json({ error: 'Server error', message: err.message });
   }
+});
+
+// --- Subscribe: save chat_id when user opens the app ---
+
+app.post('/api/subscribe', (req, res) => {
+  try {
+    const { chatId, name } = req.body;
+    if (!chatId) return res.status(400).json({ error: 'chatId required' });
+
+    const data = loadData();
+    const exists = data.subscribers.find((s) => s.chatId === chatId);
+    if (!exists) {
+      data.subscribers.push({ chatId, name: name || '', subscribedAt: new Date().toISOString() });
+      saveData(data);
+    }
+    res.json({ ok: true, total: data.subscribers.length });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// --- Notify: broadcast message to all subscribers ---
+
+app.post('/api/notify', async (req, res) => {
+  try {
+    const { secret, text } = req.body;
+    const ADMIN_SECRET = process.env.ADMIN_SECRET;
+
+    if (!ADMIN_SECRET || secret !== ADMIN_SECRET) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    if (!text || text.trim().length === 0) {
+      return res.status(400).json({ error: 'text required' });
+    }
+
+    const BOT_TOKEN = process.env.BOT_TOKEN;
+    if (!BOT_TOKEN) return res.status(500).json({ error: 'BOT_TOKEN not set' });
+
+    const data = loadData();
+    const subscribers = data.subscribers;
+
+    let sent = 0;
+    let failed = 0;
+
+    for (const sub of subscribers) {
+      try {
+        const r = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: sub.chatId,
+            text,
+            parse_mode: 'HTML',
+          }),
+        });
+        if (r.ok) sent++;
+        else failed++;
+      } catch {
+        failed++;
+      }
+    }
+
+    res.json({ ok: true, sent, failed, total: subscribers.length });
+  } catch (err) {
+    console.error('Notify error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// --- Subscriber count (for admin UI) ---
+
+app.get('/api/subscribers/count', (req, res) => {
+  const { secret } = req.query;
+  const ADMIN_SECRET = process.env.ADMIN_SECRET;
+  if (!ADMIN_SECRET || secret !== ADMIN_SECRET) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  const data = loadData();
+  res.json({ count: data.subscribers.length });
 });
 
 // --- Volunteer form → send Telegram message to direction leader ---

@@ -1,10 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import { initTelegram } from '@/lib/telegram';
+import { initTelegram, getTelegramUser } from '@/lib/telegram';
+import { subscribe } from '@/lib/api';
 import '@/styles/globals.css';
 
 initTelegram();
+
+// Subscribe user for push notifications
+const tgUser = getTelegramUser();
+if (tgUser?.id) {
+  subscribe(tgUser.id, tgUser.first_name || '');
+}
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

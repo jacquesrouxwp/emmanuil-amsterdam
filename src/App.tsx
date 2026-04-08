@@ -8,6 +8,7 @@ import { ContactsPage } from '@/pages/ContactsPage';
 import { DonatePage } from '@/pages/DonatePage';
 import { MorePage } from '@/pages/MorePage';
 import { VolunteerPage } from '@/pages/VolunteerPage';
+import { AdminPage } from '@/pages/AdminPage';
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
           <Route path="/donate" element={<DonatePage />} />
           <Route path="/more" element={<MorePage />} />
           <Route path="/volunteer" element={<VolunteerPage />} />
+          <Route path="/admin" element={<AdminPage />} />
         </Routes>
         <BottomNav />
       </div>

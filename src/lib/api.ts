@@ -21,6 +21,18 @@ export async function fetchAllAttendance(): Promise<Record<string, GroupAttendan
   return res.json();
 }
 
+export async function subscribe(chatId: number, name: string): Promise<void> {
+  try {
+    await fetch(`${API_URL}/api/subscribe`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chatId, name }),
+    });
+  } catch {
+    // non-critical, silently ignore
+  }
+}
+
 export async function toggleAttendance(
   groupId: string,
   userId: string,
