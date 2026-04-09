@@ -13,6 +13,75 @@ function formatDate(iso: string, lang: string): string {
   );
 }
 
+function PhotoCarousel({ photos, alt }: { photos: string[]; alt: string }) {
+  const [current, setCurrent] = useState(0);
+
+  if (photos.length === 1) {
+    return (
+      <img
+        src={photos[0]}
+        alt={alt}
+        style={{ width: '100%', height: 220, objectFit: 'cover', display: 'block' }}
+      />
+    );
+  }
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <div
+        style={{
+          display: 'flex',
+          overflowX: 'auto',
+          scrollSnapType: 'x mandatory',
+          scrollBehavior: 'smooth',
+          WebkitOverflowScrolling: 'touch',
+          msOverflowStyle: 'none',
+          scrollbarWidth: 'none',
+        }}
+        onScroll={(e) => {
+          const el = e.currentTarget;
+          const idx = Math.round(el.scrollLeft / el.offsetWidth);
+          setCurrent(idx);
+        }}
+      >
+        {photos.map((src, i) => (
+          <img
+            key={i}
+            src={src}
+            alt={`${alt} ${i + 1}`}
+            style={{
+              flex: '0 0 100%',
+              width: '100%',
+              height: 220,
+              objectFit: 'cover',
+              display: 'block',
+              scrollSnapAlign: 'start',
+            }}
+          />
+        ))}
+      </div>
+      {/* Dot indicators */}
+      <div style={{
+        position: 'absolute', bottom: 8, left: 0, right: 0,
+        display: 'flex', justifyContent: 'center', gap: 5,
+      }}>
+        {photos.map((_, i) => (
+          <div
+            key={i}
+            style={{
+              width: i === current ? 16 : 6,
+              height: 6,
+              borderRadius: 3,
+              background: i === current ? '#fff' : 'rgba(255,255,255,0.5)',
+              transition: 'width 0.2s, background 0.2s',
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function BlogFeed({ title }: { title: string }) {
   const lang = useLang();
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -36,25 +105,20 @@ export function BlogFeed({ title }: { title: string }) {
             >
               <div
                 className="card"
-                style={{ padding: 0, cursor: 'pointer', overflow: 'hidden' }}
-                onClick={() => {
-                  hapticFeedback('light');
-                  setExpanded(isOpen ? null : post.id);
-                }}
+                style={{ padding: 0, overflow: 'hidden' }}
               >
-                {/* Photo */}
-                {post.photo && (
-                  <img
-                    src={post.photo}
-                    alt={loc(post.title, lang)}
-                    style={{
-                      width: '100%', height: 200, objectFit: 'cover',
-                      display: 'block',
-                    }}
-                  />
+                {/* Photos */}
+                {post.photos && post.photos.length > 0 && (
+                  <PhotoCarousel photos={post.photos} alt={loc(post.title, lang)} />
                 )}
 
-                <div style={{ padding: 14 }}>
+                <div
+                  style={{ padding: 14, cursor: 'pointer' }}
+                  onClick={() => {
+                    hapticFeedback('light');
+                    setExpanded(isOpen ? null : post.id);
+                  }}
+                >
                   {/* Date */}
                   <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
                     {formatDate(post.date, lang)}
@@ -65,7 +129,7 @@ export function BlogFeed({ title }: { title: string }) {
                     {loc(post.title, lang)}
                   </h4>
 
-                  {/* Body preview */}
+                  {/* Body */}
                   <p style={{
                     fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5,
                     display: '-webkit-box', WebkitLineClamp: isOpen ? undefined : 2,
