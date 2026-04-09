@@ -50,6 +50,7 @@ function Lightbox({ photos, startIndex, onClose }: { photos: string[]; startInde
           height: '100%',
           objectFit: 'contain',
           display: 'block',
+          borderRadius: 18,
         }}
       />
 
