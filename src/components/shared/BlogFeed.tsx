@@ -18,14 +18,12 @@ function formatDate(iso: string, lang: string): string {
 
 function Lightbox({ photos, startIndex, onClose }: { photos: string[]; startIndex: number; onClose: () => void }) {
   const [current, setCurrent] = useState(startIndex);
-  const [entered, setEntered] = useState(false);
-  const touchX = useRef(0);
+  const [ready, setReady] = useState(false);
+  const touchRef = useRef({ x: 0, swiped: false });
 
-  // Block body scroll
   useEffect(() => {
     document.body.style.overflow = 'hidden';
-    // Small delay before accepting interactions (prevents ghost taps)
-    const t = setTimeout(() => setEntered(true), 100);
+    const t = setTimeout(() => setReady(true), 120);
     return () => { document.body.style.overflow = ''; clearTimeout(t); };
   }, []);
 
@@ -42,58 +40,51 @@ function Lightbox({ photos, startIndex, onClose }: { photos: string[]; startInde
   const goPrev = useCallback(() => { hapticFeedback('light'); setCurrent((c) => Math.max(0, c - 1)); }, []);
   const goNext = useCallback(() => { hapticFeedback('light'); setCurrent((c) => Math.min(photos.length - 1, c + 1)); }, [photos.length]);
 
-  if (!entered) {
-    // Render invisible overlay during the 100ms guard
-    return createPortal(
-      <div style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(0,0,0,0.45)' }} />,
-      document.body,
-    );
-  }
+  const handleClose = useCallback(() => {
+    if (ready) onClose();
+  }, [ready, onClose]);
 
   return createPortal(
-    <div
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
       style={{
         position: 'fixed', inset: 0, zIndex: 10000,
         background: 'rgba(0,0,0,0.55)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         touchAction: 'none',
       }}
-      // Prevent any click/touch from leaking through
-      onClick={(e) => e.stopPropagation()}
-      onTouchStart={(e) => { touchX.current = e.touches[0].clientX; }}
+      onClick={handleClose}
+      onTouchStart={(e) => {
+        touchRef.current = { x: e.touches[0].clientX, swiped: false };
+      }}
       onTouchEnd={(e) => {
-        const dx = e.changedTouches[0].clientX - touchX.current;
+        const dx = e.changedTouches[0].clientX - touchRef.current.x;
         if (Math.abs(dx) > 60) {
+          touchRef.current.swiped = true;
           if (dx < 0) goNext(); else goPrev();
         }
       }}
     >
-      {/* Close button */}
-      <button
-        onClick={(e) => { e.stopPropagation(); onClose(); }}
-        style={{
-          position: 'absolute', top: 14, right: 14, zIndex: 10,
-          background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%',
-          width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', backdropFilter: 'blur(8px)',
-        }}
-      >
-        <X size={20} color="#fff" />
-      </button>
-
-      {/* Photo */}
-      <img
+      {/* Photo — tap closes (unless swiped or arrow clicked) */}
+      <motion.img
+        key={current}
         src={photos[current]}
+        initial={{ scale: 0.85, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.85, opacity: 0 }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        draggable={false}
         style={{
-          maxWidth: 'calc(100% - 32px)',
+          maxWidth: 'calc(100% - 40px)',
           maxHeight: 'calc(100% - 100px)',
           objectFit: 'contain',
           display: 'block',
           borderRadius: 18,
           boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
-          transition: 'opacity 0.2s',
         }}
-        draggable={false}
       />
 
       {/* Left arrow */}
@@ -101,13 +92,13 @@ function Lightbox({ photos, startIndex, onClose }: { photos: string[]; startInde
         <button
           onClick={(e) => { e.stopPropagation(); goPrev(); }}
           style={{
-            position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)',
+            position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)',
             background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%',
-            width: 42, height: 42, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', backdropFilter: 'blur(8px)',
           }}
         >
-          <ChevronLeft size={22} color="#fff" />
+          <ChevronLeft size={20} color="#fff" />
         </button>
       )}
 
@@ -116,13 +107,13 @@ function Lightbox({ photos, startIndex, onClose }: { photos: string[]; startInde
         <button
           onClick={(e) => { e.stopPropagation(); goNext(); }}
           style={{
-            position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+            position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)',
             background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%',
-            width: 42, height: 42, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', backdropFilter: 'blur(8px)',
           }}
         >
-          <ChevronRight size={22} color="#fff" />
+          <ChevronRight size={20} color="#fff" />
         </button>
       )}
 
@@ -137,7 +128,7 @@ function Lightbox({ photos, startIndex, onClose }: { photos: string[]; startInde
           {current + 1} / {photos.length}
         </div>
       )}
-    </div>,
+    </motion.div>,
     document.body,
   );
 }
