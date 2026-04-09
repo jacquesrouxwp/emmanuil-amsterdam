@@ -33,9 +33,7 @@ function Lightbox({ photos, startIndex, onClose }: { photos: string[]; startInde
       transition={{ duration: 0.15 }}
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
-        background: 'rgba(0,0,0,0.5)',
-        backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)',
+        background: 'transparent',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}
       onClick={onClose}
