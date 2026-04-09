@@ -30,7 +30,7 @@ function Lightbox({ photos, startIndex, onClose }: { photos: string[]; startInde
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.15 }}
+      transition={{ duration: 0.4 }}
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
         background: 'transparent',
@@ -38,10 +38,13 @@ function Lightbox({ photos, startIndex, onClose }: { photos: string[]; startInde
       }}
       onClick={onClose}
     >
-      {/* Image — full width, tap anywhere to close */}
-      <img
+      {/* Image — slow open animation, tap anywhere to close */}
+      <motion.img
         key={current}
         src={photos[current]}
+        initial={{ scale: 0.82, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         style={{
           width: '100%',
           height: '100%',
@@ -128,8 +131,8 @@ function PhotoCarousel({ photos, alt }: { photos: string[]; alt: string }) {
           ))}
         </div>
 
-        {/* Left arrow */}
-        {current > 0 && (
+        {/* Left arrow — hidden when lightbox open */}
+        {current > 0 && lightbox === null && (
           <button onClick={prev} style={{
             position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
             background: 'rgba(0,0,0,0.35)', border: 'none', borderRadius: '50%',
@@ -140,8 +143,8 @@ function PhotoCarousel({ photos, alt }: { photos: string[]; alt: string }) {
           </button>
         )}
 
-        {/* Right arrow */}
-        {current < photos.length - 1 && (
+        {/* Right arrow — hidden when lightbox open */}
+        {current < photos.length - 1 && lightbox === null && (
           <button onClick={next} style={{
             position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
             background: 'rgba(0,0,0,0.35)', border: 'none', borderRadius: '50%',
