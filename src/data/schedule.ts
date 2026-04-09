@@ -83,7 +83,7 @@ export const homeGroups: ServiceItem[] = [
       ru: 'Находится в 1 минуте от центрального вокзала Алмере. Войдите через главный вход отеля Best Western Plus (Plaza Premium) и поднимитесь на лифте на 15 этаж!',
       en: 'Located 1 minute from Almere Central train station. Enter through the main entrance of Best Western Plus (Plaza Premium) hotel and take the elevator to the 15th floor!',
     },
-    photo: 'https://i.ibb.co/PvpJ9zTv/1123221.jpg',
+    photo: 'https://i.ibb.co/bjgStMCD/image.jpg',
   },
   {
     id: 'hg-4',
