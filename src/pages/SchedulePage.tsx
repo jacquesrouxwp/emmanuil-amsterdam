@@ -59,33 +59,37 @@ function GroupModal({
           maxWidth: 340,
           overflow: 'hidden',
           boxShadow: '0 12px 48px rgba(0,0,0,0.3)',
+          position: 'relative',
         }}
       >
-        {/* Header — with optional photo background */}
-        <div style={{
-          position: 'relative',
-          minHeight: 90,
-          overflow: 'hidden',
-        }}>
-          {/* Background photo */}
-          {group.photo && (
+        {/* Full-window photo background */}
+        {group.photo && (
+          <>
             <img
               src={group.photo}
               style={{
                 position: 'absolute', inset: 0,
                 width: '100%', height: '100%',
                 objectFit: 'cover',
+                zIndex: 0,
               }}
             />
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'rgba(30, 10, 60, 0.72)',
+              zIndex: 1,
+            }} />
+          </>
+        )}
+
+        {/* Header */}
+        <div style={{ position: 'relative', zIndex: 2, overflow: 'hidden' }}>
+          {!group.photo && (
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'linear-gradient(135deg, #4a2d7a 0%, #7c4dff 100%)',
+            }} />
           )}
-          {/* Overlay — gradient tint */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: group.photo
-              ? 'linear-gradient(135deg, rgba(74,45,122,0.82) 0%, rgba(124,77,255,0.75) 100%)'
-              : 'linear-gradient(135deg, #4a2d7a 0%, #7c4dff 100%)',
-          }} />
-          {/* Content */}
           <div style={{ position: 'relative', padding: '20px 18px 16px' }}>
             <h3 style={{ fontSize: 18, fontWeight: 700, color: '#fff', marginBottom: 4 }}>
               {group.city || 'Група'}
@@ -122,16 +126,16 @@ function GroupModal({
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              style={{ overflow: 'hidden', background: `${typeColors.group}08` }}
+              style={{ overflow: 'hidden', background: 'rgba(255,255,255,0.08)', position: 'relative', zIndex: 2 }}
             >
               <div style={{ padding: '8px 18px', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {attendees.map((a, ai) => (
-                  <div key={ai} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, background: 'var(--bg-card)', padding: '4px 10px', borderRadius: 10 }}>
+                  <div key={ai} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, background: 'rgba(255,255,255,0.15)', padding: '4px 10px', borderRadius: 10 }}>
                     {a.photo
                       ? <img src={a.photo} alt="" style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover' }} />
-                      : <div style={{ width: 20, height: 20, borderRadius: '50%', background: `${typeColors.group}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: typeColors.group }}>{a.name[0]}</div>
+                      : <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: '#fff' }}>{a.name[0]}</div>
                     }
-                    <span style={{ fontWeight: 500 }}>{a.name}</span>
+                    <span style={{ fontWeight: 500, color: group.photo ? '#fff' : undefined }}>{a.name}</span>
                   </div>
                 ))}
               </div>
@@ -140,40 +144,44 @@ function GroupModal({
         </AnimatePresence>
 
         {/* Details */}
-        <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{
+          padding: '16px 18px',
+          display: 'flex', flexDirection: 'column', gap: 12,
+          position: 'relative', zIndex: 2,
+        }}>
           {/* Day & Time */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: group.photo ? '#fff' : undefined }}>
             <div style={{
               width: 34, height: 34, borderRadius: 10,
-              background: `${typeColors.group}12`,
+              background: group.photo ? 'rgba(255,255,255,0.15)' : `${typeColors.group}12`,
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
             }}>
-              <Clock size={16} color={typeColors.group} />
+              <Clock size={16} color={group.photo ? '#fff' : typeColors.group} />
             </div>
             <span>{loc(group.day, lang)}, {group.time}</span>
           </div>
 
           {/* Address */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 14, color: group.photo ? '#fff' : undefined }}>
             <div style={{
               width: 34, height: 34, borderRadius: 10,
-              background: `${typeColors.group}12`,
+              background: group.photo ? 'rgba(255,255,255,0.15)' : `${typeColors.group}12`,
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
             }}>
-              <MapPin size={16} color={typeColors.group} />
+              <MapPin size={16} color={group.photo ? '#fff' : typeColors.group} />
             </div>
             <span style={{ lineHeight: 1.4, paddingTop: 6 }}>{group.address}</span>
           </div>
 
           {/* Leader */}
           {group.leader && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: group.photo ? '#fff' : undefined }}>
               <div style={{
                 width: 34, height: 34, borderRadius: 10,
-                background: `${typeColors.group}12`,
+                background: group.photo ? 'rgba(255,255,255,0.15)' : `${typeColors.group}12`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
               }}>
-                <User size={16} color={typeColors.group} />
+                <User size={16} color={group.photo ? '#fff' : typeColors.group} />
               </div>
               <span>{group.leader}</span>
             </div>
@@ -184,14 +192,14 @@ function GroupModal({
             <a
               href={`tel:${group.phone.replace(/\s/g, '')}`}
               onClick={(e) => e.stopPropagation()}
-              style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: 'var(--primary)', textDecoration: 'none' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: group.photo ? '#a8d8ff' : 'var(--primary)', textDecoration: 'none' }}
             >
               <div style={{
                 width: 34, height: 34, borderRadius: 10,
-                background: 'rgba(94,158,214,0.12)',
+                background: group.photo ? 'rgba(255,255,255,0.15)' : 'rgba(94,158,214,0.12)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
               }}>
-                <Phone size={16} color="var(--primary)" />
+                <Phone size={16} color={group.photo ? '#a8d8ff' : 'var(--primary)'} />
               </div>
               <span>{group.phone}</span>
             </a>
@@ -200,9 +208,10 @@ function GroupModal({
           {/* Description */}
           {group.description && (
             <div style={{
-              fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6,
-              background: 'var(--bg-secondary)', borderRadius: 10,
-              padding: '10px 12px',
+              fontSize: 13, lineHeight: 1.6,
+              color: group.photo ? 'rgba(255,255,255,0.85)' : 'var(--text-secondary)',
+              background: group.photo ? 'rgba(255,255,255,0.1)' : 'var(--bg-secondary)',
+              borderRadius: 10, padding: '10px 12px',
             }}>
               {loc(group.description, lang)}
             </div>
@@ -218,9 +227,9 @@ function GroupModal({
                 fontSize: 15, fontWeight: 600,
                 cursor: isLoading ? 'wait' : 'pointer',
                 transition: 'all 0.2s',
-                background: isAttending ? typeColors.group : `${typeColors.group}12`,
-                color: isAttending ? '#fff' : typeColors.group,
-                border: `1.5px solid ${isAttending ? typeColors.group : `${typeColors.group}30`}`,
+                background: isAttending ? typeColors.group : (group.photo ? 'rgba(255,255,255,0.18)' : `${typeColors.group}12`),
+                color: isAttending ? '#fff' : (group.photo ? '#fff' : typeColors.group),
+                border: `1.5px solid ${isAttending ? typeColors.group : 'rgba(255,255,255,0.25)'}`,
                 opacity: isLoading ? 0.7 : 1,
               }}
             >
@@ -235,12 +244,12 @@ function GroupModal({
               style={{
                 width: 44, height: 44, borderRadius: 12, flexShrink: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'rgba(66,133,244,0.10)',
-                border: '1.5px solid rgba(66,133,244,0.22)',
+                background: group.photo ? 'rgba(255,255,255,0.18)' : 'rgba(66,133,244,0.10)',
+                border: '1.5px solid rgba(255,255,255,0.25)',
                 cursor: 'pointer',
               }}
             >
-              <Navigation size={18} color="#4285F4" />
+              <Navigation size={18} color={group.photo ? '#fff' : '#4285F4'} />
             </button>
           </div>
         </div>
