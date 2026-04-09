@@ -1,16 +1,228 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, MapPin, Phone, User, Users, ChevronDown, ChevronUp, Info, Navigation } from 'lucide-react';
+import { Clock, MapPin, Phone, User, Users, Info, Navigation } from 'lucide-react';
 import { services, homeGroups, typeColors } from '@/data/schedule';
 import { hapticFeedback, getUserName, getTelegramUser, openLink } from '@/lib/telegram';
 import { fetchAllAttendance, toggleAttendance, type GroupAttendance } from '@/lib/api';
 import { useT, useLang, loc } from '@/i18n/translations';
-import { useEffect, useCallback } from 'react';
+
+/* ── Group Detail Modal (portal, lightbox style) ── */
+
+function GroupModal({
+  group, attendance: groupData, isAttending, isLoading,
+  onClose, onAttend, onShowAttendees,
+}: {
+  group: typeof homeGroups[0];
+  attendance?: GroupAttendance;
+  isAttending: boolean;
+  isLoading: boolean;
+  onClose: () => void;
+  onAttend: (e: React.MouseEvent) => void;
+  onShowAttendees: (e: React.MouseEvent) => void;
+}) {
+  const lang = useLang();
+  const t = useT();
+  const count = groupData?.count || 0;
+  const attendees = groupData?.attendees || [];
+  const [showAttendees, setShowAttendees] = useState(false);
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  return createPortal(
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.25 }}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 10000,
+        background: 'rgba(0,0,0,0.5)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 20,
+      }}
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.88, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.88, opacity: 0 }}
+        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: 'var(--bg-card)',
+          borderRadius: 20,
+          width: '100%',
+          maxWidth: 340,
+          overflow: 'hidden',
+          boxShadow: '0 12px 48px rgba(0,0,0,0.3)',
+        }}
+      >
+        {/* Header */}
+        <div style={{
+          background: 'linear-gradient(135deg, #4a2d7a 0%, #7c4dff 100%)',
+          padding: '20px 18px 16px',
+          position: 'relative',
+        }}>
+          <h3 style={{ fontSize: 18, fontWeight: 700, color: '#fff', marginBottom: 4 }}>
+            {group.city || 'Група'}
+          </h3>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>
+            {loc(group.title, lang)}
+          </p>
+
+          {/* Attendee badge */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (count > 0) setShowAttendees(!showAttendees);
+            }}
+            style={{
+              position: 'absolute', top: 16, right: 16,
+              display: 'flex', alignItems: 'center', gap: 4,
+              fontSize: 13, fontWeight: 600, color: '#fff',
+              background: 'rgba(255,255,255,0.2)', padding: '4px 10px',
+              borderRadius: 12, cursor: count > 0 ? 'pointer' : 'default',
+              backdropFilter: 'blur(4px)', border: 'none',
+            }}
+          >
+            <Users size={14} />{count}
+          </button>
+        </div>
+
+        {/* Attendees dropdown */}
+        <AnimatePresence>
+          {showAttendees && attendees.length > 0 && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              style={{ overflow: 'hidden', background: `${typeColors.group}08` }}
+            >
+              <div style={{ padding: '8px 18px', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {attendees.map((a, ai) => (
+                  <div key={ai} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, background: 'var(--bg-card)', padding: '4px 10px', borderRadius: 10 }}>
+                    {a.photo
+                      ? <img src={a.photo} alt="" style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover' }} />
+                      : <div style={{ width: 20, height: 20, borderRadius: '50%', background: `${typeColors.group}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: typeColors.group }}>{a.name[0]}</div>
+                    }
+                    <span style={{ fontWeight: 500 }}>{a.name}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Details */}
+        <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {/* Day & Time */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
+            <div style={{
+              width: 34, height: 34, borderRadius: 10,
+              background: `${typeColors.group}12`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              <Clock size={16} color={typeColors.group} />
+            </div>
+            <span>{loc(group.day, lang)}, {group.time}</span>
+          </div>
+
+          {/* Address */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 14 }}>
+            <div style={{
+              width: 34, height: 34, borderRadius: 10,
+              background: `${typeColors.group}12`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              <MapPin size={16} color={typeColors.group} />
+            </div>
+            <span style={{ lineHeight: 1.4, paddingTop: 6 }}>{group.address}</span>
+          </div>
+
+          {/* Leader */}
+          {group.leader && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
+              <div style={{
+                width: 34, height: 34, borderRadius: 10,
+                background: `${typeColors.group}12`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}>
+                <User size={16} color={typeColors.group} />
+              </div>
+              <span>{group.leader}</span>
+            </div>
+          )}
+
+          {/* Phone */}
+          {group.phone && (
+            <a
+              href={`tel:${group.phone.replace(/\s/g, '')}`}
+              onClick={(e) => e.stopPropagation()}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: 'var(--primary)', textDecoration: 'none' }}
+            >
+              <div style={{
+                width: 34, height: 34, borderRadius: 10,
+                background: 'rgba(94,158,214,0.12)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}>
+                <Phone size={16} color="var(--primary)" />
+              </div>
+              <span>{group.phone}</span>
+            </a>
+          )}
+
+          {/* Action buttons */}
+          <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+            <button
+              onClick={onAttend}
+              disabled={isLoading}
+              style={{
+                flex: 1, height: 44, borderRadius: 12,
+                fontSize: 15, fontWeight: 600,
+                cursor: isLoading ? 'wait' : 'pointer',
+                transition: 'all 0.2s',
+                background: isAttending ? typeColors.group : `${typeColors.group}12`,
+                color: isAttending ? '#fff' : typeColors.group,
+                border: `1.5px solid ${isAttending ? typeColors.group : `${typeColors.group}30`}`,
+                opacity: isLoading ? 0.7 : 1,
+              }}
+            >
+              {isLoading ? '...' : isAttending ? t.schedule.willAttendConfirm : t.schedule.willAttend}
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                hapticFeedback('light');
+                openLink(`https://maps.google.com/?q=${encodeURIComponent(group.address)}`);
+              }}
+              style={{
+                width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(66,133,244,0.10)',
+                border: '1.5px solid rgba(66,133,244,0.22)',
+                cursor: 'pointer',
+              }}
+            >
+              <Navigation size={18} color="#4285F4" />
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>,
+    document.body,
+  );
+}
+
+/* ── Schedule Page ── */
 
 export function SchedulePage() {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [showRideInfo, setShowRideInfo] = useState(false);
-  const [showAttendeesFor, setShowAttendeesFor] = useState<string | null>(null);
   const [attendance, setAttendance] = useState<Record<string, GroupAttendance>>({});
   const [myAttending, setMyAttending] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState<string | null>(null);
@@ -37,8 +249,6 @@ export function SchedulePage() {
 
   useEffect(() => { loadAttendance(); }, [loadAttendance]);
 
-  const toggle = (id: string) => setExpandedId((prev) => (prev === id ? null : id));
-
   const handleAttend = async (e: React.MouseEvent, groupId: string) => {
     e.stopPropagation();
     hapticFeedback('medium');
@@ -59,12 +269,6 @@ export function SchedulePage() {
       });
     }
     setLoading(null);
-  };
-
-  const handleShowAttendees = (e: React.MouseEvent, groupId: string) => {
-    e.stopPropagation();
-    hapticFeedback('light');
-    setShowAttendeesFor((prev) => (prev === groupId ? null : groupId));
   };
 
   return (
@@ -123,7 +327,7 @@ export function SchedulePage() {
         </div>
       </div>
 
-      {/* Home Groups */}
+      {/* Home Groups — 2-column grid */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
           <h3 className="section-title">{t.schedule.homeGroups}</h3>
@@ -131,92 +335,100 @@ export function SchedulePage() {
             <Info size={14} />{t.schedule.howToGet}
           </button>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: 8,
+        }}>
           {homeGroups.map((g, i) => {
-            const isOpen = expandedId === g.id;
+            const count = attendance[g.id]?.count || 0;
             const isAttending = myAttending.has(g.id);
-            const groupData = attendance[g.id];
-            const count = groupData?.count || 0;
-            const attendees = groupData?.attendees || [];
-            const showingAttendees = showAttendeesFor === g.id;
-            const isLoading = loading === g.id;
+
             return (
-              <motion.div key={g.id} className="card" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }} style={{ padding: 0, overflow: 'hidden', borderLeft: `3px solid ${typeColors.group}`, position: 'relative' }}>
-                <button onClick={(e) => count > 0 ? handleShowAttendees(e, g.id) : undefined} style={{ position: 'absolute', top: 8, right: 8, display: 'flex', alignItems: 'center', gap: 3, fontSize: 12, cursor: count > 0 ? 'pointer' : 'default', color: count > 0 ? typeColors.group : 'var(--text-tertiary)', background: count > 0 ? `${typeColors.group}12` : 'var(--bg-secondary)', padding: '3px 8px', borderRadius: 10, zIndex: 2 }}>
-                  <Users size={12} />{count}
-                </button>
-                <AnimatePresence>
-                  {showingAttendees && attendees.length > 0 && (
-                    <motion.div initial={{ opacity: 0, y: -4, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.95 }} transition={{ duration: 0.15 }} style={{ position: 'absolute', top: 34, right: 8, background: 'var(--bg-card)', borderRadius: 10, padding: '6px 0', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', border: '1px solid var(--border-light)', zIndex: 10, minWidth: 140 }}>
-                      {attendees.map((a, ai) => (
-                        <div key={ai} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', fontSize: 13 }}>
-                          {a.photo ? <img src={a.photo} alt="" style={{ width: 22, height: 22, borderRadius: '50%', objectFit: 'cover' }} /> : <div style={{ width: 22, height: 22, borderRadius: '50%', background: `${typeColors.group}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 600, color: typeColors.group }}>{a.name[0]}</div>}
-                          <span style={{ fontWeight: 500 }}>{a.name}</span>
+              <motion.div
+                key={g.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+              >
+                <button
+                  className="card"
+                  onClick={() => { hapticFeedback('light'); setSelectedGroup(g.id); }}
+                  style={{
+                    padding: 0, overflow: 'hidden', width: '100%',
+                    textAlign: 'left', cursor: 'pointer',
+                    borderTop: `3px solid ${typeColors.group}`,
+                    transition: 'transform 0.15s',
+                  }}
+                >
+                  <div style={{ padding: '12px 10px' }}>
+                    {/* City name */}
+                    <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>
+                      {g.city || 'Група'}
+                    </h4>
+
+                    {/* Day & time */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--text-secondary)', marginBottom: 4 }}>
+                      <Clock size={11} color={typeColors.group} />
+                      {loc(g.day, lang)}, {g.time}
+                    </div>
+
+                    {/* Leader */}
+                    {g.leader && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--text-secondary)', marginBottom: 6 }}>
+                        <User size={11} color={typeColors.group} />
+                        {g.leader}
+                      </div>
+                    )}
+
+                    {/* Bottom row: attendees + attending badge */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: 3,
+                        fontSize: 11, color: count > 0 ? typeColors.group : 'var(--text-tertiary)',
+                        background: count > 0 ? `${typeColors.group}12` : 'var(--bg-secondary)',
+                        padding: '2px 7px', borderRadius: 8,
+                      }}>
+                        <Users size={11} />{count}
+                      </div>
+                      {isAttending && (
+                        <div style={{
+                          fontSize: 10, fontWeight: 600, color: typeColors.group,
+                          background: `${typeColors.group}15`, padding: '2px 7px',
+                          borderRadius: 8,
+                        }}>
+                          ✓
                         </div>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-                <button onClick={() => toggle(g.id)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '12px 14px', paddingRight: 60, textAlign: 'left', cursor: 'pointer', gap: 8 }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 3 }}>{g.city || 'Група'}</p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'var(--text-secondary)' }}>
-                      <Clock size={12} color={typeColors.group} />{loc(g.day, lang)}, {g.time}
+                      )}
                     </div>
                   </div>
-                  {isOpen ? <ChevronUp size={18} color="var(--text-tertiary)" /> : <ChevronDown size={18} color="var(--text-tertiary)" />}
                 </button>
-                <AnimatePresence>
-                  {isOpen && (
-                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} style={{ overflow: 'hidden' }}>
-                      <div style={{ padding: '0 14px 14px', display: 'flex', flexDirection: 'column', gap: 6, borderTop: '1px solid var(--border-light)', paddingTop: 10 }}>
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, fontSize: 13, color: 'var(--text-secondary)' }}>
-                          <MapPin size={13} color={typeColors.group} style={{ marginTop: 2, flexShrink: 0 }} />{g.address}
-                        </div>
-                        {g.leader && <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)' }}><User size={13} color={typeColors.group} />{g.leader}</div>}
-                        {g.phone && <a href={`tel:${g.phone.replace(/\s/g, '')}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--primary)', textDecoration: 'none' }}><Phone size={13} />{g.phone}</a>}
-                        <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
-                          {/* Буду */}
-                          <button
-                            onClick={(e) => handleAttend(e, g.id)}
-                            disabled={isLoading}
-                            style={{
-                              flex: 1, height: 40, borderRadius: 10,
-                              fontSize: 14, fontWeight: 600,
-                              cursor: isLoading ? 'wait' : 'pointer',
-                              transition: 'all 0.2s',
-                              background: isAttending ? typeColors.group : `${typeColors.group}12`,
-                              color: isAttending ? '#fff' : typeColors.group,
-                              border: `1.5px solid ${isAttending ? typeColors.group : `${typeColors.group}30`}`,
-                              opacity: isLoading ? 0.7 : 1,
-                            }}
-                          >
-                            {isLoading ? '...' : isAttending ? t.schedule.willAttendConfirm : t.schedule.willAttend}
-                          </button>
-                          {/* Google Maps */}
-                          <button
-                            onClick={(e) => { e.stopPropagation(); hapticFeedback('light'); openLink(`https://maps.google.com/?q=${encodeURIComponent(g.address)}`); }}
-                            title="Google Maps"
-                            style={{
-                              width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              background: 'rgba(66,133,244,0.10)',
-                              border: '1.5px solid rgba(66,133,244,0.22)',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            <Navigation size={16} color="#4285F4" />
-                          </button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </motion.div>
             );
           })}
         </div>
       </div>
+
+      {/* Group detail modal */}
+      <AnimatePresence>
+        {selectedGroup && (() => {
+          const g = homeGroups.find((h) => h.id === selectedGroup);
+          if (!g) return null;
+          return (
+            <GroupModal
+              key={g.id}
+              group={g}
+              attendance={attendance[g.id]}
+              isAttending={myAttending.has(g.id)}
+              isLoading={loading === g.id}
+              onClose={() => setSelectedGroup(null)}
+              onAttend={(e) => handleAttend(e, g.id)}
+              onShowAttendees={(e) => e.stopPropagation()}
+            />
+          );
+        })()}
+      </AnimatePresence>
 
       {/* Ride info — centered popup */}
       <AnimatePresence>
