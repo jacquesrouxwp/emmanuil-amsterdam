@@ -27,43 +27,42 @@ function PhotoCarousel({ photos, alt }: { photos: string[]; alt: string }) {
   }
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', overflow: 'hidden' }}>
       <div
         style={{
           display: 'flex',
-          overflowX: 'auto',
+          overflowX: 'scroll',
           scrollSnapType: 'x mandatory',
-          scrollBehavior: 'smooth',
           WebkitOverflowScrolling: 'touch',
           msOverflowStyle: 'none',
           scrollbarWidth: 'none',
+          touchAction: 'pan-x',
         }}
         onScroll={(e) => {
           const el = e.currentTarget;
           const idx = Math.round(el.scrollLeft / el.offsetWidth);
           setCurrent(idx);
         }}
+        onClick={(e) => e.stopPropagation()}
       >
         {photos.map((src, i) => (
-          <img
+          <div
             key={i}
-            src={src}
-            alt={`${alt} ${i + 1}`}
-            style={{
-              flex: '0 0 100%',
-              width: '100%',
-              height: 220,
-              objectFit: 'cover',
-              display: 'block',
-              scrollSnapAlign: 'start',
-            }}
-          />
+            style={{ flex: '0 0 100%', scrollSnapAlign: 'start', minWidth: '100%' }}
+          >
+            <img
+              src={src}
+              alt={`${alt} ${i + 1}`}
+              style={{ width: '100%', height: 220, objectFit: 'cover', display: 'block' }}
+            />
+          </div>
         ))}
       </div>
       {/* Dot indicators */}
       <div style={{
         position: 'absolute', bottom: 8, left: 0, right: 0,
         display: 'flex', justifyContent: 'center', gap: 5,
+        pointerEvents: 'none',
       }}>
         {photos.map((_, i) => (
           <div
