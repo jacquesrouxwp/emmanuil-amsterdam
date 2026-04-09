@@ -76,7 +76,7 @@ function GroupModal({
             />
             <div style={{
               position: 'absolute', inset: 0,
-              background: 'rgba(30, 10, 60, 0.72)',
+              background: 'rgba(10, 10, 15, 0.52)',
               zIndex: 1,
             }} />
           </>
