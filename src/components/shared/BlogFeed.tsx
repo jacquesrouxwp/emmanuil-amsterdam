@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { blogPosts } from '@/data/blog';
@@ -15,6 +15,8 @@ function formatDate(iso: string, lang: string): string {
 
 function PhotoCarousel({ photos, alt }: { photos: string[]; alt: string }) {
   const [current, setCurrent] = useState(0);
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
 
   if (photos.length === 1) {
     return (
@@ -26,38 +28,50 @@ function PhotoCarousel({ photos, alt }: { photos: string[]; alt: string }) {
     );
   }
 
+  const prev = () => setCurrent((c) => Math.max(0, c - 1));
+  const next = () => setCurrent((c) => Math.min(photos.length - 1, c + 1));
+
   return (
-    <div style={{ position: 'relative', overflow: 'hidden' }}>
-      <div
-        style={{
-          display: 'flex',
-          overflowX: 'scroll',
-          scrollSnapType: 'x mandatory',
-          WebkitOverflowScrolling: 'touch',
-          msOverflowStyle: 'none',
-          scrollbarWidth: 'none',
-          touchAction: 'pan-x',
-        }}
-        onScroll={(e) => {
-          const el = e.currentTarget;
-          const idx = Math.round(el.scrollLeft / el.offsetWidth);
-          setCurrent(idx);
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div
+      style={{ position: 'relative', overflow: 'hidden', height: 220, userSelect: 'none' }}
+      onTouchStart={(e) => {
+        touchStartX.current = e.touches[0].clientX;
+        touchStartY.current = e.touches[0].clientY;
+      }}
+      onTouchEnd={(e) => {
+        const dx = e.changedTouches[0].clientX - touchStartX.current;
+        const dy = e.changedTouches[0].clientY - touchStartY.current;
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+          e.stopPropagation();
+          if (dx < 0) next(); else prev();
+        }
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Images */}
+      <div style={{
+        display: 'flex',
+        width: `${photos.length * 100}%`,
+        height: '100%',
+        transform: `translateX(-${current * (100 / photos.length)}%)`,
+        transition: 'transform 0.3s ease',
+      }}>
         {photos.map((src, i) => (
-          <div
+          <img
             key={i}
-            style={{ flex: '0 0 100%', scrollSnapAlign: 'start', minWidth: '100%' }}
-          >
-            <img
-              src={src}
-              alt={`${alt} ${i + 1}`}
-              style={{ width: '100%', height: 220, objectFit: 'cover', display: 'block' }}
-            />
-          </div>
+            src={src}
+            alt={`${alt} ${i + 1}`}
+            style={{
+              width: `${100 / photos.length}%`,
+              height: 220,
+              objectFit: 'cover',
+              display: 'block',
+              flexShrink: 0,
+            }}
+          />
         ))}
       </div>
+
       {/* Dot indicators */}
       <div style={{
         position: 'absolute', bottom: 8, left: 0, right: 0,
