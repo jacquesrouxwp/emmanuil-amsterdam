@@ -12,6 +12,8 @@ export interface ServiceItem {
   city?: string;
   brandName?: string;
   brandGradient?: string;
+  description?: Localized;
+  photo?: string;
 }
 
 export const services: ServiceItem[] = [
@@ -47,6 +49,11 @@ export const homeGroups: ServiceItem[] = [
     type: 'group',
     leader: 'Pavlo',
     city: 'Amsterdam',
+    description: {
+      ua: 'Доступна для тих, хто живе в Амстердамі — легко дістатися велосипедом, метро або трамваєм. Скористайтеся навігатором!',
+      ru: 'Доступна для тех, кто живёт в Амстердаме — легко добраться на велосипеде, метро или трамвае. Воспользуйтесь навигатором!',
+      en: 'Accessible for those living in Amsterdam — easy to reach by bike, metro, or tram. Use your navigation app!',
+    },
   },
   {
     id: 'hg-2',
@@ -57,15 +64,26 @@ export const homeGroups: ServiceItem[] = [
     type: 'group',
     leader: 'Vitali',
     city: 'Leerbroek',
+    description: {
+      ua: 'Знаходиться недалеко від Утрехта. Громадським транспортом дістатися складно — прямого поїзда чи автобуса немає. Найкраще автомобілем, тому знайдіть когось, хто їде по дорозі!',
+      ru: 'Находится недалеко от Утрехта. Общественным транспортом добраться сложно — прямого поезда и автобуса нет. Лучше всего на машине, найдите попутчика!',
+      en: 'Located near Utrecht. Public transport is difficult — no direct train or bus. Best by car, so find someone going your way!',
+    },
   },
   {
     id: 'hg-3',
     title: { ua: 'Домашня група', ru: 'Домашняя группа', en: 'Home Group' },
     day: { ua: 'Четвер', ru: 'Четверг', en: 'Thursday' },
     time: '19:00',
-    address: 'Mandelaplein 1, Almere',
+    address: 'Best Western Plus (Plaza Premium), Almere — вхід через головний вхід готелю, ліфт на 15 поверх',
     type: 'group',
     city: 'Almere',
+    description: {
+      ua: 'Знаходиться в 1 хвилині від центрального залізничного вокзалу Альмере. Зайдіть через головний вхід готелю Best Western Plus (Plaza Premium) і піднімайтеся ліфтом на 15 поверх!',
+      ru: 'Находится в 1 минуте от центрального вокзала Алмере. Войдите через главный вход отеля Best Western Plus (Plaza Premium) и поднимитесь на лифте на 15 этаж!',
+      en: 'Located 1 minute from Almere Central train station. Enter through the main entrance of Best Western Plus (Plaza Premium) hotel and take the elevator to the 15th floor!',
+    },
+    photo: 'ALMERE_PHOTO',
   },
   {
     id: 'hg-4',
