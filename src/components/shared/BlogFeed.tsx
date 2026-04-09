@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { blogPosts } from '@/data/blog';
@@ -15,6 +15,7 @@ function formatDate(iso: string, lang: string): string {
 
 function Lightbox({ photos, startIndex, onClose }: { photos: string[]; startIndex: number; onClose: () => void }) {
   const [current, setCurrent] = useState(startIndex);
+  const touchStartX = useRef(0);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -22,8 +23,8 @@ function Lightbox({ photos, startIndex, onClose }: { photos: string[]; startInde
     return () => window.removeEventListener('keydown', handler);
   }, [onClose]);
 
-  const prev = (e: React.MouseEvent) => { e.stopPropagation(); hapticFeedback('light'); setCurrent((c) => Math.max(0, c - 1)); };
-  const next = (e: React.MouseEvent) => { e.stopPropagation(); hapticFeedback('light'); setCurrent((c) => Math.min(photos.length - 1, c + 1)); };
+  const prev = () => { hapticFeedback('light'); setCurrent((c) => Math.max(0, c - 1)); };
+  const next = () => { hapticFeedback('light'); setCurrent((c) => Math.min(photos.length - 1, c + 1)); };
 
   return (
     <motion.div
@@ -37,26 +38,36 @@ function Lightbox({ photos, startIndex, onClose }: { photos: string[]; startInde
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}
       onClick={onClose}
+      onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+      onTouchEnd={(e) => {
+        const dx = e.changedTouches[0].clientX - touchStartX.current;
+        if (Math.abs(dx) > 50) {
+          e.stopPropagation();
+          if (dx < 0) next(); else prev();
+        }
+      }}
     >
-      {/* Image — slow open animation, tap anywhere to close */}
+      {/* Image with padding so rounded corners are visible */}
       <motion.img
         key={current}
         src={photos[current]}
         initial={{ scale: 0.82, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        onClick={(e) => e.stopPropagation()}
         style={{
-          width: '100%',
-          height: '100%',
+          maxWidth: 'calc(100% - 32px)',
+          maxHeight: 'calc(100% - 80px)',
           objectFit: 'contain',
           display: 'block',
-          borderRadius: 18,
+          borderRadius: 20,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
         }}
       />
 
       {/* Left arrow */}
       {current > 0 && (
-        <button onClick={prev} style={{
+        <button onClick={(e) => { e.stopPropagation(); prev(); }} style={{
           position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
           background: 'rgba(255,255,255,0.18)', border: 'none', borderRadius: '50%',
           width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -68,7 +79,7 @@ function Lightbox({ photos, startIndex, onClose }: { photos: string[]; startInde
 
       {/* Right arrow */}
       {current < photos.length - 1 && (
-        <button onClick={next} style={{
+        <button onClick={(e) => { e.stopPropagation(); next(); }} style={{
           position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
           background: 'rgba(255,255,255,0.18)', border: 'none', borderRadius: '50%',
           width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center',
