@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { blogPosts } from '@/data/blog';
 import { useLang, loc } from '@/i18n/translations';
 import { hapticFeedback } from '@/lib/telegram';
@@ -30,39 +30,23 @@ function Lightbox({ photos, startIndex, onClose }: { photos: string[]; startInde
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
+      transition={{ duration: 0.15 }}
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
-        background: 'rgba(0,0,0,0.92)',
+        background: '#000',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}
       onClick={onClose}
     >
-      {/* Close */}
-      <button
-        onClick={onClose}
-        style={{
-          position: 'absolute', top: 16, right: 16,
-          background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: '50%',
-          width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', zIndex: 1,
-        }}
-      >
-        <X size={18} color="#fff" />
-      </button>
-
-      {/* Image */}
-      <motion.img
+      {/* Image — full width, tap anywhere to close */}
+      <img
         key={current}
         src={photos[current]}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.18 }}
-        onClick={(e) => e.stopPropagation()}
         style={{
-          maxWidth: '100%', maxHeight: '85vh',
-          objectFit: 'contain', borderRadius: 8,
-          boxShadow: '0 8px 40px rgba(0,0,0,0.6)',
+          width: '100%',
+          height: '100%',
+          objectFit: 'contain',
+          display: 'block',
         }}
       />
 
@@ -70,7 +54,7 @@ function Lightbox({ photos, startIndex, onClose }: { photos: string[]; startInde
       {current > 0 && (
         <button onClick={prev} style={{
           position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
-          background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%',
+          background: 'rgba(255,255,255,0.18)', border: 'none', borderRadius: '50%',
           width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer',
         }}>
@@ -82,7 +66,7 @@ function Lightbox({ photos, startIndex, onClose }: { photos: string[]; startInde
       {current < photos.length - 1 && (
         <button onClick={next} style={{
           position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-          background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%',
+          background: 'rgba(255,255,255,0.18)', border: 'none', borderRadius: '50%',
           width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer',
         }}>
@@ -93,9 +77,10 @@ function Lightbox({ photos, startIndex, onClose }: { photos: string[]; startInde
       {/* Counter */}
       {photos.length > 1 && (
         <div style={{
-          position: 'absolute', bottom: 20,
+          position: 'absolute', bottom: 32,
           background: 'rgba(255,255,255,0.15)', borderRadius: 20,
-          padding: '4px 12px', fontSize: 13, color: '#fff',
+          padding: '4px 14px', fontSize: 13, color: '#fff',
+          pointerEvents: 'none',
         }}>
           {current + 1} / {photos.length}
         </div>
