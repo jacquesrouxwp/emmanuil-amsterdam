@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { blogPosts } from '@/data/blog';
 import { useLang, loc } from '@/i18n/translations';
 import { hapticFeedback } from '@/lib/telegram';
@@ -13,78 +14,114 @@ function formatDate(iso: string, lang: string): string {
   );
 }
 
+/* ── Lightbox (rendered via portal to body) ── */
+
 function Lightbox({ photos, startIndex, onClose }: { photos: string[]; startIndex: number; onClose: () => void }) {
   const [current, setCurrent] = useState(startIndex);
-  const touchStartX = useRef(0);
+  const [entered, setEntered] = useState(false);
+  const touchX = useRef(0);
+
+  // Block body scroll
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    // Small delay before accepting interactions (prevents ghost taps)
+    const t = setTimeout(() => setEntered(true), 100);
+    return () => { document.body.style.overflow = ''; clearTimeout(t); };
+  }, []);
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowLeft') setCurrent((c) => Math.max(0, c - 1));
+      if (e.key === 'ArrowRight') setCurrent((c) => Math.min(photos.length - 1, c + 1));
+    };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [onClose]);
+  }, [onClose, photos.length]);
 
-  const prev = () => { hapticFeedback('light'); setCurrent((c) => Math.max(0, c - 1)); };
-  const next = () => { hapticFeedback('light'); setCurrent((c) => Math.min(photos.length - 1, c + 1)); };
+  const goPrev = useCallback(() => { hapticFeedback('light'); setCurrent((c) => Math.max(0, c - 1)); }, []);
+  const goNext = useCallback(() => { hapticFeedback('light'); setCurrent((c) => Math.min(photos.length - 1, c + 1)); }, [photos.length]);
 
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.4 }}
+  if (!entered) {
+    // Render invisible overlay during the 100ms guard
+    return createPortal(
+      <div style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(0,0,0,0.45)' }} />,
+      document.body,
+    );
+  }
+
+  return createPortal(
+    <div
       style={{
-        position: 'fixed', inset: 0, zIndex: 9999,
-        background: 'rgba(0,0,0,0.45)',
+        position: 'fixed', inset: 0, zIndex: 10000,
+        background: 'rgba(0,0,0,0.55)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
+        touchAction: 'none',
       }}
-      onClick={onClose}
-      onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+      // Prevent any click/touch from leaking through
+      onClick={(e) => e.stopPropagation()}
+      onTouchStart={(e) => { touchX.current = e.touches[0].clientX; }}
       onTouchEnd={(e) => {
-        const dx = e.changedTouches[0].clientX - touchStartX.current;
-        if (Math.abs(dx) > 50) {
-          e.stopPropagation();
-          if (dx < 0) next(); else prev();
+        const dx = e.changedTouches[0].clientX - touchX.current;
+        if (Math.abs(dx) > 60) {
+          if (dx < 0) goNext(); else goPrev();
         }
       }}
     >
-      {/* Image with padding so rounded corners are visible */}
-      <motion.img
-        key={current}
+      {/* Close button */}
+      <button
+        onClick={(e) => { e.stopPropagation(); onClose(); }}
+        style={{
+          position: 'absolute', top: 14, right: 14, zIndex: 10,
+          background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%',
+          width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', backdropFilter: 'blur(8px)',
+        }}
+      >
+        <X size={20} color="#fff" />
+      </button>
+
+      {/* Photo */}
+      <img
         src={photos[current]}
-        initial={{ scale: 0.82, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        onClick={(e) => e.stopPropagation()}
         style={{
           maxWidth: 'calc(100% - 32px)',
-          maxHeight: 'calc(100% - 80px)',
+          maxHeight: 'calc(100% - 100px)',
           objectFit: 'contain',
           display: 'block',
-          borderRadius: 20,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+          borderRadius: 18,
+          boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
+          transition: 'opacity 0.2s',
         }}
+        draggable={false}
       />
 
       {/* Left arrow */}
       {current > 0 && (
-        <button onClick={(e) => { e.stopPropagation(); prev(); }} style={{
-          position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
-          background: 'rgba(255,255,255,0.18)', border: 'none', borderRadius: '50%',
-          width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer',
-        }}>
+        <button
+          onClick={(e) => { e.stopPropagation(); goPrev(); }}
+          style={{
+            position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)',
+            background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%',
+            width: 42, height: 42, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', backdropFilter: 'blur(8px)',
+          }}
+        >
           <ChevronLeft size={22} color="#fff" />
         </button>
       )}
 
       {/* Right arrow */}
       {current < photos.length - 1 && (
-        <button onClick={(e) => { e.stopPropagation(); next(); }} style={{
-          position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-          background: 'rgba(255,255,255,0.18)', border: 'none', borderRadius: '50%',
-          width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer',
-        }}>
+        <button
+          onClick={(e) => { e.stopPropagation(); goNext(); }}
+          style={{
+            position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+            background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%',
+            width: 42, height: 42, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', backdropFilter: 'blur(8px)',
+          }}
+        >
           <ChevronRight size={22} color="#fff" />
         </button>
       )}
@@ -92,17 +129,20 @@ function Lightbox({ photos, startIndex, onClose }: { photos: string[]; startInde
       {/* Counter */}
       {photos.length > 1 && (
         <div style={{
-          position: 'absolute', bottom: 32,
-          background: 'rgba(255,255,255,0.15)', borderRadius: 20,
-          padding: '4px 14px', fontSize: 13, color: '#fff',
-          pointerEvents: 'none',
+          position: 'absolute', bottom: 28,
+          background: 'rgba(255,255,255,0.18)', borderRadius: 20,
+          padding: '5px 16px', fontSize: 14, color: '#fff', fontWeight: 600,
+          pointerEvents: 'none', backdropFilter: 'blur(8px)',
         }}>
           {current + 1} / {photos.length}
         </div>
       )}
-    </motion.div>
+    </div>,
+    document.body,
   );
 }
+
+/* ── Carousel (in-card photo slider) ── */
 
 function PhotoCarousel({ photos, alt }: { photos: string[]; alt: string }) {
   const [current, setCurrent] = useState(0);
@@ -117,7 +157,7 @@ function PhotoCarousel({ photos, alt }: { photos: string[]; alt: string }) {
         style={{ position: 'relative', overflow: 'hidden', height: 220, userSelect: 'none' }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Images */}
+        {/* Images track */}
         <div style={{
           display: 'flex',
           width: `${photos.length * 100}%`,
@@ -130,7 +170,11 @@ function PhotoCarousel({ photos, alt }: { photos: string[]; alt: string }) {
               key={i}
               src={src}
               alt={`${alt} ${i + 1}`}
-              onClick={() => { hapticFeedback('light'); setLightbox(i); }}
+              onClick={() => {
+                if (lightbox !== null) return; // guard
+                hapticFeedback('light');
+                setLightbox(i);
+              }}
               style={{
                 width: `${100 / photos.length}%`,
                 height: 220,
@@ -143,7 +187,7 @@ function PhotoCarousel({ photos, alt }: { photos: string[]; alt: string }) {
           ))}
         </div>
 
-        {/* Left arrow — hidden when lightbox open */}
+        {/* Carousel arrows (hidden when lightbox open) */}
         {current > 0 && lightbox === null && (
           <button onClick={prev} style={{
             position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
@@ -154,8 +198,6 @@ function PhotoCarousel({ photos, alt }: { photos: string[]; alt: string }) {
             <ChevronLeft size={18} color="#fff" />
           </button>
         )}
-
-        {/* Right arrow — hidden when lightbox open */}
         {current < photos.length - 1 && lightbox === null && (
           <button onClick={next} style={{
             position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
@@ -168,7 +210,7 @@ function PhotoCarousel({ photos, alt }: { photos: string[]; alt: string }) {
         )}
 
         {/* Dot indicators */}
-        {photos.length > 1 && (
+        {photos.length > 1 && lightbox === null && (
           <div style={{
             position: 'absolute', bottom: 8, left: 0, right: 0,
             display: 'flex', justifyContent: 'center', gap: 5,
@@ -185,15 +227,15 @@ function PhotoCarousel({ photos, alt }: { photos: string[]; alt: string }) {
         )}
       </div>
 
-      {/* Lightbox */}
-      <AnimatePresence>
-        {lightbox !== null && (
-          <Lightbox photos={photos} startIndex={lightbox} onClose={() => setLightbox(null)} />
-        )}
-      </AnimatePresence>
+      {/* Lightbox via portal */}
+      {lightbox !== null && (
+        <Lightbox photos={photos} startIndex={lightbox} onClose={() => setLightbox(null)} />
+      )}
     </>
   );
 }
+
+/* ── Blog feed ── */
 
 export function BlogFeed({ title }: { title: string }) {
   const lang = useLang();
@@ -216,11 +258,7 @@ export function BlogFeed({ title }: { title: string }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.04 }}
             >
-              <div
-                className="card"
-                style={{ padding: 0, overflow: 'hidden' }}
-              >
-                {/* Photos */}
+              <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
                 {post.photos && post.photos.length > 0 && (
                   <PhotoCarousel photos={post.photos} alt={loc(post.title, lang)} />
                 )}
@@ -232,17 +270,12 @@ export function BlogFeed({ title }: { title: string }) {
                     setExpanded(isOpen ? null : post.id);
                   }}
                 >
-                  {/* Date */}
                   <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
                     {formatDate(post.date, lang)}
                   </span>
-
-                  {/* Title */}
                   <h4 style={{ fontSize: 15, fontWeight: 700, margin: '6px 0', lineHeight: 1.35 }}>
                     {loc(post.title, lang)}
                   </h4>
-
-                  {/* Body */}
                   <p style={{
                     fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5,
                     display: '-webkit-box', WebkitLineClamp: isOpen ? undefined : 2,
@@ -250,8 +283,6 @@ export function BlogFeed({ title }: { title: string }) {
                   }}>
                     {loc(post.body, lang)}
                   </p>
-
-                  {/* Expand toggle */}
                   <div style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
                     marginTop: 10, gap: 4,
