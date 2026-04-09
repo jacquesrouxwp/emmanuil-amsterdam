@@ -3,37 +3,25 @@ import type { Localized } from '@/i18n/translations';
 export interface BlogPost {
   id: string;
   date: string;
+  photo?: string;
   title: Localized;
   body: Localized;
 }
 
 export const blogPosts: BlogPost[] = [
   {
-    id: 'blog-picnic-2025',
-    date: '2025-06-15',
+    id: 'blog-huizen-2026-04-07',
+    date: '2026-04-07',
+    photo: 'https://i.ibb.co/Q37WJhFH/2.jpg',
     title: {
-      ua: 'Церковний пікнік 🌿',
-      ru: 'Церковный пикник 🌿',
-      en: 'Church Picnic 🌿',
+      ua: 'Церква Emmanuil на локації для людей з інвалідністю в місті Huizen',
+      ru: 'Церковь Emmanuil на локации для людей с инвалидностью в городе Huizen',
+      en: 'Emmanuil Church at the disability care location in Huizen',
     },
     body: {
-      ua: 'Провели чудовий час разом на природі — їжа, ігри, молитва та сміх. Дякуємо всім, хто прийшов!',
-      ru: 'Провели замечательное время на природе — еда, игры, молитва и смех. Спасибо всем, кто пришёл!',
-      en: 'We had a wonderful time together outdoors — food, games, prayer and laughter. Thank you to everyone who came!',
-    },
-  },
-  {
-    id: 'blog-disability-2025',
-    date: '2025-04-05',
-    title: {
-      ua: 'Служіння людям з інвалідністю ♡',
-      ru: 'Служение людям с инвалидностью ♡',
-      en: 'Ministry for People with Disabilities ♡',
-    },
-    body: {
-      ua: 'Знову відвідали наших друзів — разом співали, молилися та пили чай. Їхні усмішки — наша нагорода.',
-      ru: 'Снова навестили наших друзей — вместе пели, молились и пили чай. Их улыбки — наша награда.',
-      en: 'We visited our friends again — singing, praying and drinking tea together. Their smiles are our reward.',
+      ua: 'Ми відвідали наших друзів на локації в місті Huizen — співали пісні, ділилися Словом, провели хлібопреломлення. Сестра Надія показала близько 30 картин ручної вишивки — неймовірний Богом даний талант! Плануємо майбутню виставку в церкві з її свідченням.',
+      ru: 'Мы посетили наших друзей на локации в городе Huizen — пели песни, делились Словом, провели хлебопреломление. Сестра Надежда показала около 30 картин ручной вышивки — невероятный Богом данный талант! Планируем будущую выставку в церкви с её свидетельством.',
+      en: 'We visited our friends at the care location in Huizen — sang songs, shared the Word, had communion. Sister Nadezhda showed about 30 hand-embroidery paintings — an incredible God-given talent! We are planning a future exhibition at the church with her testimony.',
     },
   },
 ];
