@@ -423,41 +423,43 @@ export function SchedulePage() {
                   style={{
                     padding: 0, overflow: 'hidden', width: '100%',
                     textAlign: 'left', cursor: 'pointer',
-                    borderTop: `3px solid ${typeColors.group}`,
+                    borderTop: g.photo ? 'none' : `3px solid ${typeColors.group}`,
                     transition: 'transform 0.15s',
                     position: 'relative',
                   }}
                 >
-                  {/* Small photo thumbnail at top */}
+                  {/* Full card photo background */}
                   {g.photo && (
-                    <div style={{ position: 'relative', height: 70, overflow: 'hidden' }}>
+                    <>
                       <img src={g.photo} style={{
+                        position: 'absolute', inset: 0,
                         width: '100%', height: '100%',
-                        objectFit: 'cover', display: 'block',
+                        objectFit: 'cover', zIndex: 0,
                       }} />
                       <div style={{
                         position: 'absolute', inset: 0,
-                        background: 'rgba(10,10,15,0.3)',
+                        background: 'rgba(10,10,15,0.55)',
+                        zIndex: 1,
                       }} />
-                    </div>
+                    </>
                   )}
 
                   <div style={{ padding: '12px 10px', position: 'relative', zIndex: 2 }}>
                     {/* City name */}
-                    <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>
+                    <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 6, color: g.photo ? '#fff' : undefined }}>
                       {g.city || 'Група'}
                     </h4>
 
                     {/* Day & time */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--text-secondary)', marginBottom: 4 }}>
-                      <Clock size={11} color={typeColors.group} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: g.photo ? 'rgba(255,255,255,0.8)' : 'var(--text-secondary)', marginBottom: 4 }}>
+                      <Clock size={11} color={g.photo ? 'rgba(255,255,255,0.8)' : typeColors.group} />
                       {loc(g.day, lang)}, {g.time}
                     </div>
 
                     {/* Leader */}
                     {g.leader && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--text-secondary)', marginBottom: 6 }}>
-                        <User size={11} color={typeColors.group} />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: g.photo ? 'rgba(255,255,255,0.8)' : 'var(--text-secondary)', marginBottom: 6 }}>
+                        <User size={11} color={g.photo ? 'rgba(255,255,255,0.8)' : typeColors.group} />
                         {g.leader}
                       </div>
                     )}
@@ -467,8 +469,8 @@ export function SchedulePage() {
                       <div style={{
                         display: 'flex', alignItems: 'center', gap: 3,
                         fontSize: 11,
-                        color: count > 0 ? typeColors.group : 'var(--text-tertiary)',
-                        background: count > 0 ? `${typeColors.group}12` : 'var(--bg-secondary)',
+                        color: g.photo ? '#fff' : (count > 0 ? typeColors.group : 'var(--text-tertiary)'),
+                        background: g.photo ? 'rgba(255,255,255,0.18)' : (count > 0 ? `${typeColors.group}12` : 'var(--bg-secondary)'),
                         padding: '2px 7px', borderRadius: 8,
                       }}>
                         <Users size={11} />{count}
@@ -476,8 +478,8 @@ export function SchedulePage() {
                       {isAttending && (
                         <div style={{
                           fontSize: 10, fontWeight: 600,
-                          color: typeColors.group,
-                          background: `${typeColors.group}15`,
+                          color: g.photo ? '#fff' : typeColors.group,
+                          background: g.photo ? 'rgba(255,255,255,0.2)' : `${typeColors.group}15`,
                           padding: '2px 7px', borderRadius: 8,
                         }}>
                           ✓

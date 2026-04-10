@@ -54,6 +54,7 @@ export const homeGroups: ServiceItem[] = [
       ru: 'Доступна для тех, кто живёт в Амстердаме — легко добраться на велосипеде, метро или трамвае. Воспользуйтесь навигатором!',
       en: 'Accessible for those living in Amsterdam — easy to reach by bike, metro, or tram. Use your navigation app!',
     },
+    photo: 'https://i.ibb.co/HfHyBkxm/amster.jpg',
   },
   {
     id: 'hg-2',
@@ -69,6 +70,7 @@ export const homeGroups: ServiceItem[] = [
       ru: 'Находится недалеко от Утрехта. Общественным транспортом добраться сложно — прямого поезда и автобуса нет. Лучше всего на машине, найдите попутчика!',
       en: 'Located near Utrecht. Public transport is difficult — no direct train or bus. Best by car, so find someone going your way!',
     },
+    photo: 'https://i.ibb.co/PGzLc2C0/leer.jpg',
   },
   {
     id: 'hg-3',
