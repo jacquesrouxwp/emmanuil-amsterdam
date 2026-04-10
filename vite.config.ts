@@ -12,7 +12,7 @@ export default defineConfig({
   },
   server: {
     host: true,
-    port: parseInt(process.env.PORT || '3001'),
+    port: process.env.PORT ? parseInt(process.env.PORT) : undefined,
   },
   build: {
     outDir: 'dist',

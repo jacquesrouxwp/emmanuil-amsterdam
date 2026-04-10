@@ -229,7 +229,7 @@ function GroupModal({
                 transition: 'all 0.2s',
                 background: isAttending ? typeColors.group : (group.photo ? 'rgba(255,255,255,0.18)' : `${typeColors.group}12`),
                 color: isAttending ? '#fff' : (group.photo ? '#fff' : typeColors.group),
-                border: `1.5px solid ${isAttending ? typeColors.group : 'rgba(255,255,255,0.25)'}`,
+                border: `1.5px solid ${isAttending ? typeColors.group : (group.photo ? 'rgba(255,255,255,0.25)' : `${typeColors.group}30`)}`,
                 opacity: isLoading ? 0.7 : 1,
               }}
             >
@@ -245,7 +245,7 @@ function GroupModal({
                 width: 44, height: 44, borderRadius: 12, flexShrink: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 background: group.photo ? 'rgba(255,255,255,0.18)' : 'rgba(66,133,244,0.10)',
-                border: '1.5px solid rgba(255,255,255,0.25)',
+                border: `1.5px solid ${group.photo ? 'rgba(255,255,255,0.25)' : 'rgba(66,133,244,0.25)'}`,
                 cursor: 'pointer',
               }}
             >
@@ -404,38 +404,36 @@ export function SchedulePage() {
                     position: 'relative',
                   }}
                 >
-                  {/* Card photo background */}
+                  {/* Small photo thumbnail at top */}
                   {g.photo && (
-                    <>
+                    <div style={{ position: 'relative', height: 70, overflow: 'hidden' }}>
                       <img src={g.photo} style={{
-                        position: 'absolute', inset: 0,
                         width: '100%', height: '100%',
-                        objectFit: 'cover', zIndex: 0,
+                        objectFit: 'cover', display: 'block',
                       }} />
                       <div style={{
                         position: 'absolute', inset: 0,
-                        background: 'rgba(10,10,15,0.58)',
-                        zIndex: 1,
+                        background: 'rgba(10,10,15,0.3)',
                       }} />
-                    </>
+                    </div>
                   )}
 
                   <div style={{ padding: '12px 10px', position: 'relative', zIndex: 2 }}>
                     {/* City name */}
-                    <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 6, color: g.photo ? '#fff' : undefined }}>
+                    <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>
                       {g.city || 'Група'}
                     </h4>
 
                     {/* Day & time */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: g.photo ? 'rgba(255,255,255,0.75)' : 'var(--text-secondary)', marginBottom: 4 }}>
-                      <Clock size={11} color={g.photo ? 'rgba(255,255,255,0.75)' : typeColors.group} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--text-secondary)', marginBottom: 4 }}>
+                      <Clock size={11} color={typeColors.group} />
                       {loc(g.day, lang)}, {g.time}
                     </div>
 
                     {/* Leader */}
                     {g.leader && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: g.photo ? 'rgba(255,255,255,0.75)' : 'var(--text-secondary)', marginBottom: 6 }}>
-                        <User size={11} color={g.photo ? 'rgba(255,255,255,0.75)' : typeColors.group} />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--text-secondary)', marginBottom: 6 }}>
+                        <User size={11} color={typeColors.group} />
                         {g.leader}
                       </div>
                     )}
@@ -445,8 +443,8 @@ export function SchedulePage() {
                       <div style={{
                         display: 'flex', alignItems: 'center', gap: 3,
                         fontSize: 11,
-                        color: count > 0 ? (g.photo ? '#fff' : typeColors.group) : (g.photo ? 'rgba(255,255,255,0.5)' : 'var(--text-tertiary)'),
-                        background: count > 0 ? (g.photo ? 'rgba(255,255,255,0.18)' : `${typeColors.group}12`) : (g.photo ? 'rgba(255,255,255,0.1)' : 'var(--bg-secondary)'),
+                        color: count > 0 ? typeColors.group : 'var(--text-tertiary)',
+                        background: count > 0 ? `${typeColors.group}12` : 'var(--bg-secondary)',
                         padding: '2px 7px', borderRadius: 8,
                       }}>
                         <Users size={11} />{count}
@@ -454,8 +452,8 @@ export function SchedulePage() {
                       {isAttending && (
                         <div style={{
                           fontSize: 10, fontWeight: 600,
-                          color: g.photo ? '#fff' : typeColors.group,
-                          background: g.photo ? 'rgba(255,255,255,0.2)' : `${typeColors.group}15`,
+                          color: typeColors.group,
+                          background: `${typeColors.group}15`,
                           padding: '2px 7px', borderRadius: 8,
                         }}>
                           ✓

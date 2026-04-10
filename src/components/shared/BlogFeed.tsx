@@ -92,13 +92,13 @@ function Lightbox({ photos, startIndex, onClose }: { photos: string[]; startInde
         <button
           onClick={(e) => { e.stopPropagation(); goPrev(); }}
           style={{
-            position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)',
-            background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%',
-            width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', backdropFilter: 'blur(8px)',
+            position: 'absolute', left: 28, top: '50%', transform: 'translateY(-50%)',
+            background: 'rgba(0,0,0,0.35)', border: 'none', borderRadius: '50%',
+            width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', backdropFilter: 'blur(4px)',
           }}
         >
-          <ChevronLeft size={20} color="#fff" />
+          <ChevronLeft size={18} color="#fff" />
         </button>
       )}
 
@@ -107,13 +107,13 @@ function Lightbox({ photos, startIndex, onClose }: { photos: string[]; startInde
         <button
           onClick={(e) => { e.stopPropagation(); goNext(); }}
           style={{
-            position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)',
-            background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%',
-            width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', backdropFilter: 'blur(8px)',
+            position: 'absolute', right: 28, top: '50%', transform: 'translateY(-50%)',
+            background: 'rgba(0,0,0,0.35)', border: 'none', borderRadius: '50%',
+            width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', backdropFilter: 'blur(4px)',
           }}
         >
-          <ChevronRight size={20} color="#fff" />
+          <ChevronRight size={18} color="#fff" />
         </button>
       )}
 
