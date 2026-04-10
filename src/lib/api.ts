@@ -33,6 +33,32 @@ export async function subscribe(chatId: number, name: string): Promise<void> {
   }
 }
 
+export interface PostReaction { likes: number; shares: number; }
+
+export async function fetchReactions(): Promise<Record<string, PostReaction>> {
+  try {
+    const res = await fetch(`${API_URL}/api/reactions`);
+    if (!res.ok) return {};
+    return res.json();
+  } catch { return {}; }
+}
+
+export async function likePost(postId: string, delta: 1 | -1): Promise<PostReaction> {
+  const res = await fetch(`${API_URL}/api/reactions/${postId}/like`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ delta }),
+  });
+  return res.json();
+}
+
+export async function sharePost(postId: string): Promise<PostReaction> {
+  const res = await fetch(`${API_URL}/api/reactions/${postId}/share`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  });
+  return res.json();
+}
+
 export async function toggleAttendance(
   groupId: string,
   userId: string,

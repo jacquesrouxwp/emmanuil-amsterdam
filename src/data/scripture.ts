@@ -418,12 +418,24 @@ export const dailyScriptures: LocalizedScripture[] = [
   },
 ];
 
-export function getTodayScripture(): LocalizedScripture {
-  const today = new Date();
+export function getCurrentScripture(): LocalizedScripture {
+  const now = new Date();
   const dayOfYear = Math.floor(
-    (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000
+    (now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000
   );
-  return dailyScriptures[dayOfYear % dailyScriptures.length];
+  const slot = Math.floor(now.getHours() * 2 + now.getMinutes() / 30); // 0–47
+  return dailyScriptures[(dayOfYear * 48 + slot) % dailyScriptures.length];
+}
+
+export function getSecondsUntilNextSlot(): number {
+  const now = new Date();
+  const secondsInSlot = (now.getMinutes() % 30) * 60 + now.getSeconds();
+  return 30 * 60 - secondsInSlot;
+}
+
+// Keep legacy export
+export function getTodayScripture(): LocalizedScripture {
+  return getCurrentScripture();
 }
 
 // Legacy export for type compatibility

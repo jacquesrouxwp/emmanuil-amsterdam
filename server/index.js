@@ -21,13 +21,14 @@ if (existsSync(DIST_DIR)) {
 // --- Simple JSON file storage ---
 
 function loadData() {
-  if (!existsSync(DATA_FILE)) return { attendance: {}, subscribers: [] };
+  if (!existsSync(DATA_FILE)) return { attendance: {}, subscribers: [], reactions: {} };
   try {
     const d = JSON.parse(readFileSync(DATA_FILE, 'utf-8'));
     if (!d.subscribers) d.subscribers = [];
+    if (!d.reactions) d.reactions = {};
     return d;
   } catch {
-    return { attendance: {}, subscribers: [] };
+    return { attendance: {}, subscribers: [], reactions: {} };
   }
 }
 
@@ -93,6 +94,32 @@ app.post('/api/attendance/:groupId/toggle', (req, res) => {
     console.error('Toggle error:', err);
     res.status(500).json({ error: 'Server error', message: err.message });
   }
+});
+
+// --- Post reactions (likes / shares) ---
+
+app.get('/api/reactions', (_req, res) => {
+  const data = loadData();
+  res.json(data.reactions);
+});
+
+app.post('/api/reactions/:postId/like', (req, res) => {
+  const { postId } = req.params;
+  const { delta } = req.body; // +1 or -1
+  const data = loadData();
+  if (!data.reactions[postId]) data.reactions[postId] = { likes: 0, shares: 0 };
+  data.reactions[postId].likes = Math.max(0, (data.reactions[postId].likes || 0) + (delta === -1 ? -1 : 1));
+  saveData(data);
+  res.json(data.reactions[postId]);
+});
+
+app.post('/api/reactions/:postId/share', (req, res) => {
+  const { postId } = req.params;
+  const data = loadData();
+  if (!data.reactions[postId]) data.reactions[postId] = { likes: 0, shares: 0 };
+  data.reactions[postId].shares = (data.reactions[postId].shares || 0) + 1;
+  saveData(data);
+  res.json(data.reactions[postId]);
 });
 
 // --- Subscribe: save chat_id when user opens the app ---

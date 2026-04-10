@@ -1,17 +1,16 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X, Heart, Share2 } from 'lucide-react';
 import { blogPosts } from '@/data/blog';
 import { useLang, loc } from '@/i18n/translations';
-import { hapticFeedback } from '@/lib/telegram';
+import { hapticFeedback, shareUrl } from '@/lib/telegram';
+import { fetchReactions, likePost, sharePost, type PostReaction } from '@/lib/api';
 
 function formatDate(iso: string, lang: string): string {
   const d = new Date(iso);
-  return d.toLocaleDateString(
-    lang === 'ua' ? 'uk-UA' : lang === 'ru' ? 'ru-RU' : 'en-GB',
-    { day: 'numeric', month: 'long', year: 'numeric' }
-  );
+  const locale = lang === 'ua' ? 'uk-UA' : lang === 'ru' ? 'ru-RU' : lang === 'nl' ? 'nl-NL' : lang === 'es' ? 'es-ES' : 'en-GB';
+  return d.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 /* ── Lightbox (rendered via portal to body) ── */
@@ -228,9 +227,42 @@ function PhotoCarousel({ photos, alt }: { photos: string[]; alt: string }) {
 
 /* ── Blog feed ── */
 
+const LIKED_KEY = 'emmanuil_liked_posts';
+function getLiked(): Set<string> { try { return new Set(JSON.parse(localStorage.getItem(LIKED_KEY) || '[]')); } catch { return new Set(); } }
+function setLiked(s: Set<string>) { localStorage.setItem(LIKED_KEY, JSON.stringify([...s])); }
+
 export function BlogFeed({ title }: { title: string }) {
   const lang = useLang();
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [reactions, setReactions] = useState<Record<string, PostReaction>>({});
+  const [liked, setLikedState] = useState<Set<string>>(() => getLiked());
+
+  useEffect(() => { fetchReactions().then(setReactions); }, []);
+
+  const handleLike = async (postId: string) => {
+    hapticFeedback('light');
+    const isLiked = liked.has(postId);
+    const next = new Set(liked);
+    isLiked ? next.delete(postId) : next.add(postId);
+    setLikedState(next);
+    setLiked(next);
+    // Optimistic update
+    setReactions((prev) => ({
+      ...prev,
+      [postId]: { likes: Math.max(0, (prev[postId]?.likes || 0) + (isLiked ? -1 : 1)), shares: prev[postId]?.shares || 0 },
+    }));
+    try { const r = await likePost(postId, isLiked ? -1 : 1); setReactions((prev) => ({ ...prev, [postId]: r })); } catch { /* offline */ }
+  };
+
+  const handleShare = async (postId: string, postTitle: string) => {
+    hapticFeedback('light');
+    shareUrl('https://t.me/myconclaw_bot/app', postTitle);
+    setReactions((prev) => ({
+      ...prev,
+      [postId]: { likes: prev[postId]?.likes || 0, shares: (prev[postId]?.shares || 0) + 1 },
+    }));
+    try { const r = await sharePost(postId); setReactions((prev) => ({ ...prev, [postId]: r })); } catch { /* offline */ }
+  };
 
   return (
     <div>
@@ -280,9 +312,52 @@ export function BlogFeed({ title }: { title: string }) {
                     color: 'var(--primary)', fontSize: 12, fontWeight: 600,
                   }}>
                     {isOpen
-                      ? (lang === 'ua' ? 'Згорнути' : lang === 'ru' ? 'Свернуть' : 'Collapse')
-                      : (lang === 'ua' ? 'Читати' : lang === 'ru' ? 'Читать' : 'Read more')}
+                      ? (lang === 'ua' ? 'Згорнути' : lang === 'ru' ? 'Свернуть' : lang === 'nl' ? 'Inklappen' : lang === 'es' ? 'Cerrar' : 'Collapse')
+                      : (lang === 'ua' ? 'Читати' : lang === 'ru' ? 'Читать' : lang === 'nl' ? 'Lees meer' : lang === 'es' ? 'Leer más' : 'Read more')}
                     {isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                  </div>
+
+                  {/* Like / Share row */}
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    marginTop: 12, paddingTop: 10,
+                    borderTop: '1px solid var(--border-light)',
+                  }} onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={() => handleLike(post.id)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 5,
+                        padding: '5px 10px', borderRadius: 20,
+                        background: liked.has(post.id) ? 'rgba(255,59,92,0.1)' : 'var(--bg-secondary)',
+                        border: `1px solid ${liked.has(post.id) ? 'rgba(255,59,92,0.3)' : 'var(--border-light)'}`,
+                        cursor: 'pointer', transition: 'all 0.15s',
+                      }}
+                    >
+                      <Heart
+                        size={14}
+                        color={liked.has(post.id) ? '#ff3b5c' : 'var(--text-secondary)'}
+                        fill={liked.has(post.id) ? '#ff3b5c' : 'none'}
+                      />
+                      <span style={{ fontSize: 12, fontWeight: 600, color: liked.has(post.id) ? '#ff3b5c' : 'var(--text-secondary)' }}>
+                        {reactions[post.id]?.likes || 0}
+                      </span>
+                    </button>
+
+                    <button
+                      onClick={() => handleShare(post.id, loc(post.title, lang))}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 5,
+                        padding: '5px 10px', borderRadius: 20,
+                        background: 'var(--bg-secondary)',
+                        border: '1px solid var(--border-light)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Share2 size={14} color="var(--text-secondary)" />
+                      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>
+                        {reactions[post.id]?.shares || 0}
+                      </span>
+                    </button>
                   </div>
                 </div>
               </div>
