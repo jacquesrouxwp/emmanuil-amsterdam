@@ -50,6 +50,7 @@ const t = {
       howToGetOk: 'Зрозуміло',
       willAttend: 'Буду',
       willAttendConfirm: '✓ Буду!',
+      invite: 'Запросити',
     },
     events: {
       title: 'Важливі події',
@@ -156,6 +157,7 @@ const t = {
       howToGetOk: 'Понятно',
       willAttend: 'Буду',
       willAttendConfirm: '✓ Буду!',
+      invite: 'Пригласить',
     },
     events: {
       title: 'Важные события',
@@ -262,6 +264,7 @@ const t = {
       howToGetOk: 'Got it',
       willAttend: 'I\'ll be there',
       willAttendConfirm: '✓ I\'ll be there!',
+      invite: 'Invite',
     },
     events: {
       title: 'Events',

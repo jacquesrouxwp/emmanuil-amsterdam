@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, MapPin, Phone, User, Users, Info, Navigation } from 'lucide-react';
+import { Clock, MapPin, Phone, User, Users, Info, Navigation, Share2 } from 'lucide-react';
 import { services, homeGroups, typeColors } from '@/data/schedule';
-import { hapticFeedback, getUserName, getTelegramUser, openLink } from '@/lib/telegram';
+import { hapticFeedback, getUserName, getTelegramUser, openLink, shareUrl } from '@/lib/telegram';
 import { fetchAllAttendance, toggleAttendance, type GroupAttendance } from '@/lib/api';
 import { useT, useLang, loc } from '@/i18n/translations';
 
@@ -234,6 +234,30 @@ function GroupModal({
               }}
             >
               {isLoading ? '...' : isAttending ? t.schedule.willAttendConfirm : t.schedule.willAttend}
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                hapticFeedback('light');
+                const city = group.city || 'Amsterdam';
+                const day = loc(group.day, lang);
+                const time = group.time;
+                const text = lang === 'ua'
+                  ? `Привіт! Запрошую тебе на домашню групу в ${city} (${day}, ${time}). Приєднуйся!`
+                  : lang === 'ru'
+                  ? `Привет! Приглашаю тебя на домашнюю группу в ${city} (${day}, ${time}). Присоединяйся!`
+                  : `Hi! I'd like to invite you to a home group in ${city} (${day}, ${time}). Join us!`;
+                shareUrl('https://t.me/myconclaw_bot/app', text);
+              }}
+              style={{
+                width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: group.photo ? 'rgba(255,255,255,0.18)' : `${typeColors.group}12`,
+                border: `1.5px solid ${group.photo ? 'rgba(255,255,255,0.25)' : `${typeColors.group}30`}`,
+                cursor: 'pointer',
+              }}
+            >
+              <Share2 size={18} color={group.photo ? '#fff' : typeColors.group} />
             </button>
             <button
               onClick={(e) => {
