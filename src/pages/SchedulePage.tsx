@@ -241,12 +241,13 @@ function GroupModal({
                 hapticFeedback('light');
                 const city = group.city || 'Amsterdam';
                 const day = loc(group.day, lang);
-                const time = group.time;
+                const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(group.address)}`;
+                const phoneLine = group.phone ? (lang === 'ua' ? `📞 Відповідальний: ${group.phone}` : lang === 'ru' ? `📞 Ответственный: ${group.phone}` : `📞 Contact: ${group.phone}`) : '';
                 const text = lang === 'ua'
-                  ? `Привіт! Запрошую тебе на домашню групу в ${city} (${day}, ${time}). Приєднуйся!`
+                  ? `Привіт! Запрошую тебе на домашню групу в ${city} 🏠\n\n📍 Адреса: ${group.address}\n🗓 Коли: ${day}, ${group.time}${phoneLine ? '\n' + phoneLine : ''}\n\n🗺 Google Maps: ${mapsUrl}\n\nБудемо раді тебе бачити! 🙌`
                   : lang === 'ru'
-                  ? `Привет! Приглашаю тебя на домашнюю группу в ${city} (${day}, ${time}). Присоединяйся!`
-                  : `Hi! I'd like to invite you to a home group in ${city} (${day}, ${time}). Join us!`;
+                  ? `Привет! Приглашаю тебя на домашнюю группу в ${city} 🏠\n\n📍 Адрес: ${group.address}\n🗓 Когда: ${day}, ${group.time}${phoneLine ? '\n' + phoneLine : ''}\n\n🗺 Google Maps: ${mapsUrl}\n\nБудем рады тебя видеть! 🙌`
+                  : `Hi! You're invited to a home group in ${city} 🏠\n\n📍 Address: ${group.address}\n🗓 When: ${day}, ${group.time}${phoneLine ? '\n' + phoneLine : ''}\n\n🗺 Google Maps: ${mapsUrl}\n\nWe'd love to see you! 🙌`;
                 shareUrl('https://t.me/myconclaw_bot/app', text);
               }}
               style={{
