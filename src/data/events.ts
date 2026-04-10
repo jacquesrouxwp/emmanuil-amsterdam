@@ -12,6 +12,8 @@ export interface ChurchEvent {
   color: string;
   brandName?: Localized;
   brandGradient?: string;
+  photo?: string;
+  link?: string;
 }
 
 export const upcomingEvents: ChurchEvent[] = [
@@ -54,10 +56,12 @@ export const upcomingEvents: ChurchEvent[] = [
       en: "Camp for Ukrainian youth from Europe — \"United by Revival\".",
     },
     fullDesc: {
-      ua: "«Об'єднані пробудженням» — табір для української молоді з Європи та Америки, організований церквами з Бельгії, Нідерландів та США. Сьогодні в Європі діє близько 126 українських церков у 20 країнах. Наша мета — зібрати молодих людей для духовного пробудження, глибокого спілкування та оновлення покликання слідувати за Христом.",
-      ru: "«Объединённые пробуждением» — лагерь для украинской молодёжи из Европы и Америки, организованный церквями из Бельгии, Нидерландов и США. Сегодня в Европе действует около 126 украинских церквей в 20 странах. Наша цель — собрать молодых людей для духовного пробуждения, глубокого общения и обновления призвания следовать за Христом.",
-      en: "\"United by Revival\" — a camp for Ukrainian youth from Europe and America, organised by churches from Belgium, the Netherlands and the USA. Today about 126 Ukrainian churches are active in 20 European countries. Our goal is to bring young people together for spiritual revival, deep fellowship and renewal of the calling to follow Christ.",
+      ua: "«Об'єднані пробудженням» — табір для української молоді (16+) з Європи та Америки, організований церквами з Бельгії, Нідерландів та США. 5 днів молитви, вивчення Біблії, спілкування та відпочинку. Спікери: Ярослав Ярошенко, Валентин Ярошенко, Богдан Коновалов, Віталій Жиляк. На території: басейн, волейбол, баскетбол, теніс. Проживання в кімнатах по 3–6 осіб, триразове харчування включено.",
+      ru: "«Объединённые пробуждением» — лагерь для украинской молодёжи (16+) из Европы и Америки, организованный церквями из Бельгии, Нидерландов и США. 5 дней молитвы, изучения Библии, общения и отдыха. Спикеры: Ярослав Ярошенко, Валентин Ярошенко, Богдан Коновалов, Виталий Жиляк. На территории: бассейн, волейбол, баскетбол, теннис. Проживание в комнатах по 3–6 человек, трёхразовое питание включено.",
+      en: "\"United by Revival\" — a camp for Ukrainian youth (16+) from Europe and America, organised by churches from Belgium, the Netherlands and the USA. 5 days of prayer, Bible study, fellowship and recreation. Speakers: Yaroslav Yaroshenko, Valentin Yaroshenko, Bohdan Konovalov, Vitaliy Zhyliak. Facilities: swimming pool, volleyball, basketball, tennis. Accommodation in rooms of 3–6 people, three meals a day included.",
     },
+    photo: 'https://emmanuil-united-revival.vercel.app/_next/image?url=%2Fimages%2Flocation%2Fgreen-zone.jpg&w=1920&q=75',
+    link: 'https://emmanuil-united-revival.vercel.app',
   },
 
   // 3. Disability ministry — text changes with language
