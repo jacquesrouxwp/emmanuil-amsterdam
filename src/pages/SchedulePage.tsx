@@ -247,6 +247,10 @@ function GroupModal({
                   ? `Привіт! Запрошую тебе на домашню групу в ${city} 🏠\n\n📍 Адреса: ${group.address}\n🗓 Коли: ${day}, ${group.time}${phoneLine ? '\n' + phoneLine : ''}\n\n🗺 Google Maps: ${mapsUrl}\n\nБудемо раді тебе бачити! 🙌`
                   : lang === 'ru'
                   ? `Привет! Приглашаю тебя на домашнюю группу в ${city} 🏠\n\n📍 Адрес: ${group.address}\n🗓 Когда: ${day}, ${group.time}${phoneLine ? '\n' + phoneLine : ''}\n\n🗺 Google Maps: ${mapsUrl}\n\nБудем рады тебя видеть! 🙌`
+                  : lang === 'nl'
+                  ? `Hoi! Ik nodig je uit voor een huisgroep in ${city} 🏠\n\n📍 Adres: ${group.address}\n🗓 Wanneer: ${day}, ${group.time}${phoneLine ? '\n' + phoneLine : ''}\n\n🗺 Google Maps: ${mapsUrl}\n\nWe zien je graag! 🙌`
+                  : lang === 'es'
+                  ? `¡Hola! Te invito a un grupo familiar en ${city} 🏠\n\n📍 Dirección: ${group.address}\n🗓 Cuándo: ${day}, ${group.time}${phoneLine ? '\n' + phoneLine : ''}\n\n🗺 Google Maps: ${mapsUrl}\n\n¡Nos encantaría verte! 🙌`
                   : `Hi! You're invited to a home group in ${city} 🏠\n\n📍 Address: ${group.address}\n🗓 When: ${day}, ${group.time}${phoneLine ? '\n' + phoneLine : ''}\n\n🗺 Google Maps: ${mapsUrl}\n\nWe'd love to see you! 🙌`;
                 shareUrl('https://t.me/myconclaw_bot/app', text);
               }}

@@ -145,7 +145,7 @@ export function EventsPage() {
                             }}
                           >
                             <ExternalLink size={16} />
-                            {t.lang === 'ua' ? 'Відкрити сайт' : t.lang === 'ru' ? 'Открыть сайт' : 'Visit website'}
+                            {t.events.website}
                           </button>
                         )}
                       </div>

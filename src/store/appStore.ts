@@ -3,8 +3,8 @@ import { persist } from 'zustand/middleware';
 import type { Donation } from '@/types';
 
 interface AppState {
-  lang: 'ua' | 'ru' | 'en';
-  setLang: (lang: 'ua' | 'ru' | 'en') => void;
+  lang: 'ua' | 'ru' | 'en' | 'nl' | 'es';
+  setLang: (lang: 'ua' | 'ru' | 'en' | 'nl' | 'es') => void;
 
   userName: string;
   setUserName: (name: string) => void;
