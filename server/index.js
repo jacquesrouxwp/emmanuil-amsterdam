@@ -122,6 +122,39 @@ app.post('/api/reactions/:postId/share', (req, res) => {
   res.json(data.reactions[postId]);
 });
 
+// --- Share: prepare inline message with photo via Telegram Bot API ---
+
+app.post('/api/share/prepare', async (req, res) => {
+  try {
+    const BOT_TOKEN = process.env.BOT_TOKEN;
+    if (!BOT_TOKEN) return res.status(500).json({ error: 'BOT_TOKEN not set' });
+
+    const { userId, title, body, photoUrl } = req.body;
+    if (!userId || !title) return res.status(400).json({ error: 'userId and title required' });
+
+    const caption = `${title}\n\n${body ? body.substring(0, 200) + (body.length > 200 ? '...' : '') : ''}`;
+    const replyMarkup = {
+      inline_keyboard: [[{ text: '📱 Відкрити додаток', url: 'https://t.me/myconclaw_bot/app' }]],
+    };
+
+    const result = photoUrl
+      ? { type: 'photo', id: 'share', photo_url: photoUrl, thumbnail_url: photoUrl, caption, reply_markup: replyMarkup }
+      : { type: 'article', id: 'share', title, input_message_content: { message_text: caption }, reply_markup: replyMarkup };
+
+    const tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/savePreparedInlineMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, result, allow_user_chats: true, allow_group_chats: true, allow_channel_chats: true }),
+    });
+
+    const tgData = await tgRes.json();
+    if (!tgData.ok) return res.status(400).json({ error: tgData.description });
+    res.json({ id: tgData.result.id });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error', message: err.message });
+  }
+});
+
 // --- Subscribe: save chat_id when user opens the app ---
 
 app.post('/api/subscribe', (req, res) => {

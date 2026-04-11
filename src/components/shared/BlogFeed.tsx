@@ -5,7 +5,7 @@ import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X, Heart, Share2 } f
 import { blogPosts } from '@/data/blog';
 import { useLang, loc } from '@/i18n/translations';
 import { hapticFeedback, shareUrl } from '@/lib/telegram';
-import { fetchReactions, likePost, sharePost, type PostReaction } from '@/lib/api';
+import { fetchReactions, likePost, sharePost, prepareShare, type PostReaction } from '@/lib/api';
 
 function formatDate(iso: string, lang: string): string {
   const d = new Date(iso);
@@ -254,14 +254,36 @@ export function BlogFeed({ title }: { title: string }) {
     try { const r = await likePost(postId, isLiked ? -1 : 1); setReactions((prev) => ({ ...prev, [postId]: r })); } catch { /* offline */ }
   };
 
-  const handleShare = async (postId: string, postTitle: string) => {
+  const handleShare = async (post: typeof blogPosts[0]) => {
     hapticFeedback('light');
-    shareUrl('https://t.me/myconclaw_bot/app', postTitle);
-    setReactions((prev) => ({
-      ...prev,
-      [postId]: { likes: prev[postId]?.likes || 0, shares: (prev[postId]?.shares || 0) + 1 },
-    }));
-    try { const r = await sharePost(postId); setReactions((prev) => ({ ...prev, [postId]: r })); } catch { /* offline */ }
+    const tg = (window as unknown as { Telegram?: { WebApp?: { initDataUnsafe?: { user?: { id?: number } }; shareMessage?: (id: string, cb: (ok: boolean) => void) => void } } }).Telegram?.WebApp;
+    const userId = tg?.initDataUnsafe?.user?.id;
+
+    const recordShare = () => {
+      setReactions((prev) => ({
+        ...prev,
+        [post.id]: { likes: prev[post.id]?.likes || 0, shares: (prev[post.id]?.shares || 0) + 1 },
+      }));
+      sharePost(post.id).then((r) => setReactions((prev) => ({ ...prev, [post.id]: r }))).catch(() => {});
+    };
+
+    if (userId && tg?.shareMessage) {
+      try {
+        const { id } = await prepareShare({
+          userId,
+          title: loc(post.title, lang),
+          body: loc(post.body, lang),
+          photoUrl: post.photos?.[0],
+        });
+        tg.shareMessage(id, (sent) => { if (sent) recordShare(); });
+      } catch {
+        shareUrl('https://t.me/myconclaw_bot/app', loc(post.title, lang));
+        recordShare();
+      }
+    } else {
+      shareUrl('https://t.me/myconclaw_bot/app', loc(post.title, lang));
+      recordShare();
+    }
   };
 
   return (
@@ -344,7 +366,7 @@ export function BlogFeed({ title }: { title: string }) {
                     </button>
 
                     <button
-                      onClick={() => handleShare(post.id, loc(post.title, lang))}
+                      onClick={() => handleShare(post)}
                       style={{
                         display: 'flex', alignItems: 'center', gap: 5,
                         padding: '5px 10px', borderRadius: 20,

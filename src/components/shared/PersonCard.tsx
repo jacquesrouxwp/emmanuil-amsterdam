@@ -19,8 +19,8 @@ function getInitials(name: string): string {
     .toUpperCase();
 }
 
-function locStr(v: string | { ua: string; ru: string; en: string }, lang: 'ua' | 'ru' | 'en'): string {
-  return typeof v === 'string' ? v : v[lang];
+function locStr(v: string | { ua: string; ru: string; en: string; nl?: string; es?: string }, lang: string): string {
+  return typeof v === 'string' ? v : ((v as Record<string, string>)[lang] ?? v.en);
 }
 
 export function PersonCard({ person, index = 0, showActions = true }: PersonCardProps) {
