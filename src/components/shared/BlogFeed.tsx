@@ -256,8 +256,8 @@ export function BlogFeed({ title }: { title: string }) {
 
   const handleShare = async (post: typeof blogPosts[0]) => {
     hapticFeedback('light');
-    const tg = (window as unknown as { Telegram?: { WebApp?: { initDataUnsafe?: { user?: { id?: number } }; shareMessage?: (id: string, cb: (ok: boolean) => void) => void; showPopup?: (p: object) => void } } }).Telegram?.WebApp;
-    const userId = tg?.initDataUnsafe?.user?.id;
+    const tg = (window as any).Telegram?.WebApp;
+    const userId = tg?.initDataUnsafe?.user?.id as number | undefined;
 
     const recordShare = () => {
       setReactions((prev) => ({
@@ -267,37 +267,27 @@ export function BlogFeed({ title }: { title: string }) {
       sharePost(post.id).then((r) => setReactions((prev) => ({ ...prev, [post.id]: r }))).catch(() => {});
     };
 
-    const shareParams = {
-      userId: userId!,
-      title: loc(post.title, lang),
-      body: loc(post.body, lang),
-      photoUrl: post.photos?.[0],
-      lang,
-    };
-
-    // Primary: inline shareMessage (requires inline mode enabled in BotFather)
-    if (userId && tg?.shareMessage) {
-      try {
-        const { id } = await prepareShare(shareParams);
-        tg.shareMessage(id, (sent) => { if (sent) recordShare(); });
-        return;
-      } catch { /* fall through to direct send */ }
-    }
-
-    // Fallback: bot sends photo directly to user, user forwards it
+    // Primary: bot sends photo+caption directly to user's bot chat, user forwards it
     if (userId) {
-      const result = await sendDirectShare(shareParams);
-      if (result.ok) {
-        recordShare();
-        const msg = lang === 'ua' ? 'Пост надіслано вам у чат з ботом — перешліть його другу!'
-          : lang === 'nl' ? 'Post verzonden naar je botchat — stuur het door!'
-          : lang === 'es' ? '¡Post enviado a tu chat con el bot — reenvíalo!'
-          : lang === 'en' ? 'Post sent to your bot chat — forward it to a friend!'
-          : 'Пост отправлен вам в чат с ботом — перешлите его другу!';
-        if (tg?.showPopup) tg.showPopup({ title: '✅', message: msg, buttons: [{ type: 'ok' }] });
-        else alert(msg);
-        return;
-      }
+      try {
+        const result = await sendDirectShare({
+          userId,
+          title: loc(post.title, lang),
+          body: loc(post.body, lang),
+          photoUrl: post.photos?.[0],
+          lang,
+        });
+        if (result.ok) {
+          recordShare();
+          const msg = lang === 'ua' ? 'Пост надіслано у чат з ботом — перешліть його!'
+            : lang === 'nl' ? 'Post verzonden naar botchat — stuur het door!'
+            : lang === 'es' ? '¡Post enviado al chat del bot — reenvíalo!'
+            : lang === 'en' ? 'Post sent to bot chat — forward it!'
+            : 'Пост отправлен в чат с ботом — перешлите его!';
+          tg?.showPopup?.({ title: '✅', message: msg, buttons: [{ type: 'ok' }] });
+          return;
+        }
+      } catch { /* fall through */ }
     }
 
     // Last resort: plain link share
