@@ -122,6 +122,40 @@ app.post('/api/reactions/:postId/share', (req, res) => {
   res.json(data.reactions[postId]);
 });
 
+// --- Share: send photo directly to user (fallback when shareMessage unavailable) ---
+
+app.post('/api/share/send-direct', async (req, res) => {
+  try {
+    const BOT_TOKEN = process.env.BOT_TOKEN;
+    if (!BOT_TOKEN) return res.status(500).json({ error: 'BOT_TOKEN not set' });
+
+    const { userId, title, body, photoUrl, lang } = req.body;
+    if (!userId) return res.status(400).json({ error: 'userId required' });
+
+    const l = lang && MORE_IN_APP[lang] ? lang : 'ru';
+    const snippet = body ? body.substring(0, 200) + (body.length > 200 ? '...' : '') : '';
+    const caption = `${title}\n\n${snippet}\n\n${MORE_IN_APP[l]}`;
+    const btnLabel = OPEN_APP_LABEL[l] || OPEN_APP_LABEL.ru;
+    const replyMarkup = { inline_keyboard: [[{ text: btnLabel, url: 'https://t.me/myconclaw_bot/app' }]] };
+
+    const method = photoUrl ? 'sendPhoto' : 'sendMessage';
+    const payload = photoUrl
+      ? { chat_id: userId, photo: photoUrl, caption, reply_markup: replyMarkup }
+      : { chat_id: userId, text: caption, reply_markup: replyMarkup };
+
+    const r = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${method}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await r.json();
+    console.log('[send-direct]', data.ok ? 'OK' : data.description);
+    res.json({ ok: data.ok, error: data.description });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // --- Share: prepare inline message with photo via Telegram Bot API ---
 
 const OPEN_APP_LABEL = {
@@ -156,38 +190,9 @@ app.post('/api/share/prepare', async (req, res) => {
       inline_keyboard: [[{ text: btnLabel, url: 'https://t.me/myconclaw_bot/app' }]],
     };
 
-    let result;
-
-    if (photoUrl) {
-      // Upload photo to Telegram to get a stable file_id, then delete the temp message
-      const uploadRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: userId, photo: photoUrl, disable_notification: true }),
-      });
-      const uploadData = await uploadRes.json();
-
-      if (uploadData.ok) {
-        const msgId = uploadData.result.message_id;
-        // Delete immediately so user doesn't see it
-        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/deleteMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chat_id: userId, message_id: msgId }),
-        }).catch(() => {});
-
-        const fileId = uploadData.result.photo[uploadData.result.photo.length - 1].file_id;
-        result = { type: 'photo', id: 'share', photo_file_id: fileId, caption, parse_mode: 'HTML', reply_markup: replyMarkup };
-      }
-    }
-
-    if (!result) {
-      result = {
-        type: 'article', id: 'share', title,
-        input_message_content: { message_text: caption },
-        reply_markup: replyMarkup,
-      };
-    }
+    const result = photoUrl
+      ? { type: 'photo', id: 'share', photo_url: photoUrl, thumbnail_url: photoUrl, caption, reply_markup: replyMarkup }
+      : { type: 'article', id: 'share', title, input_message_content: { message_text: caption }, reply_markup: replyMarkup };
 
     const tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/savePreparedInlineMessage`, {
       method: 'POST',
@@ -196,6 +201,7 @@ app.post('/api/share/prepare', async (req, res) => {
     });
 
     const tgData = await tgRes.json();
+    console.log('[share/prepare]', tgData.ok ? 'OK' : tgData.description);
     if (!tgData.ok) return res.status(400).json({ error: tgData.description });
     res.json({ id: tgData.result.id });
   } catch (err) {

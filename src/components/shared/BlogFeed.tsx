@@ -5,7 +5,7 @@ import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X, Heart, Share2 } f
 import { blogPosts } from '@/data/blog';
 import { useLang, loc } from '@/i18n/translations';
 import { hapticFeedback, shareUrl } from '@/lib/telegram';
-import { fetchReactions, likePost, sharePost, prepareShare, type PostReaction } from '@/lib/api';
+import { fetchReactions, likePost, sharePost, prepareShare, sendDirectShare, type PostReaction } from '@/lib/api';
 
 function formatDate(iso: string, lang: string): string {
   const d = new Date(iso);
@@ -256,7 +256,7 @@ export function BlogFeed({ title }: { title: string }) {
 
   const handleShare = async (post: typeof blogPosts[0]) => {
     hapticFeedback('light');
-    const tg = (window as unknown as { Telegram?: { WebApp?: { initDataUnsafe?: { user?: { id?: number } }; shareMessage?: (id: string, cb: (ok: boolean) => void) => void } } }).Telegram?.WebApp;
+    const tg = (window as unknown as { Telegram?: { WebApp?: { initDataUnsafe?: { user?: { id?: number } }; shareMessage?: (id: string, cb: (ok: boolean) => void) => void; showPopup?: (p: object) => void } } }).Telegram?.WebApp;
     const userId = tg?.initDataUnsafe?.user?.id;
 
     const recordShare = () => {
@@ -267,24 +267,42 @@ export function BlogFeed({ title }: { title: string }) {
       sharePost(post.id).then((r) => setReactions((prev) => ({ ...prev, [post.id]: r }))).catch(() => {});
     };
 
+    const shareParams = {
+      userId: userId!,
+      title: loc(post.title, lang),
+      body: loc(post.body, lang),
+      photoUrl: post.photos?.[0],
+      lang,
+    };
+
+    // Primary: inline shareMessage (requires inline mode enabled in BotFather)
     if (userId && tg?.shareMessage) {
       try {
-        const { id } = await prepareShare({
-          userId,
-          title: loc(post.title, lang),
-          body: loc(post.body, lang),
-          photoUrl: post.photos?.[0],
-          lang,
-        });
+        const { id } = await prepareShare(shareParams);
         tg.shareMessage(id, (sent) => { if (sent) recordShare(); });
-      } catch {
-        shareUrl('https://t.me/myconclaw_bot/app', loc(post.title, lang));
-        recordShare();
-      }
-    } else {
-      shareUrl('https://t.me/myconclaw_bot/app', loc(post.title, lang));
-      recordShare();
+        return;
+      } catch { /* fall through to direct send */ }
     }
+
+    // Fallback: bot sends photo directly to user, user forwards it
+    if (userId) {
+      const result = await sendDirectShare(shareParams);
+      if (result.ok) {
+        recordShare();
+        const msg = lang === 'ua' ? 'Пост надіслано вам у чат з ботом — перешліть його другу!'
+          : lang === 'nl' ? 'Post verzonden naar je botchat — stuur het door!'
+          : lang === 'es' ? '¡Post enviado a tu chat con el bot — reenvíalo!'
+          : lang === 'en' ? 'Post sent to your bot chat — forward it to a friend!'
+          : 'Пост отправлен вам в чат с ботом — перешлите его другу!';
+        if (tg?.showPopup) tg.showPopup({ title: '✅', message: msg, buttons: [{ type: 'ok' }] });
+        else alert(msg);
+        return;
+      }
+    }
+
+    // Last resort: plain link share
+    shareUrl('https://t.me/myconclaw_bot/app', loc(post.title, lang));
+    recordShare();
   };
 
   return (
