@@ -222,12 +222,11 @@ app.post('/api/telegram/webhook', async (req, res) => {
 // Register webhook on startup
 async function registerWebhook() {
   const BOT_TOKEN = process.env.BOT_TOKEN;
-  const BASE_URL = process.env.RENDER_EXTERNAL_URL || process.env.BASE_URL;
-  if (!BOT_TOKEN || !BASE_URL) {
-    console.log('[webhook] skipping — BOT_TOKEN or BASE_URL not set');
+  if (!BOT_TOKEN) {
+    console.log('[webhook] skipping — BOT_TOKEN not set');
     return;
   }
-  const webhookUrl = `${BASE_URL}/api/telegram/webhook`;
+  const webhookUrl = 'https://emmanuil-amsterdam.onrender.com/api/telegram/webhook';
   try {
     const r = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook`, {
       method: 'POST',
