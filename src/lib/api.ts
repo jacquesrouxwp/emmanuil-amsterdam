@@ -51,37 +51,19 @@ export async function likePost(postId: string, delta: 1 | -1): Promise<PostReact
   return res.json();
 }
 
-export async function prepareShare(params: {
-  userId: number;
+export async function cacheShare(params: {
   title: string;
   body: string;
   photoUrl?: string;
   lang?: string;
-}): Promise<{ id: string }> {
-  const res = await fetch(`${API_URL}/api/share/prepare`, {
+}): Promise<{ key: string }> {
+  const res = await fetch(`${API_URL}/api/share/cache`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params),
   });
-  if (!res.ok) throw new Error('prepare failed');
+  if (!res.ok) throw new Error('cache failed');
   return res.json();
-}
-
-export async function sendDirectShare(params: {
-  userId: number;
-  title: string;
-  body: string;
-  photoUrl?: string;
-  lang?: string;
-}): Promise<{ ok: boolean; error?: string }> {
-  try {
-    const res = await fetch(`${API_URL}/api/share/send-direct`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params),
-    });
-    return res.json();
-  } catch { return { ok: false }; }
 }
 
 export async function sharePost(postId: string): Promise<PostReaction> {

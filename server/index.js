@@ -122,48 +122,14 @@ app.post('/api/reactions/:postId/share', (req, res) => {
   res.json(data.reactions[postId]);
 });
 
-// --- Share: send photo directly to user (fallback when shareMessage unavailable) ---
-
-app.post('/api/share/send-direct', async (req, res) => {
-  try {
-    const BOT_TOKEN = process.env.BOT_TOKEN;
-    if (!BOT_TOKEN) return res.status(500).json({ error: 'BOT_TOKEN not set' });
-
-    const { userId, title, body, photoUrl, lang } = req.body;
-    if (!userId) return res.status(400).json({ error: 'userId required' });
-
-    const l = lang && MORE_IN_APP[lang] ? lang : 'ru';
-    const snippet = body ? body.substring(0, 200) + (body.length > 200 ? '...' : '') : '';
-    const caption = `${title}\n\n${snippet}\n\n${MORE_IN_APP[l]}`;
-    const btnLabel = OPEN_APP_LABEL[l] || OPEN_APP_LABEL.ru;
-    const replyMarkup = { inline_keyboard: [[{ text: btnLabel, url: 'https://t.me/myconclaw_bot/app' }]] };
-
-    const method = photoUrl ? 'sendPhoto' : 'sendMessage';
-    const payload = photoUrl
-      ? { chat_id: userId, photo: photoUrl, caption, reply_markup: replyMarkup }
-      : { chat_id: userId, text: caption, reply_markup: replyMarkup };
-
-    const r = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${method}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    const data = await r.json();
-    console.log('[send-direct]', data.ok ? 'OK' : data.description);
-    res.json({ ok: data.ok, error: data.description });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// --- Share: prepare inline message with photo via Telegram Bot API ---
+// --- Share: inline query system ---
 
 const OPEN_APP_LABEL = {
-  ua: '📱 Відкрити пост у додатку',
-  ru: '📱 Открыть пост в приложении',
-  en: '📱 Open post in app',
-  nl: '📱 Open bericht in app',
-  es: '📱 Abrir publicación en la app',
+  ua: '📱 Відкрити у додатку',
+  ru: '📱 Открыть в приложении',
+  en: '📱 Open in app',
+  nl: '📱 Open in app',
+  es: '📱 Abrir en la app',
 };
 const MORE_IN_APP = {
   ua: '📲 Повний пост у нашому міні-додатку',
@@ -173,41 +139,107 @@ const MORE_IN_APP = {
   es: '📲 Publicación completa en nuestra mini-app',
 };
 
-app.post('/api/share/prepare', async (req, res) => {
-  try {
-    const BOT_TOKEN = process.env.BOT_TOKEN;
-    if (!BOT_TOKEN) return res.status(500).json({ error: 'BOT_TOKEN not set' });
+// In-memory cache for share data (key = random id, expires after 5 min)
+const shareCache = {};
 
-    const { userId, title, body, photoUrl, lang } = req.body;
-    if (!userId || !title) return res.status(400).json({ error: 'userId and title required' });
+app.post('/api/share/cache', (req, res) => {
+  const { title, body, photoUrl, lang } = req.body;
+  if (!title) return res.status(400).json({ error: 'title required' });
+  const key = Math.random().toString(36).slice(2, 10);
+  shareCache[key] = { title, body, photoUrl, lang, ts: Date.now() };
+  // Clean old entries
+  for (const k of Object.keys(shareCache)) {
+    if (Date.now() - shareCache[k].ts > 5 * 60 * 1000) delete shareCache[k];
+  }
+  res.json({ key });
+});
 
-    const l = lang && MORE_IN_APP[lang] ? lang : 'ru';
-    const snippet = body ? body.substring(0, 180) + (body.length > 180 ? '...' : '') : '';
-    const caption = `${title}\n\n${snippet}\n\n${MORE_IN_APP[l]}`;
+// Telegram webhook — handles inline_query
+app.post('/api/telegram/webhook', async (req, res) => {
+  res.json({ ok: true }); // respond immediately
+
+  const BOT_TOKEN = process.env.BOT_TOKEN;
+  if (!BOT_TOKEN) return;
+
+  const update = req.body;
+
+  if (update.inline_query) {
+    const query = update.inline_query.query.trim();
+    const inlineId = update.inline_query.id;
+    const cached = shareCache[query];
+
+    if (!cached) {
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerInlineQuery`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inline_query_id: inlineId, results: [], cache_time: 0 }),
+      });
+      return;
+    }
+
+    const l = cached.lang && MORE_IN_APP[cached.lang] ? cached.lang : 'ru';
+    const snippet = cached.body ? cached.body.substring(0, 180) + (cached.body.length > 180 ? '...' : '') : '';
+    const caption = `${cached.title}\n\n${snippet}\n\n${MORE_IN_APP[l]}`;
     const btnLabel = OPEN_APP_LABEL[l] || OPEN_APP_LABEL.ru;
+    const replyMarkup = { inline_keyboard: [[{ text: btnLabel, url: 'https://t.me/myconclaw_bot/app' }]] };
 
-    const replyMarkup = {
-      inline_keyboard: [[{ text: btnLabel, url: 'https://t.me/myconclaw_bot/app' }]],
-    };
+    const results = [];
 
-    const result = photoUrl
-      ? { type: 'photo', id: 'share', photo_url: photoUrl, thumbnail_url: photoUrl, caption, reply_markup: replyMarkup }
-      : { type: 'article', id: 'share', title, input_message_content: { message_text: caption }, reply_markup: replyMarkup };
+    if (cached.photoUrl) {
+      results.push({
+        type: 'photo',
+        id: '1',
+        photo_url: cached.photoUrl,
+        thumbnail_url: cached.photoUrl,
+        caption,
+        reply_markup: replyMarkup,
+      });
+    }
 
-    const tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/savePreparedInlineMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: userId, result, allow_user_chats: true, allow_group_chats: true, allow_channel_chats: true }),
+    // Always add a text-only result as backup
+    results.push({
+      type: 'article',
+      id: '2',
+      title: cached.title,
+      description: snippet.substring(0, 80),
+      input_message_content: { message_text: caption },
+      reply_markup: replyMarkup,
     });
 
-    const tgData = await tgRes.json();
-    console.log('[share/prepare]', tgData.ok ? 'OK' : tgData.description);
-    if (!tgData.ok) return res.status(400).json({ error: tgData.description });
-    res.json({ id: tgData.result.id });
-  } catch (err) {
-    res.status(500).json({ error: 'Server error', message: err.message });
+    const answerRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerInlineQuery`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ inline_query_id: inlineId, results, cache_time: 0, is_personal: true }),
+    });
+    const answerData = await answerRes.json();
+    console.log('[webhook/inline]', answerData.ok ? 'OK' : answerData.description);
+
+    // Clean up used cache entry
+    delete shareCache[query];
   }
 });
+
+// Register webhook on startup
+async function registerWebhook() {
+  const BOT_TOKEN = process.env.BOT_TOKEN;
+  const BASE_URL = process.env.RENDER_EXTERNAL_URL || process.env.BASE_URL;
+  if (!BOT_TOKEN || !BASE_URL) {
+    console.log('[webhook] skipping — BOT_TOKEN or BASE_URL not set');
+    return;
+  }
+  const webhookUrl = `${BASE_URL}/api/telegram/webhook`;
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: webhookUrl, allowed_updates: ['inline_query'] }),
+    });
+    const data = await r.json();
+    console.log('[webhook]', data.ok ? `registered: ${webhookUrl}` : data.description);
+  } catch (err) {
+    console.log('[webhook] error:', err.message);
+  }
+}
 
 // --- Subscribe: save chat_id when user opens the app ---
 
@@ -353,4 +385,5 @@ if (existsSync(DIST_DIR)) {
 
 app.listen(PORT, () => {
   console.log(`Emmanuil Amsterdam running on port ${PORT}`);
+  registerWebhook();
 });

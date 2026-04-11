@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Share2, BookOpen, Loader } from 'lucide-react';
 import { hapticFeedback, shareUrl } from '@/lib/telegram';
 import { useT, useLang } from '@/i18n/translations';
-import { prepareShare } from '@/lib/api';
+import { cacheShare } from '@/lib/api';
 
 type BibleBook = { abbrev: string; name: string; chapters: string[][] };
 type View = 'books' | 'chapters' | 'verses';
@@ -81,12 +81,11 @@ export function BiblePage() {
     const text = `${body}\n— ${ref}`;
 
     const tg = (window as any).Telegram?.WebApp;
-    const userId = tg?.initDataUnsafe?.user?.id;
 
-    if (userId && tg?.shareMessage) {
+    if (tg?.switchInlineQuery) {
       try {
-        const { id } = await prepareShare({ userId, title: ref, body, lang });
-        tg.shareMessage(id, () => {});
+        const { key } = await cacheShare({ title: ref, body, lang });
+        tg.switchInlineQuery(key, ['users', 'groups', 'channels']);
       } catch {
         shareUrl('https://t.me/myconclaw_bot/app', text);
       }

@@ -5,7 +5,7 @@ import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X, Heart, Share2 } f
 import { blogPosts } from '@/data/blog';
 import { useLang, loc } from '@/i18n/translations';
 import { hapticFeedback, shareUrl } from '@/lib/telegram';
-import { fetchReactions, likePost, sharePost, prepareShare, sendDirectShare, type PostReaction } from '@/lib/api';
+import { fetchReactions, likePost, sharePost, cacheShare, type PostReaction } from '@/lib/api';
 
 function formatDate(iso: string, lang: string): string {
   const d = new Date(iso);
@@ -257,7 +257,6 @@ export function BlogFeed({ title }: { title: string }) {
   const handleShare = async (post: typeof blogPosts[0]) => {
     hapticFeedback('light');
     const tg = (window as any).Telegram?.WebApp;
-    const userId = tg?.initDataUnsafe?.user?.id as number | undefined;
 
     const recordShare = () => {
       setReactions((prev) => ({
@@ -267,30 +266,22 @@ export function BlogFeed({ title }: { title: string }) {
       sharePost(post.id).then((r) => setReactions((prev) => ({ ...prev, [post.id]: r }))).catch(() => {});
     };
 
-    // Primary: bot sends photo+caption directly to user's bot chat, user forwards it
-    if (userId) {
+    // Cache post data on server, then open Telegram chat picker via switchInlineQuery
+    if (tg?.switchInlineQuery) {
       try {
-        const result = await sendDirectShare({
-          userId,
+        const { key } = await cacheShare({
           title: loc(post.title, lang),
           body: loc(post.body, lang),
           photoUrl: post.photos?.[0],
           lang,
         });
-        if (result.ok) {
-          recordShare();
-          const msg = lang === 'ua' ? 'Пост надіслано у чат з ботом — перешліть його!'
-            : lang === 'nl' ? 'Post verzonden naar botchat — stuur het door!'
-            : lang === 'es' ? '¡Post enviado al chat del bot — reenvíalo!'
-            : lang === 'en' ? 'Post sent to bot chat — forward it!'
-            : 'Пост отправлен в чат с ботом — перешлите его!';
-          tg?.showPopup?.({ title: '✅', message: msg, buttons: [{ type: 'ok' }] });
-          return;
-        }
+        tg.switchInlineQuery(key, ['users', 'groups', 'channels']);
+        recordShare();
+        return;
       } catch { /* fall through */ }
     }
 
-    // Last resort: plain link share
+    // Fallback: plain link share
     shareUrl('https://t.me/myconclaw_bot/app', loc(post.title, lang));
     recordShare();
   };
