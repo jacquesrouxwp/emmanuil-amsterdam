@@ -12,6 +12,14 @@ const OT_COUNT = 39;
 
 const fadeUp = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } };
 
+const SHARE_LABELS: Record<string, { placeholder: string; share: string; cancel: string; commentLabel: string }> = {
+  ua: { placeholder: 'Додати коментар (необов\'язково)...', share: 'Поділитися', cancel: 'Скасувати', commentLabel: 'Ваш коментар' },
+  ru: { placeholder: 'Добавить комментарий (необязательно)...', share: 'Поделиться', cancel: 'Отмена', commentLabel: 'Ваш комментарий' },
+  en: { placeholder: 'Add a comment (optional)...', share: 'Share', cancel: 'Cancel', commentLabel: 'Your comment' },
+  nl: { placeholder: 'Voeg een opmerking toe (optioneel)...', share: 'Delen', cancel: 'Annuleren', commentLabel: 'Uw opmerking' },
+  es: { placeholder: 'Añadir un comentario (opcional)...', share: 'Compartir', cancel: 'Cancelar', commentLabel: 'Tu comentario' },
+};
+
 export function BiblePage() {
   const t = useT();
   const lang = useLang();
@@ -21,8 +29,11 @@ export function BiblePage() {
   const [bookIdx, setBookIdx] = useState(0);
   const [chapterIdx, setChapterIdx] = useState(0);
   const [selectedVerse, setSelectedVerse] = useState<number | null>(null);
+  const [shareModal, setShareModal] = useState(false);
+  const [comment, setComment] = useState('');
   const [sharing, setSharing] = useState(false);
   const versesRef = useRef<HTMLDivElement>(null);
+  const sl = SHARE_LABELS[lang] ?? SHARE_LABELS.en;
 
   useEffect(() => {
     import('@/data/bible/ru_synodal.json').then((mod) => {
@@ -52,6 +63,12 @@ export function BiblePage() {
     setSelectedVerse((prev) => (prev === idx ? null : idx));
   };
 
+  const openShareModal = () => {
+    hapticFeedback('medium');
+    setComment('');
+    setShareModal(true);
+  };
+
   const handleShareVerse = async () => {
     if (!bible || selectedVerse === null) return;
     setSharing(true);
@@ -60,14 +77,15 @@ export function BiblePage() {
     const book = bible[bookIdx];
     const verse = book.chapters[chapterIdx][selectedVerse];
     const ref = `${book.name} ${chapterIdx + 1}:${selectedVerse + 1}`;
-    const text = `${verse}\n— ${ref}`;
+    const body = comment.trim() ? `${verse}\n\n💬 ${comment.trim()}` : verse;
+    const text = `${body}\n— ${ref}`;
 
     const tg = (window as any).Telegram?.WebApp;
     const userId = tg?.initDataUnsafe?.user?.id;
 
     if (userId && tg?.shareMessage) {
       try {
-        const { id } = await prepareShare({ userId, title: ref, body: verse });
+        const { id } = await prepareShare({ userId, title: ref, body });
         tg.shareMessage(id, () => {});
       } catch {
         shareUrl('https://t.me/myconclaw_bot/app', text);
@@ -76,6 +94,7 @@ export function BiblePage() {
       shareUrl('https://t.me/myconclaw_bot/app', text);
     }
     setSharing(false);
+    setShareModal(false);
   };
 
   if (loading) {
@@ -205,24 +224,83 @@ export function BiblePage() {
 
       {/* Share button — floats when verse selected */}
       <AnimatePresence>
-        {view === 'verses' && selectedVerse !== null && (
+        {view === 'verses' && selectedVerse !== null && !shareModal && (
           <motion.div
             initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 30 }}
             style={{ position: 'fixed', bottom: 80, left: 16, right: 16, zIndex: 50 }}
           >
-            <button onClick={handleShareVerse} disabled={sharing}
+            <button onClick={openShareModal}
               style={{
                 width: '100%', padding: '14px 20px', borderRadius: 14,
                 background: 'linear-gradient(135deg, #C9A96E, #b8934a)',
                 color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                boxShadow: '0 4px 20px rgba(201,169,110,0.4)',
-                border: 'none', opacity: sharing ? 0.7 : 1,
+                boxShadow: '0 4px 20px rgba(201,169,110,0.4)', border: 'none',
               }}>
               <Share2 size={18} />
               {t.bible.shareVerse} — {book.name} {chapterIdx + 1}:{selectedVerse + 1}
             </button>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Share modal with optional comment */}
+      <AnimatePresence>
+        {shareModal && bible && selectedVerse !== null && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setShareModal(false)}
+              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100 }}
+            />
+            <motion.div
+              initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 60 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 101, background: 'var(--bg-primary)', borderRadius: '20px 20px 0 0', padding: '20px 16px 32px' }}
+            >
+              {/* Drag handle */}
+              <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--border-light)', margin: '0 auto 20px' }} />
+
+              {/* Verse preview */}
+              <div style={{ background: 'rgba(201,169,110,0.1)', border: '1px solid rgba(201,169,110,0.3)', borderRadius: 12, padding: '12px 14px', marginBottom: 16 }}>
+                <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-primary)', marginBottom: 6 }}>
+                  {bible[bookIdx].chapters[chapterIdx][selectedVerse]}
+                </p>
+                <p style={{ fontSize: 12, color: '#C9A96E', fontWeight: 600 }}>
+                  — {bible[bookIdx].name} {chapterIdx + 1}:{selectedVerse + 1}
+                </p>
+              </div>
+
+              {/* Comment field */}
+              <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 8 }}>{sl.commentLabel}</p>
+              <textarea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder={sl.placeholder}
+                rows={3}
+                autoFocus
+                style={{
+                  width: '100%', borderRadius: 12, padding: '10px 14px', fontSize: 14, lineHeight: 1.5,
+                  background: 'var(--bg-secondary)', border: '1px solid var(--border-light)',
+                  color: 'var(--text-primary)', resize: 'none', outline: 'none', boxSizing: 'border-box',
+                  fontFamily: 'inherit',
+                }}
+              />
+
+              {/* Buttons */}
+              <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+                <button onClick={() => setShareModal(false)}
+                  style={{ flex: 1, padding: '13px', borderRadius: 12, background: 'var(--bg-secondary)', border: '1px solid var(--border-light)', color: 'var(--text-secondary)', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>
+                  {sl.cancel}
+                </button>
+                <button onClick={handleShareVerse} disabled={sharing}
+                  style={{ flex: 2, padding: '13px', borderRadius: 12, background: 'linear-gradient(135deg, #C9A96E, #b8934a)', border: 'none', color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: sharing ? 0.7 : 1 }}>
+                  <Share2 size={16} />
+                  {sl.share}
+                </button>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
