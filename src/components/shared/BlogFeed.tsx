@@ -274,6 +274,7 @@ export function BlogFeed({ title }: { title: string }) {
           title: loc(post.title, lang),
           body: loc(post.body, lang),
           photoUrl: post.photos?.[0],
+          lang,
         });
         tg.shareMessage(id, (sent) => { if (sent) recordShare(); });
       } catch {

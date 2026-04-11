@@ -85,7 +85,7 @@ export function BiblePage() {
 
     if (userId && tg?.shareMessage) {
       try {
-        const { id } = await prepareShare({ userId, title: ref, body });
+        const { id } = await prepareShare({ userId, title: ref, body, lang });
         tg.shareMessage(id, () => {});
       } catch {
         shareUrl('https://t.me/myconclaw_bot/app', text);

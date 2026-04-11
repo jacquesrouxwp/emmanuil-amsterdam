@@ -56,6 +56,7 @@ export async function prepareShare(params: {
   title: string;
   body: string;
   photoUrl?: string;
+  lang?: string;
 }): Promise<{ id: string }> {
   const res = await fetch(`${API_URL}/api/share/prepare`, {
     method: 'POST',

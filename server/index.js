@@ -124,22 +124,70 @@ app.post('/api/reactions/:postId/share', (req, res) => {
 
 // --- Share: prepare inline message with photo via Telegram Bot API ---
 
+const OPEN_APP_LABEL = {
+  ua: '📱 Відкрити пост у додатку',
+  ru: '📱 Открыть пост в приложении',
+  en: '📱 Open post in app',
+  nl: '📱 Open bericht in app',
+  es: '📱 Abrir publicación en la app',
+};
+const MORE_IN_APP = {
+  ua: '📲 Повний пост у нашому міні-додатку',
+  ru: '📲 Полный пост в нашем мини-приложении',
+  en: '📲 Full post in our mini app',
+  nl: '📲 Volledig bericht in onze mini-app',
+  es: '📲 Publicación completa en nuestra mini-app',
+};
+
 app.post('/api/share/prepare', async (req, res) => {
   try {
     const BOT_TOKEN = process.env.BOT_TOKEN;
     if (!BOT_TOKEN) return res.status(500).json({ error: 'BOT_TOKEN not set' });
 
-    const { userId, title, body, photoUrl } = req.body;
+    const { userId, title, body, photoUrl, lang } = req.body;
     if (!userId || !title) return res.status(400).json({ error: 'userId and title required' });
 
-    const caption = `${title}\n\n${body ? body.substring(0, 200) + (body.length > 200 ? '...' : '') : ''}`;
+    const l = lang && MORE_IN_APP[lang] ? lang : 'ru';
+    const snippet = body ? body.substring(0, 180) + (body.length > 180 ? '...' : '') : '';
+    const caption = `${title}\n\n${snippet}\n\n${MORE_IN_APP[l]}`;
+    const btnLabel = OPEN_APP_LABEL[l] || OPEN_APP_LABEL.ru;
+
     const replyMarkup = {
-      inline_keyboard: [[{ text: '📱 Відкрити додаток', url: 'https://t.me/myconclaw_bot/app' }]],
+      inline_keyboard: [[{ text: btnLabel, url: 'https://t.me/myconclaw_bot/app' }]],
     };
 
-    const result = photoUrl
-      ? { type: 'photo', id: 'share', photo_url: photoUrl, thumbnail_url: photoUrl, caption, reply_markup: replyMarkup }
-      : { type: 'article', id: 'share', title, input_message_content: { message_text: caption }, reply_markup: replyMarkup };
+    let result;
+
+    if (photoUrl) {
+      // Upload photo to Telegram to get a stable file_id, then delete the temp message
+      const uploadRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: userId, photo: photoUrl, disable_notification: true }),
+      });
+      const uploadData = await uploadRes.json();
+
+      if (uploadData.ok) {
+        const msgId = uploadData.result.message_id;
+        // Delete immediately so user doesn't see it
+        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/deleteMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: userId, message_id: msgId }),
+        }).catch(() => {});
+
+        const fileId = uploadData.result.photo[uploadData.result.photo.length - 1].file_id;
+        result = { type: 'photo', id: 'share', photo_file_id: fileId, caption, parse_mode: 'HTML', reply_markup: replyMarkup };
+      }
+    }
+
+    if (!result) {
+      result = {
+        type: 'article', id: 'share', title,
+        input_message_content: { message_text: caption },
+        reply_markup: replyMarkup,
+      };
+    }
 
     const tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/savePreparedInlineMessage`, {
       method: 'POST',
