@@ -19,7 +19,6 @@ export function MorePage() {
   const t = useT();
 
   const menuItems = [
-    { icon: BookOpen, label: t.more.bible, path: '/bible', color: '#7C5CBF' },
     { icon: Church, label: t.more.aboutChurch, path: '/about', color: '#C9A96E' },
     { icon: Phone, label: t.more.contacts, path: '/contacts', color: '#5E9ED6' },
   ];
