@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Church, Phone, Share2, Info, ChevronRight, Heart } from 'lucide-react';
+import { Church, Phone, Share2, Info, ChevronRight, Heart, BookOpen } from 'lucide-react';
 import { hapticFeedback, shareUrl } from '@/lib/telegram';
 import { useT } from '@/i18n/translations';
 
@@ -19,6 +19,7 @@ export function MorePage() {
   const t = useT();
 
   const menuItems = [
+    { icon: BookOpen, label: t.more.bible, path: '/bible', color: '#7C5CBF' },
     { icon: Church, label: t.more.aboutChurch, path: '/about', color: '#C9A96E' },
     { icon: Phone, label: t.more.contacts, path: '/contacts', color: '#5E9ED6' },
   ];
