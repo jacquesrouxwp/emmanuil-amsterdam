@@ -283,7 +283,7 @@ export function BlogFeed({ title }: { title: string }) {
     const userId = tg?.initDataUnsafe?.user?.id;
 
     // Try savePreparedInlineMessage + shareMessage (photo + caption + button)
-    if (tg?.shareMessage && userId) {
+    if (userId && typeof tg?.shareMessage === 'function') {
       try {
         const { preparedId } = await prepareShare({
           userId,
@@ -292,10 +292,13 @@ export function BlogFeed({ title }: { title: string }) {
           photoUrl: post.photos?.[0],
           lang,
         });
-        tg.shareMessage(preparedId);
-        recordShare();
+        tg.shareMessage(preparedId, (sent: boolean) => {
+          if (sent) recordShare();
+        });
         return;
-      } catch { /* fall through */ }
+      } catch (err) {
+        console.warn('[share] prepareShare failed:', err);
+      }
     }
 
     // Fallback: plain link share with grid picker
