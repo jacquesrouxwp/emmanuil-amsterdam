@@ -154,6 +154,71 @@ app.post('/api/share/cache', (req, res) => {
   res.json({ key });
 });
 
+// Prepare a share message via savePreparedInlineMessage (Bot API 7.10)
+app.post('/api/share/prepare', async (req, res) => {
+  try {
+    const { userId, title, body, photoUrl, lang } = req.body;
+    if (!userId || !title) return res.status(400).json({ error: 'userId and title required' });
+
+    const BOT_TOKEN = process.env.BOT_TOKEN;
+    if (!BOT_TOKEN) return res.status(500).json({ error: 'BOT_TOKEN not set' });
+
+    const l = lang && MORE_IN_APP[lang] ? lang : 'ru';
+    const snippet = body ? body.substring(0, 200) + (body.length > 200 ? '...' : '') : '';
+    const caption = snippet
+      ? `<b>${title}</b>\n\n${snippet}\n\n${MORE_IN_APP[l]}`
+      : `<b>${title}</b>\n\n${MORE_IN_APP[l]}`;
+
+    const btnLabel = OPEN_APP_LABEL[l] || OPEN_APP_LABEL.ru;
+    const replyMarkup = {
+      inline_keyboard: [[{ text: btnLabel, url: 'https://t.me/myconclaw_bot/app' }]],
+    };
+
+    let result;
+    if (photoUrl) {
+      result = {
+        type: 'photo',
+        id: '1',
+        photo_url: photoUrl,
+        thumbnail_url: photoUrl,
+        caption,
+        parse_mode: 'HTML',
+        reply_markup: replyMarkup,
+      };
+    } else {
+      result = {
+        type: 'article',
+        id: '1',
+        title,
+        description: snippet.substring(0, 100),
+        input_message_content: { message_text: caption, parse_mode: 'HTML' },
+        reply_markup: replyMarkup,
+      };
+    }
+
+    const r = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/savePreparedInlineMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: userId,
+        result,
+        allow_user_chats: true,
+        allow_bot_chats: true,
+        allow_group_chats: true,
+        allow_channel_posts: true,
+      }),
+    });
+    const data = await r.json();
+    console.log('[share/prepare]', JSON.stringify(data));
+
+    if (!data.ok) return res.status(500).json({ error: data.description });
+    res.json({ preparedId: data.result.id });
+  } catch (err) {
+    console.error('prepare error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Telegram webhook — handles inline_query
 app.post('/api/telegram/webhook', async (req, res) => {
   res.json({ ok: true }); // respond immediately

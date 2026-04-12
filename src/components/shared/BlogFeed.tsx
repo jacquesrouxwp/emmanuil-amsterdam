@@ -5,7 +5,7 @@ import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X, Heart, Share2 } f
 import { blogPosts } from '@/data/blog';
 import { useLang, loc } from '@/i18n/translations';
 import { hapticFeedback, shareUrl } from '@/lib/telegram';
-import { fetchReactions, likePost, sharePost, cacheShare, type PostReaction } from '@/lib/api';
+import { fetchReactions, likePost, sharePost, prepareShare, type PostReaction } from '@/lib/api';
 
 function formatDate(iso: string, lang: string): string {
   const d = new Date(iso);
@@ -265,18 +265,27 @@ export function BlogFeed({ title }: { title: string }) {
       sharePost(post.id).then((r) => setReactions((prev) => ({ ...prev, [post.id]: r }))).catch(() => {});
     };
 
-    // Cache post data → get share URL with OG meta → open standard Telegram grid picker
-    try {
-      const { key } = await cacheShare({
-        title: loc(post.title, lang),
-        body: loc(post.body, lang),
-        photoUrl: post.photos?.[0],
-        lang,
-      });
-      shareUrl(`https://emmanuil-amsterdam.onrender.com/share/${key}`, loc(post.title, lang));
-    } catch {
-      shareUrl('https://t.me/myconclaw_bot/app', loc(post.title, lang));
+    const tg = (window as any).Telegram?.WebApp;
+    const userId = tg?.initDataUnsafe?.user?.id;
+
+    // Try savePreparedInlineMessage + shareMessage (photo + caption + button)
+    if (tg?.shareMessage && userId) {
+      try {
+        const { preparedId } = await prepareShare({
+          userId,
+          title: loc(post.title, lang),
+          body: loc(post.body, lang),
+          photoUrl: post.photos?.[0],
+          lang,
+        });
+        tg.shareMessage(preparedId);
+        recordShare();
+        return;
+      } catch { /* fall through */ }
     }
+
+    // Fallback: plain link share with grid picker
+    shareUrl('https://t.me/myconclaw_bot/app', loc(post.title, lang));
     recordShare();
   };
 

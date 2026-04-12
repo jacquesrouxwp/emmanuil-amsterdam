@@ -66,6 +66,22 @@ export async function cacheShare(params: {
   return res.json();
 }
 
+export async function prepareShare(params: {
+  userId: number;
+  title: string;
+  body: string;
+  photoUrl?: string;
+  lang?: string;
+}): Promise<{ preparedId: string }> {
+  const res = await fetch(`${API_URL}/api/share/prepare`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+  if (!res.ok) throw new Error('prepare failed');
+  return res.json();
+}
+
 export async function sharePost(postId: string): Promise<PostReaction> {
   const res = await fetch(`${API_URL}/api/reactions/${postId}/share`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
