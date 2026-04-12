@@ -256,7 +256,6 @@ export function BlogFeed({ title }: { title: string }) {
 
   const handleShare = async (post: typeof blogPosts[0]) => {
     hapticFeedback('light');
-    const tg = (window as any).Telegram?.WebApp;
 
     const recordShare = () => {
       setReactions((prev) => ({
@@ -266,23 +265,18 @@ export function BlogFeed({ title }: { title: string }) {
       sharePost(post.id).then((r) => setReactions((prev) => ({ ...prev, [post.id]: r }))).catch(() => {});
     };
 
-    // Cache post data on server, then open Telegram chat picker via switchInlineQuery
-    if (tg?.switchInlineQuery) {
-      try {
-        const { key } = await cacheShare({
-          title: loc(post.title, lang),
-          body: loc(post.body, lang),
-          photoUrl: post.photos?.[0],
-          lang,
-        });
-        tg.switchInlineQuery(key, ['users', 'groups', 'channels']);
-        recordShare();
-        return;
-      } catch { /* fall through */ }
+    // Cache post data → get share URL with OG meta → open standard Telegram grid picker
+    try {
+      const { key } = await cacheShare({
+        title: loc(post.title, lang),
+        body: loc(post.body, lang),
+        photoUrl: post.photos?.[0],
+        lang,
+      });
+      shareUrl(`https://emmanuil-amsterdam.onrender.com/share/${key}`, loc(post.title, lang));
+    } catch {
+      shareUrl('https://t.me/myconclaw_bot/app', loc(post.title, lang));
     }
-
-    // Fallback: plain link share
-    shareUrl('https://t.me/myconclaw_bot/app', loc(post.title, lang));
     recordShare();
   };
 

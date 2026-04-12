@@ -240,6 +240,63 @@ async function registerWebhook() {
   }
 }
 
+// --- Share page: OG meta for rich Telegram previews ---
+
+// Key-based share page (used by BlogFeed share button)
+app.get('/share/:key', (req, res) => {
+  const cached = shareCache[req.params.key];
+  if (!cached) return res.redirect('https://t.me/myconclaw_bot/app');
+
+  const title = cached.title || 'Emmanuil Amsterdam';
+  const l = cached.lang && MORE_IN_APP[cached.lang] ? cached.lang : 'ru';
+  const snippet = cached.body ? cached.body.substring(0, 200) + (cached.body.length > 200 ? '...' : '') : '';
+  const fullDesc = snippet ? `${snippet}\n\n${MORE_IN_APP[l]}` : MORE_IN_APP[l];
+  const image = cached.photoUrl || '';
+
+  const esc = (s) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+
+  res.send(`<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta property="og:title" content="${esc(title)}">
+<meta property="og:description" content="${esc(fullDesc)}">
+${image ? `<meta property="og:image" content="${esc(image)}">
+<meta property="og:image:width" content="800">
+<meta property="og:image:height" content="600">` : ''}
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Emmanuil Amsterdam">
+<meta property="og:url" content="https://t.me/myconclaw_bot/app">
+<meta http-equiv="refresh" content="0;url=https://t.me/myconclaw_bot/app">
+<title>${esc(title)}</title>
+</head><body><p>Redirecting...</p></body></html>`);
+});
+
+app.get('/post', (req, res) => {
+  const title = (req.query.t || 'Emmanuil Amsterdam').toString();
+  const desc = (req.query.d || '').toString();
+  const image = (req.query.img || '').toString();
+  const l = (req.query.l || 'ru').toString();
+  const moreText = MORE_IN_APP[l] || MORE_IN_APP.ru;
+  const fullDesc = desc ? `${desc}\n\n${moreText}` : moreText;
+
+  const esc = (s) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+
+  res.send(`<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta property="og:title" content="${esc(title)}">
+<meta property="og:description" content="${esc(fullDesc)}">
+${image ? `<meta property="og:image" content="${esc(image)}">
+<meta property="og:image:width" content="800">
+<meta property="og:image:height" content="600">` : ''}
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Emmanuil Amsterdam">
+<meta property="og:url" content="https://t.me/myconclaw_bot/app">
+<meta http-equiv="refresh" content="0;url=https://t.me/myconclaw_bot/app">
+<title>${esc(title)}</title>
+</head><body><p>Redirecting...</p></body></html>`);
+});
+
 // --- Subscribe: save chat_id when user opens the app ---
 
 app.post('/api/subscribe', (req, res) => {
