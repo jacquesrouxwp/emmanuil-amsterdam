@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X, Heart, Share2 } from 'lucide-react';
-import { blogPosts } from '@/data/blog';
+import { blogPosts, type BlogTag } from '@/data/blog';
 import { useLang, loc } from '@/i18n/translations';
 import { hapticFeedback, shareUrl } from '@/lib/telegram';
 import { fetchReactions, likePost, sharePost, prepareShare, type PostReaction } from '@/lib/api';
@@ -231,13 +231,27 @@ const LIKED_KEY = 'emmanuil_liked_posts';
 function getLiked(): Set<string> { try { return new Set(JSON.parse(localStorage.getItem(LIKED_KEY) || '[]')); } catch { return new Set(); } }
 function setLiked(s: Set<string>) { localStorage.setItem(LIKED_KEY, JSON.stringify([...s])); }
 
+const TAG_LABELS: Record<string, Record<BlogTag | 'all', string>> = {
+  ua: { all: 'Всі', general: 'Загальне', youth: 'Молодь' },
+  ru: { all: 'Все', general: 'Общее', youth: 'Молодёжь' },
+  en: { all: 'All', general: 'General', youth: 'Youth' },
+  nl: { all: 'Alle', general: 'Algemeen', youth: 'Jongeren' },
+  es: { all: 'Todo', general: 'General', youth: 'Jóvenes' },
+};
+
 export function BlogFeed({ title }: { title: string }) {
   const lang = useLang();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [reactions, setReactions] = useState<Record<string, PostReaction>>({});
   const [liked, setLikedState] = useState<Set<string>>(() => getLiked());
+  const [activeTag, setActiveTag] = useState<BlogTag | 'all'>('all');
 
   useEffect(() => { fetchReactions().then(setReactions); }, []);
+
+  const labels = TAG_LABELS[lang] ?? TAG_LABELS.ru;
+  const filteredPosts = activeTag === 'all'
+    ? blogPosts
+    : blogPosts.filter((p) => p.tags.includes(activeTag));
 
   const handleLike = async (postId: string) => {
     hapticFeedback('light');
@@ -291,12 +305,34 @@ export function BlogFeed({ title }: { title: string }) {
 
   return (
     <div>
-      <div className="section-header" style={{ marginBottom: 12 }}>
+      <div className="section-header" style={{ marginBottom: 10 }}>
         <h3 className="section-title">{title}</h3>
       </div>
 
+      {/* Tag filter pills */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 14, overflowX: 'auto', paddingBottom: 2 }}>
+        {(['all', 'general', 'youth'] as const).map((tag) => {
+          const active = activeTag === tag;
+          return (
+            <button
+              key={tag}
+              onClick={() => { hapticFeedback('light'); setActiveTag(tag); setExpanded(null); }}
+              style={{
+                padding: '6px 14px', borderRadius: 20, fontSize: 13, fontWeight: active ? 700 : 500,
+                whiteSpace: 'nowrap', cursor: 'pointer', border: 'none',
+                background: active ? '#C9A96E' : 'var(--bg-secondary)',
+                color: active ? '#fff' : 'var(--text-secondary)',
+                transition: 'all 0.15s',
+              }}
+            >
+              {labels[tag]}
+            </button>
+          );
+        })}
+      </div>
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {blogPosts.map((post, idx) => {
+        {filteredPosts.map((post, idx) => {
           const isOpen = expanded === post.id;
 
           return (

@@ -1,8 +1,11 @@
 import type { Localized } from '@/i18n/translations';
 
+export type BlogTag = 'general' | 'youth';
+
 export interface BlogPost {
   id: string;
   date: string;
+  tags: BlogTag[];
   photos?: string[];
   title: Localized;
   body: Localized;
@@ -10,8 +13,32 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    id: 'blog-youth-2026-04-12',
+    date: '2026-04-12',
+    tags: ['youth'],
+    photos: [
+      'https://i.ibb.co/KzKPN1d9/1.jpg',
+      'https://i.ibb.co/zHNT5n64/2.jpg',
+    ],
+    title: {
+      ua: 'Молодіжка 🔥',
+      ru: 'Молодёжка 🔥',
+      en: 'Youth Meeting 🔥',
+      nl: 'Jeugdavond 🔥',
+      es: 'Reunión de Jóvenes 🔥',
+    },
+    body: {
+      ua: 'Наша чергова молодіжка пройшла як завжди класно! Слухали свідчення, проповідували один одному, співали пісні та грали в гру — потрібно було вгадати вірш із Писання або персонажа по емодзі 👀🙏👎😈 Вгадаєте що за вірш? 😄 Ну а ще в одного з братів хотіли забрати машину на штрафстоянку — але все обійшлося 🙏 Не без молитви! :)',
+      ru: 'Наша очередная молодёжка прошла как всегда классно! Слушали свидетельства, проповедовали друг другу, пели песни и играли в игру — нужно было угадать стих из Писания или персонажа по эмодзи 👀🙏👎😈 Угадаете что за стих? 😄 Ну а ещё у одного из братьев хотели забрать машину на штрафстоянку — но всё обошлось 🙏 Не без молитвы! :)',
+      en: 'Our regular youth meeting was awesome as always! We listened to testimonies, preached to each other, sang songs and played a game — you had to guess a Bible verse or character from emojis 👀🙏👎😈 Can you guess which verse it is? 😄 Oh, and one of our brothers almost had his car towed — but everything worked out 🙏 Not without prayer! :)',
+      nl: 'Onze vaste jeugdavond was weer geweldig! We luisterden naar getuigenissen, preekten voor elkaar, zongen liederen en speelden een spel — je moest een Bijbelvers of personage raden aan de hand van emoji\'s 👀🙏👎😈 Raad jij welk vers het is? 😄 En een van onze broeders zou zijn auto bijna laten wegslepen — maar alles kwam goed 🙏 Niet zonder gebed! :)',
+      es: '¡Nuestra reunión de jóvenes habitual fue increíble como siempre! Escuchamos testimonios, nos predicamos mutuamente, cantamos canciones y jugamos un juego — había que adivinar un versículo bíblico o personaje por emojis 👀🙏👎😈 ¿Adivinas qué versículo es? 😄 Y a uno de nuestros hermanos casi le remolcan el coche — pero todo salió bien 🙏 ¡No sin oración! :)',
+    },
+  },
+  {
     id: 'blog-picnic-2026-07-06',
     date: '2026-07-06',
+    tags: ['general'],
     photos: [
       'https://i.ibb.co/WvMWFRLG/image.jpg',
       'https://i.ibb.co/fzD7jng1/2.jpg',
@@ -36,6 +63,7 @@ export const blogPosts: BlogPost[] = [
   {
     id: 'blog-huizen-2026-04-07',
     date: '2026-04-07',
+    tags: ['general'],
     photos: ['https://i.ibb.co/Q37WJhFH/2.jpg'],
     title: {
       ua: 'Церква Emmanuil на локації для людей з інвалідністю в місті Huizen',
