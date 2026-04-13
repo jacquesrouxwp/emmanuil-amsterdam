@@ -12,3 +12,5 @@ services:
         value: "8612275134:AAGLNpLaZfwsYViazsO2XMUVyVeMtQKXXrg"
       - key: MONGODB_URI
         value: "mongodb+srv://emmanuil:cLrqTaNwGehZZ0ZP@cluster0.bvwryhq.mongodb.net/emmanuil?appName=Cluster0"
+      - key: ADMIN_SECRET
+        value: "emmanuil2025admin"
