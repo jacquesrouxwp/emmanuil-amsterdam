@@ -114,6 +114,62 @@ export async function addComment(postId: string, params: {
   return res.json();
 }
 
+// --- Posts API ---
+
+export interface ApiPost {
+  _id: string;
+  date: string;
+  tags: string[];
+  photos: string[];
+  title: { ua: string; ru: string; en: string; nl?: string; es?: string };
+  body: { ua: string; ru: string; en: string; nl?: string; es?: string };
+}
+
+export async function fetchPosts(): Promise<ApiPost[]> {
+  try {
+    const res = await fetch(`${API_URL}/api/posts`);
+    if (!res.ok) return [];
+    return res.json();
+  } catch { return []; }
+}
+
+export async function createPost(secret: string, data: Omit<ApiPost, '_id'>): Promise<ApiPost> {
+  const res = await fetch(`${API_URL}/api/posts`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('create failed');
+  return res.json();
+}
+
+export async function updatePost(secret: string, id: string, data: Partial<ApiPost>): Promise<ApiPost> {
+  const res = await fetch(`${API_URL}/api/posts/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('update failed');
+  return res.json();
+}
+
+export async function deletePost(secret: string, id: string): Promise<void> {
+  await fetch(`${API_URL}/api/posts/${id}`, {
+    method: 'DELETE',
+    headers: { 'x-admin-secret': secret },
+  });
+}
+
+export async function seedPosts(secret: string, posts: ApiPost[]): Promise<{ inserted: number }> {
+  const res = await fetch(`${API_URL}/api/posts/seed`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
+    body: JSON.stringify({ posts }),
+  });
+  if (!res.ok) throw new Error('seed failed');
+  return res.json();
+}
+
 export async function sendPostToUser(params: {
   userId: number;
   title: string;

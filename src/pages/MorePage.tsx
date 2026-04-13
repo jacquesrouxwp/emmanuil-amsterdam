@@ -105,13 +105,24 @@ export function MorePage() {
         </button>
       </motion.div>
 
-      <motion.div
-        variants={fadeUp}
-        style={{ textAlign: 'center', padding: '28px 0 16px', color: 'var(--text-tertiary)' }}
-      >
+      {/* Hidden admin button — triple tap on version */}
+      <motion.div variants={fadeUp} style={{ textAlign: 'center', padding: '28px 0 16px', color: 'var(--text-tertiary)' }}>
         <Info size={16} style={{ marginBottom: 4, opacity: 0.5 }} />
         <p style={{ fontSize: 12 }}>Emmanuil Amsterdam v1.0.0</p>
-        <p style={{ fontSize: 11, marginTop: 2 }}>{t.more.version}</p>
+        <p
+          style={{ fontSize: 11, marginTop: 2, userSelect: 'none' }}
+          onClick={(() => {
+            let taps = 0; let timer: ReturnType<typeof setTimeout>;
+            return () => {
+              taps++;
+              clearTimeout(timer);
+              timer = setTimeout(() => { taps = 0; }, 800);
+              if (taps >= 5) { taps = 0; hapticFeedback('medium'); navigate('/admin'); }
+            };
+          })()}
+        >
+          {t.more.version}
+        </p>
       </motion.div>
     </motion.div>
   );

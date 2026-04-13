@@ -299,6 +299,106 @@ app.post('/api/volunteer', async (req, res) => {
   }
 });
 
+// --- Posts CRUD ---
+
+function isAdmin(req) {
+  const secret = req.headers['x-admin-secret'] || req.query.secret;
+  return process.env.ADMIN_SECRET && secret === process.env.ADMIN_SECRET;
+}
+
+app.get('/api/posts', async (_req, res) => {
+  try {
+    const posts = db
+      ? await db.collection('posts').find({}).sort({ date: -1 }).toArray()
+      : [];
+    res.json(posts);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.post('/api/posts', async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const { title, body, photos, tags, date } = req.body;
+    if (!title || !body) return res.status(400).json({ error: 'title and body required' });
+    if (!db) return res.status(503).json({ error: 'DB not connected' });
+
+    const post = {
+      _id: 'blog-' + Date.now().toString(36),
+      date: date || new Date().toISOString().slice(0, 10),
+      tags: tags || ['general'],
+      photos: photos || [],
+      title,
+      body,
+      createdAt: new Date().toISOString(),
+    };
+
+    await db.collection('posts').insertOne(post);
+    res.json(post);
+  } catch (err) {
+    console.error('Post create error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.put('/api/posts/:id', async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const { title, body, photos, tags, date } = req.body;
+    if (!db) return res.status(503).json({ error: 'DB not connected' });
+
+    const update = {};
+    if (title) update.title = title;
+    if (body) update.body = body;
+    if (photos) update.photos = photos;
+    if (tags) update.tags = tags;
+    if (date) update.date = date;
+    update.updatedAt = new Date().toISOString();
+
+    const result = await db.collection('posts').findOneAndUpdate(
+      { _id: req.params.id },
+      { $set: update },
+      { returnDocument: 'after' }
+    );
+    if (!result) return res.status(404).json({ error: 'Post not found' });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.delete('/api/posts/:id', async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  try {
+    if (!db) return res.status(503).json({ error: 'DB not connected' });
+    await db.collection('posts').deleteOne({ _id: req.params.id });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Seed initial posts from static data (one-time, skips existing)
+app.post('/api/posts/seed', async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  if (!db) return res.status(503).json({ error: 'DB not connected' });
+  try {
+    const { posts } = req.body;
+    let inserted = 0;
+    for (const post of posts) {
+      const exists = await db.collection('posts').findOne({ _id: post.id });
+      if (!exists) {
+        await db.collection('posts').insertOne({ ...post, _id: post.id });
+        inserted++;
+      }
+    }
+    res.json({ ok: true, inserted });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // --- Share: send post directly to user's bot chat ---
 
 app.post('/api/share/send-to-user', async (req, res) => {
