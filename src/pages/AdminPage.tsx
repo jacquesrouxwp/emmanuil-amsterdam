@@ -12,6 +12,7 @@ const EMPTY: Omit<ApiPost, '_id'> = {
   date: new Date().toISOString().slice(0, 10),
   tags: ['general'],
   photos: [],
+  videos: [],
   title: { ua: '', ru: '', en: '', nl: '', es: '' },
   body:  { ua: '', ru: '', en: '', nl: '', es: '' },
 };
@@ -219,6 +220,40 @@ export function AdminPage() {
                 <span style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>Добавить</span>
               </button>
             </div>
+          </div>
+
+          {/* Videos */}
+          <div>
+            <label style={{ fontSize: 11, color: 'var(--text-tertiary)', display: 'block', marginBottom: 8 }}>ВИДЕО (YouTube)</label>
+            {(editing.videos || []).map((url, i) => (
+              <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}>
+                <input
+                  type="text"
+                  value={url}
+                  readOnly
+                  style={{
+                    flex: 1, padding: '8px 10px', borderRadius: 10, fontSize: 13,
+                    border: '1px solid var(--border-light)', background: 'var(--bg-secondary)',
+                    color: 'var(--text-primary)', boxSizing: 'border-box',
+                  }}
+                />
+                <button onClick={() => setEditing({ ...editing, videos: (editing.videos || []).filter((_, vi) => vi !== i) })} style={{
+                  width: 32, height: 32, borderRadius: 8, background: 'rgba(255,59,92,0.1)',
+                  border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                }}>
+                  <X size={14} color="#ff3b5c" />
+                </button>
+              </div>
+            ))}
+            <button onClick={() => {
+              const url = window.prompt('Ссылка на YouTube видео:');
+              if (url?.trim()) setEditing({ ...editing, videos: [...(editing.videos || []), url.trim()] });
+            }} style={{
+              padding: '8px 14px', borderRadius: 10, border: '2px dashed var(--border-light)',
+              background: 'var(--bg-secondary)', cursor: 'pointer', fontSize: 13, color: 'var(--text-secondary)',
+            }}>
+              + Добавить видео
+            </button>
           </div>
 
           {/* Lang tabs */}

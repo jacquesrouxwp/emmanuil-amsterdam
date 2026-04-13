@@ -320,7 +320,7 @@ app.get('/api/posts', async (_req, res) => {
 app.post('/api/posts', async (req, res) => {
   if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
   try {
-    const { title, body, photos, tags, date } = req.body;
+    const { title, body, photos, videos, tags, date } = req.body;
     if (!title || !body) return res.status(400).json({ error: 'title and body required' });
     if (!db) return res.status(503).json({ error: 'DB not connected' });
 
@@ -329,6 +329,7 @@ app.post('/api/posts', async (req, res) => {
       date: date || new Date().toISOString().slice(0, 10),
       tags: tags || ['general'],
       photos: photos || [],
+      videos: videos || [],
       title,
       body,
       createdAt: new Date().toISOString(),
@@ -345,13 +346,14 @@ app.post('/api/posts', async (req, res) => {
 app.put('/api/posts/:id', async (req, res) => {
   if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
   try {
-    const { title, body, photos, tags, date } = req.body;
+    const { title, body, photos, videos, tags, date } = req.body;
     if (!db) return res.status(503).json({ error: 'DB not connected' });
 
     const update = {};
     if (title) update.title = title;
     if (body) update.body = body;
     if (photos) update.photos = photos;
+    if (videos !== undefined) update.videos = videos;
     if (tags) update.tags = tags;
     if (date) update.date = date;
     update.updatedAt = new Date().toISOString();

@@ -225,6 +225,29 @@ function PhotoCarousel({ photos, alt }: { photos: string[]; alt: string }) {
   );
 }
 
+/* ── YouTube embed ── */
+
+function getYouTubeId(url: string): string | null {
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/))([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+function YouTubeEmbed({ url }: { url: string }) {
+  const id = getYouTubeId(url);
+  if (!id) return null;
+  return (
+    <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: 0 }}>
+      <iframe
+        src={`https://www.youtube.com/embed/${id}?rel=0&modestbranding=1`}
+        title="YouTube"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+      />
+    </div>
+  );
+}
+
 /* ── Blog feed ── */
 
 const LIKED_KEY = 'emmanuil_liked_posts';
@@ -407,6 +430,10 @@ export function BlogFeed({ title }: { title: string }) {
                 {post.photos && post.photos.length > 0 && (
                   <PhotoCarousel photos={post.photos} alt={loc(post.title, lang)} />
                 )}
+
+                {post.videos && post.videos.length > 0 && post.videos.map((v, vi) => (
+                  <YouTubeEmbed key={vi} url={v} />
+                ))}
 
                 <div
                   style={{ padding: 14, cursor: 'pointer' }}

@@ -7,6 +7,7 @@ export interface BlogPost {
   date: string;
   tags: BlogTag[];
   photos?: string[];
+  videos?: string[];
   title: Localized;
   body: Localized;
 }

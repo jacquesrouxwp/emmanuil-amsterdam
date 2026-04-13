@@ -121,6 +121,7 @@ export interface ApiPost {
   date: string;
   tags: string[];
   photos: string[];
+  videos?: string[];
   title: { ua: string; ru: string; en: string; nl?: string; es?: string };
   body: { ua: string; ru: string; en: string; nl?: string; es?: string };
 }
