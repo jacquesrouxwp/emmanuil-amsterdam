@@ -5,7 +5,7 @@ import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X, Heart, Share2, Me
 import { blogPosts, type BlogTag } from '@/data/blog';
 import { useLang, loc } from '@/i18n/translations';
 import { hapticFeedback, shareUrl } from '@/lib/telegram';
-import { fetchReactions, likePost, sharePost, prepareShare, fetchComments, addComment, type PostReaction, type PostComment } from '@/lib/api';
+import { fetchReactions, likePost, sharePost, prepareShare, sendPostToUser, fetchComments, addComment, type PostReaction, type PostComment } from '@/lib/api';
 
 function formatDate(iso: string, lang: string): string {
   const d = new Date(iso);
@@ -340,26 +340,26 @@ export function BlogFeed({ title }: { title: string }) {
     const tg = (window as any).Telegram?.WebApp;
     const userId = tg?.initDataUnsafe?.user?.id;
 
-    // Try savePreparedInlineMessage + shareMessage (photo + caption + button)
-    if (userId && typeof tg?.shareMessage === 'function') {
+    // Send photo + caption directly to user's bot chat, then open grid picker to forward
+    if (userId) {
       try {
-        const { preparedId } = await prepareShare({
+        await sendPostToUser({
           userId,
           title: loc(post.title, lang),
           body: loc(post.body, lang),
           photoUrl: post.photos?.[0],
           lang,
         });
-        tg.shareMessage(preparedId, (sent: boolean) => {
-          if (sent) recordShare();
-        });
+        // Open bot chat so user can forward the message
+        tg?.openTelegramLink?.('https://t.me/myconclaw_bot');
+        recordShare();
         return;
       } catch (err) {
-        console.warn('[share] prepareShare failed:', err);
+        console.warn('[share] sendPostToUser failed:', err);
       }
     }
 
-    // Fallback: plain link share with grid picker
+    // Fallback: plain link share
     shareUrl('https://t.me/myconclaw_bot/app', loc(post.title, lang));
     recordShare();
   };

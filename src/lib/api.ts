@@ -114,6 +114,22 @@ export async function addComment(postId: string, params: {
   return res.json();
 }
 
+export async function sendPostToUser(params: {
+  userId: number;
+  title: string;
+  body: string;
+  photoUrl?: string;
+  lang?: string;
+}): Promise<{ ok: boolean; messageId?: number }> {
+  const res = await fetch(`${API_URL}/api/share/send-to-user`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+  if (!res.ok) throw new Error('send failed');
+  return res.json();
+}
+
 export async function sharePost(postId: string): Promise<PostReaction> {
   const res = await fetch(`${API_URL}/api/reactions/${postId}/share`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },

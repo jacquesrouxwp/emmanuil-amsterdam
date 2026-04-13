@@ -299,6 +299,62 @@ app.post('/api/volunteer', async (req, res) => {
   }
 });
 
+// --- Share: send post directly to user's bot chat ---
+
+app.post('/api/share/send-to-user', async (req, res) => {
+  try {
+    const { userId, title, body, photoUrl, lang } = req.body;
+    if (!userId || !title) return res.status(400).json({ error: 'userId and title required' });
+
+    const BOT_TOKEN = process.env.BOT_TOKEN;
+    if (!BOT_TOKEN) return res.status(500).json({ error: 'BOT_TOKEN not set' });
+
+    const l = lang && MORE_IN_APP[lang] ? lang : 'ru';
+    const snippet = body ? body.substring(0, 300) + (body.length > 300 ? '...' : '') : '';
+    const caption = snippet
+      ? `<b>${title}</b>\n\n${snippet}\n\n${MORE_IN_APP[l]}`
+      : `<b>${title}</b>\n\n${MORE_IN_APP[l]}`;
+
+    const replyMarkup = {
+      inline_keyboard: [[{ text: OPEN_APP_LABEL[l] || OPEN_APP_LABEL.ru, url: 'https://t.me/myconclaw_bot/app' }]],
+    };
+
+    let result;
+    if (photoUrl) {
+      result = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: userId,
+          photo: photoUrl,
+          caption,
+          parse_mode: 'HTML',
+          reply_markup: replyMarkup,
+        }),
+      });
+    } else {
+      result = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: userId,
+          text: caption,
+          parse_mode: 'HTML',
+          reply_markup: replyMarkup,
+        }),
+      });
+    }
+
+    const data = await result.json();
+    console.log('[share/send-to-user]', data.ok ? 'OK' : data.description);
+    if (!data.ok) return res.status(500).json({ error: data.description });
+    res.json({ ok: true, messageId: data.result.message_id });
+  } catch (err) {
+    console.error('send-to-user error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // --- Share ---
 
 const OPEN_APP_LABEL = {
