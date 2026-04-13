@@ -358,8 +358,8 @@ app.post('/api/share/send-to-user', async (req, res) => {
 // --- Share ---
 
 const OPEN_APP_LABEL = {
-  ua: '📱 Emmanuil App', ru: '📱 Emmanuil App',
-  en: '📱 Emmanuil App', nl: '📱 Emmanuil App', es: '📱 Emmanuil App',
+  ua: 'Emmanuil App', ru: 'Emmanuil App',
+  en: 'Emmanuil App', nl: 'Emmanuil App', es: 'Emmanuil App',
 };
 const MORE_IN_APP = {
   ua: '📲 Повний пост у нашому міні-додатку',
