@@ -21,14 +21,15 @@ if (existsSync(DIST_DIR)) {
 // --- Simple JSON file storage ---
 
 function loadData() {
-  if (!existsSync(DATA_FILE)) return { attendance: {}, subscribers: [], reactions: {} };
+  if (!existsSync(DATA_FILE)) return { attendance: {}, subscribers: [], reactions: {}, comments: {} };
   try {
     const d = JSON.parse(readFileSync(DATA_FILE, 'utf-8'));
     if (!d.subscribers) d.subscribers = [];
     if (!d.reactions) d.reactions = {};
+    if (!d.comments) d.comments = {};
     return d;
   } catch {
-    return { attendance: {}, subscribers: [], reactions: {} };
+    return { attendance: {}, subscribers: [], reactions: {}, comments: {} };
   }
 }
 
@@ -120,6 +121,42 @@ app.post('/api/reactions/:postId/share', (req, res) => {
   data.reactions[postId].shares = (data.reactions[postId].shares || 0) + 1;
   saveData(data);
   res.json(data.reactions[postId]);
+});
+
+// --- Post comments ---
+
+app.get('/api/comments/:postId', (req, res) => {
+  const data = loadData();
+  const comments = data.comments[req.params.postId] || [];
+  res.json(comments);
+});
+
+app.post('/api/comments/:postId', (req, res) => {
+  try {
+    const { userId, name, photo, text } = req.body;
+    if (!userId || !name || !text?.trim()) {
+      return res.status(400).json({ error: 'userId, name and text required' });
+    }
+
+    const data = loadData();
+    if (!data.comments[req.params.postId]) data.comments[req.params.postId] = [];
+
+    const comment = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      userId,
+      name,
+      photo: photo || null,
+      text: text.trim(),
+      createdAt: new Date().toISOString(),
+    };
+
+    data.comments[req.params.postId].push(comment);
+    saveData(data);
+    res.json(comment);
+  } catch (err) {
+    console.error('Comment error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // --- Share: inline query system ---

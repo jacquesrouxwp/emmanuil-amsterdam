@@ -82,6 +82,38 @@ export async function prepareShare(params: {
   return res.json();
 }
 
+export interface PostComment {
+  id: string;
+  userId: string;
+  name: string;
+  photo?: string;
+  text: string;
+  createdAt: string;
+}
+
+export async function fetchComments(postId: string): Promise<PostComment[]> {
+  try {
+    const res = await fetch(`${API_URL}/api/comments/${postId}`);
+    if (!res.ok) return [];
+    return res.json();
+  } catch { return []; }
+}
+
+export async function addComment(postId: string, params: {
+  userId: string;
+  name: string;
+  photo?: string;
+  text: string;
+}): Promise<PostComment> {
+  const res = await fetch(`${API_URL}/api/comments/${postId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+  if (!res.ok) throw new Error('comment failed');
+  return res.json();
+}
+
 export async function sharePost(postId: string): Promise<PostReaction> {
   const res = await fetch(`${API_URL}/api/reactions/${postId}/share`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },

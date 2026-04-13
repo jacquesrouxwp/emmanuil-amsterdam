@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X, Heart, Share2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X, Heart, Share2, MessageCircle, Send } from 'lucide-react';
 import { blogPosts, type BlogTag } from '@/data/blog';
 import { useLang, loc } from '@/i18n/translations';
 import { hapticFeedback, shareUrl } from '@/lib/telegram';
-import { fetchReactions, likePost, sharePost, prepareShare, type PostReaction } from '@/lib/api';
+import { fetchReactions, likePost, sharePost, prepareShare, fetchComments, addComment, type PostReaction, type PostComment } from '@/lib/api';
 
 function formatDate(iso: string, lang: string): string {
   const d = new Date(iso);
@@ -239,14 +239,72 @@ const TAG_LABELS: Record<string, Record<BlogTag | 'all', string>> = {
   es: { all: 'Todo', general: 'General', youth: 'Jóvenes' },
 };
 
+const COMMENT_LABELS: Record<string, { placeholder: string; comments: string; noComments: string }> = {
+  ua: { placeholder: 'Написати коментар...', comments: 'Коментарі', noComments: 'Поки немає коментарів' },
+  ru: { placeholder: 'Написать комментарий...', comments: 'Комментарии', noComments: 'Пока нет комментариев' },
+  en: { placeholder: 'Write a comment...', comments: 'Comments', noComments: 'No comments yet' },
+  nl: { placeholder: 'Schrijf een reactie...', comments: 'Reacties', noComments: 'Nog geen reacties' },
+  es: { placeholder: 'Escribe un comentario...', comments: 'Comentarios', noComments: 'Aún no hay comentarios' },
+};
+
+function timeAgo(iso: string, lang: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return lang === 'ru' || lang === 'ua' ? 'только что' : 'just now';
+  if (mins < 60) return `${mins}${lang === 'ru' || lang === 'ua' ? ' мин' : 'm'}`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}${lang === 'ru' || lang === 'ua' ? ' ч' : 'h'}`;
+  const days = Math.floor(hrs / 24);
+  return `${days}${lang === 'ru' || lang === 'ua' ? ' д' : 'd'}`;
+}
+
 export function BlogFeed({ title }: { title: string }) {
   const lang = useLang();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [reactions, setReactions] = useState<Record<string, PostReaction>>({});
   const [liked, setLikedState] = useState<Set<string>>(() => getLiked());
   const [activeTag, setActiveTag] = useState<BlogTag | 'all'>('all');
+  const [comments, setComments] = useState<Record<string, PostComment[]>>({});
+  const [commentText, setCommentText] = useState<Record<string, string>>({});
+  const [showComments, setShowComments] = useState<string | null>(null);
+  const [sendingComment, setSendingComment] = useState(false);
 
   useEffect(() => { fetchReactions().then(setReactions); }, []);
+
+  const loadComments = async (postId: string) => {
+    const c = await fetchComments(postId);
+    setComments((prev) => ({ ...prev, [postId]: c }));
+  };
+
+  const handleToggleComments = (postId: string) => {
+    hapticFeedback('light');
+    if (showComments === postId) {
+      setShowComments(null);
+    } else {
+      setShowComments(postId);
+      if (!comments[postId]) loadComments(postId);
+    }
+  };
+
+  const handleSendComment = async (postId: string) => {
+    const text = commentText[postId]?.trim();
+    if (!text || sendingComment) return;
+    hapticFeedback('medium');
+    setSendingComment(true);
+
+    const tg = (window as any).Telegram?.WebApp;
+    const user = tg?.initDataUnsafe?.user;
+    const userId = user?.id?.toString() || 'anon';
+    const name = user ? `${user.first_name}${user.last_name ? ' ' + user.last_name : ''}` : 'Guest';
+    const photo = user?.photo_url;
+
+    try {
+      const comment = await addComment(postId, { userId, name, photo, text });
+      setComments((prev) => ({ ...prev, [postId]: [...(prev[postId] || []), comment] }));
+      setCommentText((prev) => ({ ...prev, [postId]: '' }));
+    } catch { /* offline */ }
+    setSendingComment(false);
+  };
 
   const labels = TAG_LABELS[lang] ?? TAG_LABELS.ru;
   const filteredPosts = activeTag === 'all'
@@ -408,6 +466,22 @@ export function BlogFeed({ title }: { title: string }) {
                     </button>
 
                     <button
+                      onClick={() => handleToggleComments(post.id)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 5,
+                        padding: '5px 10px', borderRadius: 20,
+                        background: showComments === post.id ? 'rgba(201,169,110,0.12)' : 'var(--bg-secondary)',
+                        border: `1px solid ${showComments === post.id ? 'rgba(201,169,110,0.3)' : 'var(--border-light)'}`,
+                        cursor: 'pointer', transition: 'all 0.15s',
+                      }}
+                    >
+                      <MessageCircle size={14} color={showComments === post.id ? '#C9A96E' : 'var(--text-secondary)'} />
+                      <span style={{ fontSize: 12, fontWeight: 600, color: showComments === post.id ? '#C9A96E' : 'var(--text-secondary)' }}>
+                        {comments[post.id]?.length || 0}
+                      </span>
+                    </button>
+
+                    <button
                       onClick={() => handleShare(post)}
                       style={{
                         display: 'flex', alignItems: 'center', gap: 5,
@@ -423,6 +497,85 @@ export function BlogFeed({ title }: { title: string }) {
                       </span>
                     </button>
                   </div>
+
+                  {/* Comments section */}
+                  <AnimatePresence>
+                    {showComments === post.id && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        style={{ overflow: 'hidden', borderTop: '1px solid var(--border-light)' }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div style={{ padding: '12px 14px' }}>
+                          {/* Comment input */}
+                          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+                            <input
+                              type="text"
+                              value={commentText[post.id] || ''}
+                              onChange={(e) => setCommentText((prev) => ({ ...prev, [post.id]: e.target.value }))}
+                              onKeyDown={(e) => { if (e.key === 'Enter') handleSendComment(post.id); }}
+                              placeholder={(COMMENT_LABELS[lang] ?? COMMENT_LABELS.ru).placeholder}
+                              style={{
+                                flex: 1, padding: '8px 12px', borderRadius: 20, fontSize: 13,
+                                background: 'var(--bg-secondary)', border: '1px solid var(--border-light)',
+                                color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit',
+                              }}
+                            />
+                            <button
+                              onClick={() => handleSendComment(post.id)}
+                              disabled={!commentText[post.id]?.trim() || sendingComment}
+                              style={{
+                                width: 36, height: 36, borderRadius: '50%', border: 'none', cursor: 'pointer',
+                                background: commentText[post.id]?.trim() ? '#C9A96E' : 'var(--bg-secondary)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                opacity: sendingComment ? 0.5 : 1, transition: 'all 0.15s', flexShrink: 0,
+                              }}
+                            >
+                              <Send size={14} color={commentText[post.id]?.trim() ? '#fff' : 'var(--text-tertiary)'} />
+                            </button>
+                          </div>
+
+                          {/* Comments list */}
+                          {(comments[post.id] || []).length === 0 ? (
+                            <p style={{ fontSize: 12, color: 'var(--text-tertiary)', textAlign: 'center', padding: '8px 0' }}>
+                              {(COMMENT_LABELS[lang] ?? COMMENT_LABELS.ru).noComments}
+                            </p>
+                          ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                              {(comments[post.id] || []).map((c) => (
+                                <div key={c.id} style={{ display: 'flex', gap: 8 }}>
+                                  <div style={{
+                                    width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                                    background: 'rgba(201,169,110,0.15)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    overflow: 'hidden',
+                                  }}>
+                                    {c.photo ? (
+                                      <img src={c.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    ) : (
+                                      <span style={{ fontSize: 12, fontWeight: 700, color: '#C9A96E' }}>
+                                        {c.name.charAt(0).toUpperCase()}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                                      <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>{c.name}</span>
+                                      <span style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>{timeAgo(c.createdAt, lang)}</span>
+                                    </div>
+                                    <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.4, marginTop: 2 }}>{c.text}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
             </motion.div>
