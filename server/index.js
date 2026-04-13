@@ -401,6 +401,14 @@ app.post('/api/posts/seed', async (req, res) => {
 
 // --- Share: send post directly to user's bot chat ---
 
+const APP_HOOK = {
+  ru: `📲 В нашем Telegram мини-приложении мы собрали все актуальные новости церкви, расписания служений и домашних групп, важные события, полезные ссылки и контакты служителей.\n\n✅ Вся информация постоянно обновляется и доступна в одном месте 24/7`,
+  ua: `📲 У нашому Telegram міні-додатку зібрані всі актуальні новини церкви, розклади служінь і домашніх груп, важливі події, корисні посилання та контакти служителів.\n\n✅ Вся інформація постійно оновлюється і доступна в одному місці 24/7`,
+  en: `📲 In our Telegram mini app we've gathered all the latest church news, service and home group schedules, upcoming events, useful links and ministry contacts.\n\n✅ Everything is always up to date and available in one place 24/7`,
+  nl: `📲 In onze Telegram mini-app vind je het laatste kerknieuws, roosters van diensten en huisgroepen, aankomende evenementen, handige links en contacten van medewerkers.\n\n✅ Altijd actueel en beschikbaar op één plek 24/7`,
+  es: `📲 En nuestra mini-aplicación de Telegram reunimos todas las noticias de la iglesia, horarios de servicios y grupos en casa, eventos importantes, enlaces útiles y contactos de los líderes.\n\n✅ Toda la información se actualiza constantemente y está disponible en un solo lugar 24/7`,
+};
+
 app.post('/api/share/send-to-user', async (req, res) => {
   try {
     const { userId, title, body, photoUrl, lang } = req.body;
@@ -409,11 +417,20 @@ app.post('/api/share/send-to-user', async (req, res) => {
     const BOT_TOKEN = process.env.BOT_TOKEN;
     if (!BOT_TOKEN) return res.status(500).json({ error: 'BOT_TOKEN not set' });
 
-    const l = lang && MORE_IN_APP[lang] ? lang : 'ru';
-    const snippet = body ? body.substring(0, 300) + (body.length > 300 ? '...' : '') : '';
-    const caption = snippet
-      ? `<b>${title}</b>\n\n${snippet}\n\n${MORE_IN_APP[l]}`
-      : `<b>${title}</b>\n\n${MORE_IN_APP[l]}`;
+    const l = lang && APP_HOOK[lang] ? lang : 'ru';
+
+    // Short teaser — first sentence or up to 120 chars
+    let teaser = '';
+    if (body) {
+      const firstSentence = body.split(/[.!?]/)[0].trim();
+      teaser = firstSentence.length > 30
+        ? firstSentence.substring(0, 120) + '...'
+        : body.substring(0, 120) + (body.length > 120 ? '...' : '');
+    }
+
+    const caption = teaser
+      ? `<b>${title}</b>\n\n${teaser}\n\n${APP_HOOK[l]}`
+      : `<b>${title}</b>\n\n${APP_HOOK[l]}`;
 
     const replyMarkup = {
       inline_keyboard: [[{ text: OPEN_APP_LABEL[l] || OPEN_APP_LABEL.ru, url: 'https://t.me/myconclaw_bot/app' }]],
