@@ -5,7 +5,7 @@ import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, X, Heart, Share2, Me
 import { blogPosts, type BlogTag } from '@/data/blog';
 import { useLang, loc } from '@/i18n/translations';
 import { hapticFeedback, shareUrl } from '@/lib/telegram';
-import { fetchReactions, likePost, sharePost, prepareShare, sendPostToUser, fetchComments, addComment, type PostReaction, type PostComment } from '@/lib/api';
+import { fetchReactions, likePost, sharePost, prepareShare, sendPostToUser, fetchComments, addComment, fetchPosts, type PostReaction, type PostComment } from '@/lib/api';
 
 function formatDate(iso: string, lang: string): string {
   const d = new Date(iso);
@@ -281,8 +281,32 @@ function timeAgo(iso: string, lang: string): string {
   return `${days}${lang === 'ru' || lang === 'ua' ? ' д' : 'd'}`;
 }
 
+// Merge API posts with static fallback, deduplicate by id
+function useAllPosts() {
+  const [apiPosts, setApiPosts] = useState<any[]>([]);
+  useEffect(() => {
+    fetchPosts().then(posts => {
+      if (posts.length > 0) setApiPosts(posts);
+    });
+  }, []);
+  // If API has posts, use them; otherwise fallback to static
+  if (apiPosts.length > 0) {
+    return apiPosts.map(p => ({
+      id: p._id,
+      date: p.date,
+      tags: p.tags || ['general'],
+      photos: p.photos || [],
+      videos: p.videos || [],
+      title: p.title,
+      body: p.body,
+    }));
+  }
+  return blogPosts.map(p => ({ ...p, videos: (p as any).videos || [] }));
+}
+
 export function BlogFeed({ title }: { title: string }) {
   const lang = useLang();
+  const allPosts = useAllPosts();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [reactions, setReactions] = useState<Record<string, PostReaction>>({});
   const [liked, setLikedState] = useState<Set<string>>(() => getLiked());
@@ -331,8 +355,8 @@ export function BlogFeed({ title }: { title: string }) {
 
   const labels = TAG_LABELS[lang] ?? TAG_LABELS.ru;
   const filteredPosts = activeTag === 'all'
-    ? blogPosts
-    : blogPosts.filter((p) => p.tags.includes(activeTag));
+    ? allPosts
+    : allPosts.filter((p) => p.tags.includes(activeTag));
 
   const handleLike = async (postId: string) => {
     hapticFeedback('light');
@@ -431,7 +455,7 @@ export function BlogFeed({ title }: { title: string }) {
                   <PhotoCarousel photos={post.photos} alt={loc(post.title, lang)} />
                 )}
 
-                {post.videos && post.videos.length > 0 && post.videos.map((v, vi) => (
+                {post.videos && post.videos.length > 0 && post.videos.map((v: string, vi: number) => (
                   <YouTubeEmbed key={vi} url={v} />
                 ))}
 
