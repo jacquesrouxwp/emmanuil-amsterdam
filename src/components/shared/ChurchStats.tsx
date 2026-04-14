@@ -10,11 +10,11 @@ type StatItem = {
 };
 
 const STATS: StatItem[] = [
-  { key: 'attendees', icon: Users, value: 0, span: 2 },
-  { key: 'youth', icon: Flame, value: 0, span: 2 },
-  { key: 'children', icon: Baby, value: 0, span: 2 },
-  { key: 'homeGroups', icon: Home, value: 0, span: 3 },
-  { key: 'ministries', icon: HandHeart, value: 0, span: 3 },
+  { key: 'attendees', icon: Users, value: 402, span: 2 },
+  { key: 'youth', icon: Flame, value: 43, span: 2 },
+  { key: 'children', icon: Baby, value: 32, span: 2 },
+  { key: 'homeGroups', icon: Home, value: 7, span: 3 },
+  { key: 'ministries', icon: HandHeart, value: 4, span: 3 },
 ];
 
 export function ChurchStats() {
