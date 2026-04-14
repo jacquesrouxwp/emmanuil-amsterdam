@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Globe } from 'lucide-react';
 import { getUserName, hapticFeedback } from '@/lib/telegram';
 import { ScriptureQuote } from '@/components/shared/ScriptureQuote';
+import { ChurchStats } from '@/components/shared/ChurchStats';
 import { BlogFeed } from '@/components/shared/BlogFeed';
 import { useT, useLang } from '@/i18n/translations';
 import { useAppStore } from '@/store/appStore';
@@ -33,7 +34,7 @@ export function HomePage() {
   return (
     <motion.div className="page" variants={stagger} initial="hidden" animate="show">
       {/* Header */}
-      <motion.div variants={fadeUp} style={{ marginBottom: 20 }}>
+      <motion.div variants={fadeUp} style={{ marginBottom: 12 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{greeting},</p>
@@ -58,12 +59,16 @@ export function HomePage() {
             </button>
           </div>
         </div>
-        <p style={{ fontSize: 13, color: 'var(--text-tertiary)', marginTop: 4 }}>{t.home.subtitle}</p>
       </motion.div>
 
       {/* Scripture */}
-      <motion.div variants={fadeUp} style={{ marginBottom: 14 }}>
+      <motion.div variants={fadeUp} style={{ marginBottom: 12 }}>
         <ScriptureQuote compact />
+      </motion.div>
+
+      {/* Church stats */}
+      <motion.div variants={fadeUp} style={{ marginBottom: 18 }}>
+        <ChurchStats />
       </motion.div>
 
       {/* Blog feed */}

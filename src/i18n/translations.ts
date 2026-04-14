@@ -26,6 +26,10 @@ const t = {
       todayScripture: 'Слово на сьогодні', schedule: 'Розклад', details: 'Детальніше',
       googleMaps: 'Google Maps', appleMaps: 'Apple Maps',
       churchLife: 'Життя церкви',
+      stats: {
+        attendees: 'Прихожан', youth: 'Молодь', children: 'Діти',
+        homeGroups: 'Домашні групи', ministries: 'Служіння',
+      },
     },
     schedule: {
       title: 'Розклад', subtitle: 'Служіння та домашні групи',
@@ -76,6 +80,10 @@ const t = {
     home: {
       greetingMorning: 'Доброе утро', greetingDay: 'Добрый день', greetingEvening: 'Добрый вечер',
       subtitle: 'Мини-апп всех важных событий церкви',
+      stats: {
+        attendees: 'Прихожан', youth: 'Молодёжь', children: 'Дети',
+        homeGroups: 'Домашние группы', ministries: 'Служения',
+      },
       nextService: 'Ближайшее служение', importantEvents: 'Важные события', all: 'Все',
       todayScripture: 'Слово на сегодня', schedule: 'Расписание', details: 'Подробнее',
       googleMaps: 'Google Maps', appleMaps: 'Apple Maps',
@@ -134,6 +142,10 @@ const t = {
       todayScripture: 'Word for today', schedule: 'Schedule', details: 'Details',
       googleMaps: 'Google Maps', appleMaps: 'Apple Maps',
       churchLife: 'Church Life',
+      stats: {
+        attendees: 'Attendees', youth: 'Youth', children: 'Children',
+        homeGroups: 'Home groups', ministries: 'Ministries',
+      },
     },
     schedule: {
       title: 'Schedule', subtitle: 'Services and home groups',
@@ -188,6 +200,10 @@ const t = {
       todayScripture: 'Woord voor vandaag', schedule: 'Schema', details: 'Details',
       googleMaps: 'Google Maps', appleMaps: 'Apple Maps',
       churchLife: 'Kerkelijk leven',
+      stats: {
+        attendees: 'Leden', youth: 'Jeugd', children: 'Kinderen',
+        homeGroups: 'Huisgroepen', ministries: 'Bedieningen',
+      },
     },
     schedule: {
       title: 'Schema', subtitle: 'Diensten en huisgroepen',
@@ -242,6 +258,10 @@ const t = {
       todayScripture: 'Palabra de hoy', schedule: 'Horario', details: 'Detalles',
       googleMaps: 'Google Maps', appleMaps: 'Apple Maps',
       churchLife: 'Vida de la iglesia',
+      stats: {
+        attendees: 'Miembros', youth: 'Jóvenes', children: 'Niños',
+        homeGroups: 'Grupos familiares', ministries: 'Ministerios',
+      },
     },
     schedule: {
       title: 'Horario', subtitle: 'Servicios y grupos familiares',
