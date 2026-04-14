@@ -281,7 +281,7 @@ function timeAgo(iso: string, lang: string): string {
   return `${days}${lang === 'ru' || lang === 'ua' ? ' д' : 'd'}`;
 }
 
-// Merge API posts with static fallback, deduplicate by id
+// Merge API posts with static fallback, sort by date desc
 function useAllPosts() {
   const [apiPosts, setApiPosts] = useState<any[]>([]);
   useEffect(() => {
@@ -289,19 +289,25 @@ function useAllPosts() {
       if (posts.length > 0) setApiPosts(posts);
     });
   }, []);
-  // If API has posts, use them; otherwise fallback to static
-  if (apiPosts.length > 0) {
-    return apiPosts.map(p => ({
-      id: p._id,
-      date: p.date,
-      tags: p.tags || ['general'],
-      photos: p.photos || [],
-      videos: p.videos || [],
-      title: p.title,
-      body: p.body,
-    }));
-  }
-  return blogPosts.map(p => ({ ...p, videos: (p as any).videos || [] }));
+  const source = apiPosts.length > 0
+    ? apiPosts.map(p => ({
+        id: p._id,
+        date: p.date,
+        tags: p.tags || ['general'],
+        photos: p.photos || [],
+        videos: p.videos || [],
+        title: p.title,
+        body: p.body,
+        createdAt: p.createdAt,
+      }))
+    : blogPosts.map(p => ({ ...p, videos: (p as any).videos || [], createdAt: '' }));
+  // Sort by date desc; tie-break by createdAt desc
+  return [...source].sort((a, b) => {
+    if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+    const ac = (a as any).createdAt || '';
+    const bc = (b as any).createdAt || '';
+    return ac < bc ? 1 : -1;
+  });
 }
 
 export function BlogFeed({ title }: { title: string }) {
