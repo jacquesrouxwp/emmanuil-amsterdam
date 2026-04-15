@@ -401,6 +401,108 @@ app.post('/api/posts/seed', async (req, res) => {
   }
 });
 
+// ── Events CRUD ────────────────────────────────────────────────────────────
+app.get('/api/events', async (_req, res) => {
+  try {
+    const events = db ? await db.collection('events').find({}).sort({ sortDate: 1 }).toArray() : [];
+    res.json(events);
+  } catch { res.status(500).json({ error: 'Server error' }); }
+});
+
+app.post('/api/events', async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  if (!db) return res.status(503).json({ error: 'DB not connected' });
+  try {
+    const ev = { _id: 'ev-' + Date.now().toString(36), ...req.body, createdAt: new Date().toISOString() };
+    await db.collection('events').insertOne(ev);
+    res.json(ev);
+  } catch { res.status(500).json({ error: 'Server error' }); }
+});
+
+app.put('/api/events/:id', async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  if (!db) return res.status(503).json({ error: 'DB not connected' });
+  try {
+    const { _id, ...update } = req.body;
+    const r = await db.collection('events').findOneAndUpdate(
+      { _id: req.params.id }, { $set: update }, { returnDocument: 'after' }
+    );
+    if (!r) return res.status(404).json({ error: 'Not found' });
+    res.json(r);
+  } catch { res.status(500).json({ error: 'Server error' }); }
+});
+
+app.delete('/api/events/:id', async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  if (!db) return res.status(503).json({ error: 'DB not connected' });
+  try {
+    await db.collection('events').deleteOne({ _id: req.params.id });
+    res.json({ ok: true });
+  } catch { res.status(500).json({ error: 'Server error' }); }
+});
+
+// ── Stats (single document) ────────────────────────────────────────────────
+app.get('/api/stats', async (_req, res) => {
+  try {
+    const stats = db ? await db.collection('stats').findOne({ _id: 'church' }) : null;
+    res.json(stats || { attendees: 402, youth: 43, children: 32, homeGroups: 7, ministries: 4 });
+  } catch { res.status(500).json({ error: 'Server error' }); }
+});
+
+app.put('/api/stats', async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  if (!db) return res.status(503).json({ error: 'DB not connected' });
+  try {
+    const { attendees, youth, children, homeGroups, ministries } = req.body;
+    await db.collection('stats').updateOne(
+      { _id: 'church' },
+      { $set: { attendees, youth, children, homeGroups, ministries } },
+      { upsert: true }
+    );
+    res.json({ ok: true, attendees, youth, children, homeGroups, ministries });
+  } catch { res.status(500).json({ error: 'Server error' }); }
+});
+
+// ── Home Groups CRUD ───────────────────────────────────────────────────────
+app.get('/api/homegroups', async (_req, res) => {
+  try {
+    const groups = db ? await db.collection('homegroups').find({}).sort({ city: 1 }).toArray() : [];
+    res.json(groups);
+  } catch { res.status(500).json({ error: 'Server error' }); }
+});
+
+app.post('/api/homegroups', async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  if (!db) return res.status(503).json({ error: 'DB not connected' });
+  try {
+    const g = { _id: 'hg-' + Date.now().toString(36), type: 'group', ...req.body };
+    await db.collection('homegroups').insertOne(g);
+    res.json(g);
+  } catch { res.status(500).json({ error: 'Server error' }); }
+});
+
+app.put('/api/homegroups/:id', async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  if (!db) return res.status(503).json({ error: 'DB not connected' });
+  try {
+    const { _id, ...update } = req.body;
+    const r = await db.collection('homegroups').findOneAndUpdate(
+      { _id: req.params.id }, { $set: update }, { returnDocument: 'after' }
+    );
+    if (!r) return res.status(404).json({ error: 'Not found' });
+    res.json(r);
+  } catch { res.status(500).json({ error: 'Server error' }); }
+});
+
+app.delete('/api/homegroups/:id', async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  if (!db) return res.status(503).json({ error: 'DB not connected' });
+  try {
+    await db.collection('homegroups').deleteOne({ _id: req.params.id });
+    res.json({ ok: true });
+  } catch { res.status(500).json({ error: 'Server error' }); }
+});
+
 // --- Share: send post directly to user's bot chat ---
 
 const APP_HOOK = {

@@ -208,3 +208,75 @@ export async function toggleAttendance(
   });
   return res.json();
 }
+
+// ── Events ──────────────────────────────────────────────────
+export async function fetchApiEvents(): Promise<any[]> {
+  try {
+    const res = await fetch(`${API_URL}/api/events`);
+    if (!res.ok) return [];
+    return res.json();
+  } catch { return []; }
+}
+export async function createEvent(secret: string, data: any): Promise<any> {
+  const res = await fetch(`${API_URL}/api/events`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+export async function updateEvent(secret: string, id: string, data: any): Promise<any> {
+  const res = await fetch(`${API_URL}/api/events/${id}`, {
+    method: 'PUT', headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+export async function deleteEvent(secret: string, id: string): Promise<void> {
+  await fetch(`${API_URL}/api/events/${id}`, {
+    method: 'DELETE', headers: { 'x-admin-secret': secret },
+  });
+}
+
+// ── Stats ───────────────────────────────────────────────────
+export async function fetchStats(): Promise<Record<string, number>> {
+  try {
+    const res = await fetch(`${API_URL}/api/stats`);
+    if (!res.ok) return {};
+    return res.json();
+  } catch { return {}; }
+}
+export async function updateStats(secret: string, data: Record<string, number>): Promise<any> {
+  const res = await fetch(`${API_URL}/api/stats`, {
+    method: 'PUT', headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+// ── Home Groups ─────────────────────────────────────────────
+export async function fetchApiHomeGroups(): Promise<any[]> {
+  try {
+    const res = await fetch(`${API_URL}/api/homegroups`);
+    if (!res.ok) return [];
+    return res.json();
+  } catch { return []; }
+}
+export async function createHomeGroup(secret: string, data: any): Promise<any> {
+  const res = await fetch(`${API_URL}/api/homegroups`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+export async function updateHomeGroup(secret: string, id: string, data: any): Promise<any> {
+  const res = await fetch(`${API_URL}/api/homegroups/${id}`, {
+    method: 'PUT', headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+export async function deleteHomeGroup(secret: string, id: string): Promise<void> {
+  await fetch(`${API_URL}/api/homegroups/${id}`, {
+    method: 'DELETE', headers: { 'x-admin-secret': secret },
+  });
+}
