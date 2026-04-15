@@ -190,8 +190,8 @@ export function AdminPage() {
   if (editingPost) {
     const canSave = !!editingPost.title.ru?.trim() && !!editingPost.body.ru?.trim();
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', paddingBottom: 100 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--border-light)', position: 'sticky', top: 0, background: 'var(--bg-primary)', zIndex: 10 }}>
+      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-primary)', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--border-light)', background: 'var(--bg-primary)', zIndex: 10, flexShrink: 0 }}>
           <button onClick={() => setEditingPost(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}><X size={22} color="var(--text-secondary)" /></button>
           <h2 style={{ fontSize: 17, fontWeight: 700 }}>{editingPost._id ? 'Редактировать пост' : 'Новый пост'}</h2>
           <button onClick={async () => {
@@ -213,7 +213,7 @@ export function AdminPage() {
             {savingPost ? '...' : 'Сохранить'}
           </button>
         </div>
-        <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' as any, padding: 16, display: 'flex', flexDirection: 'column', gap: 14, paddingBottom: 40 }}>
           {/* Date */}
           <div><label style={LABEL}>ДАТА</label>
             <input type="date" value={editingPost.date} onChange={e => setEditingPost({ ...editingPost, date: e.target.value })} style={INPUT} />
@@ -294,8 +294,8 @@ export function AdminPage() {
   if (editingEvent) {
     const canSave = !!editingEvent.title?.ru?.trim() && !!editingEvent.address?.trim();
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', paddingBottom: 100 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--border-light)', position: 'sticky', top: 0, background: 'var(--bg-primary)', zIndex: 10 }}>
+      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-primary)', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--border-light)', background: 'var(--bg-primary)', zIndex: 10, flexShrink: 0 }}>
           <button onClick={() => setEditingEvent(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}><X size={22} color="var(--text-secondary)" /></button>
           <h2 style={{ fontSize: 17, fontWeight: 700 }}>{editingEvent._id ? 'Редактировать событие' : 'Новое событие'}</h2>
           <button onClick={async () => {
@@ -317,7 +317,7 @@ export function AdminPage() {
             {savingEvent ? '...' : 'Сохранить'}
           </button>
         </div>
-        <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' as any, padding: 16, display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 40 }}>
           <div style={{ display: 'flex', gap: 10 }}>
             <div style={{ flex: 1 }}><label style={LABEL}>ДАТА (для сортировки)</label>
               <input type="date" value={editingEvent.sortDate || ''} onChange={e => setEditingEvent({ ...editingEvent, sortDate: e.target.value })} style={INPUT} />
@@ -374,8 +374,8 @@ export function AdminPage() {
   if (editingGroup) {
     const canSave = !!editingGroup.city?.trim() && !!editingGroup.address?.trim();
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', paddingBottom: 100 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--border-light)', position: 'sticky', top: 0, background: 'var(--bg-primary)', zIndex: 10 }}>
+      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-primary)', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--border-light)', background: 'var(--bg-primary)', zIndex: 10, flexShrink: 0 }}>
           <button onClick={() => setEditingGroup(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}><X size={22} color="var(--text-secondary)" /></button>
           <h2 style={{ fontSize: 17, fontWeight: 700 }}>{editingGroup._id ? 'Редактировать группу' : 'Новая группа'}</h2>
           <button onClick={async () => {
@@ -397,7 +397,7 @@ export function AdminPage() {
             {savingGroup ? '...' : 'Сохранить'}
           </button>
         </div>
-        <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' as any, padding: 16, display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 40 }}>
           <div><label style={LABEL}>ГОРОД *</label>
             <input type="text" value={editingGroup.city||''} onChange={e=>setEditingGroup({...editingGroup,city:e.target.value})} placeholder="Amsterdam" style={INPUT} />
           </div>
@@ -441,9 +441,9 @@ export function AdminPage() {
 
   // ── Main panel ───────────────────────────────────────────
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', paddingBottom: 80 }}>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-primary)', overflow: 'hidden' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--border-light)', position: 'sticky', top: 0, background: 'var(--bg-primary)', zIndex: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--border-light)', background: 'var(--bg-primary)', zIndex: 10, flexShrink: 0 }}>
         <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
           <ArrowLeft size={22} color="var(--text-secondary)" />
         </button>
@@ -454,7 +454,7 @@ export function AdminPage() {
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--border-light)', background: 'var(--bg-primary)', position: 'sticky', top: 51, zIndex: 9 }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--border-light)', background: 'var(--bg-primary)', zIndex: 9, flexShrink: 0 }}>
         {TABS.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)} style={{
             flex: 1, padding: '10px 4px', border: 'none', cursor: 'pointer', background: 'transparent',
@@ -468,7 +468,7 @@ export function AdminPage() {
         ))}
       </div>
 
-      <div style={{ padding: 16 }}>
+      <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' as any, padding: 16, paddingBottom: 40 }}>
         {/* ── POSTS ── */}
         {tab === 'posts' && (
           <>
