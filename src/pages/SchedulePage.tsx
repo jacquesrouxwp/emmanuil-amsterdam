@@ -351,23 +351,23 @@ export function SchedulePage() {
       {/* Services — side by side */}
       <div style={{ marginBottom: 20 }}>
         <h3 className="section-title" style={{ marginBottom: 10 }}>{t.schedule.services}</h3>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 6 }}>
           {services.map((s, i) => {
             const color = typeColors[s.type] || '#5E9ED6';
             return (
               <motion.div key={s.id} className="card" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} style={{ padding: 0, overflow: 'hidden', flex: 1, minWidth: 0 }}>
                 {s.brandName && (
-                  <div style={{ height: 64, background: s.brandGradient, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                  <div style={{ height: 50, background: s.brandGradient, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                     <div style={{ textAlign: 'center', color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.3)' }}>
                       {s.brandName.split('\n').map((line, li) => (
-                        <div key={li} style={{ fontSize: li === 0 ? 13 : 10, fontWeight: 800, letterSpacing: li === 0 ? 2 : 1.5, lineHeight: 1.3 }}>{line}</div>
+                        <div key={li} style={{ fontSize: li === 0 ? 11 : 9, fontWeight: 800, letterSpacing: li === 0 ? 1.5 : 1, lineHeight: 1.3 }}>{line}</div>
                       ))}
                     </div>
                     <button
                       onClick={(e) => { e.stopPropagation(); hapticFeedback('light'); openLink(`https://maps.google.com/?q=${encodeURIComponent(s.address)}`); }}
                       style={{
-                        position: 'absolute', top: 7, right: 7,
-                        width: 28, height: 28, borderRadius: 8,
+                        position: 'absolute', top: 5, right: 5,
+                        width: 22, height: 22, borderRadius: 6,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         background: 'rgba(255,255,255,0.18)',
                         border: '1px solid rgba(255,255,255,0.28)',
@@ -375,18 +375,18 @@ export function SchedulePage() {
                         backdropFilter: 'blur(4px)',
                       }}
                     >
-                      <Navigation size={13} color="#fff" />
+                      <Navigation size={10} color="#fff" />
                     </button>
                   </div>
                 )}
-                <div style={{ padding: '10px 10px 12px' }}>
-                  <h4 style={{ fontSize: 13, fontWeight: 600, marginBottom: 5 }}>{loc(s.title, lang)}</h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--text-secondary)' }}>
-                      <Clock size={11} color={color} />{loc(s.day, lang)}, {s.time}
+                <div style={{ padding: '8px 8px 10px' }}>
+                  <h4 style={{ fontSize: 11, fontWeight: 600, marginBottom: 4, lineHeight: 1.25 }}>{loc(s.title, lang)}</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, color: 'var(--text-secondary)' }}>
+                      <Clock size={9} color={color} />{loc(s.day, lang)}, {s.time}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--text-secondary)' }}>
-                      <MapPin size={11} color={color} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, color: 'var(--text-secondary)' }}>
+                      <MapPin size={9} color={color} />
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.address}</span>
                     </div>
                   </div>
