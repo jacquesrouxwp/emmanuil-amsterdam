@@ -33,7 +33,7 @@ const t = {
     },
     schedule: {
       title: 'Розклад', subtitle: 'Служіння та домашні групи',
-      services: 'Служіння', homeGroups: 'Домашні групи',
+      services: 'Служіння', homeGroups: 'Домашні групи', prayerMinistry: 'Молитовне служіння',
       howToGet: 'Як дістатися?', howToGetTitle: 'Як дістатися?',
       howToGetDesc: 'Якщо ви хочете приїхати, але вам нічим — напишіть одному з учасників або в загальній групі в Telegram, чи не буде у них місця в авто!',
       howToGetOk: 'Зрозуміло', willAttend: 'Буду', willAttendConfirm: '✓ Буду!', invite: 'Запросити',
@@ -91,7 +91,7 @@ const t = {
     },
     schedule: {
       title: 'Расписание', subtitle: 'Служения и домашние группы',
-      services: 'Служения', homeGroups: 'Домашние группы',
+      services: 'Служения', homeGroups: 'Домашние группы', prayerMinistry: 'Молитвенное служение',
       howToGet: 'Как добраться?', howToGetTitle: 'Как добраться?',
       howToGetDesc: 'Если вы хотите приехать, но вам не на чем — напишите одному из участников или в общую группу в Telegram, не будет ли у них места в авто!',
       howToGetOk: 'Понятно', willAttend: 'Буду', willAttendConfirm: '✓ Буду!', invite: 'Пригласить',
@@ -149,7 +149,7 @@ const t = {
     },
     schedule: {
       title: 'Schedule', subtitle: 'Services and home groups',
-      services: 'Services', homeGroups: 'Home Groups',
+      services: 'Services', homeGroups: 'Home Groups', prayerMinistry: 'Prayer Ministry',
       howToGet: 'How to get there?', howToGetTitle: 'How to get there?',
       howToGetDesc: 'If you want to come but have no ride — write to one of the members or in the Telegram group to ask if they have a spare seat in their car!',
       howToGetOk: 'Got it', willAttend: 'I\'ll be there', willAttendConfirm: '✓ I\'ll be there!', invite: 'Invite',
@@ -207,7 +207,7 @@ const t = {
     },
     schedule: {
       title: 'Schema', subtitle: 'Diensten en huisgroepen',
-      services: 'Diensten', homeGroups: 'Huisgroepen',
+      services: 'Diensten', homeGroups: 'Huisgroepen', prayerMinistry: 'Gebedsministry',
       howToGet: 'Hoe kom je er?', howToGetTitle: 'Hoe kom je er?',
       howToGetDesc: 'Als je wilt komen maar geen vervoer hebt — schrijf een van de deelnemers of in de Telegram-groep of er nog plek is in de auto!',
       howToGetOk: 'Begrepen', willAttend: 'Ik kom', willAttendConfirm: '✓ Ik kom!', invite: 'Uitnodigen',
@@ -265,7 +265,7 @@ const t = {
     },
     schedule: {
       title: 'Horario', subtitle: 'Servicios y grupos familiares',
-      services: 'Servicios', homeGroups: 'Grupos familiares',
+      services: 'Servicios', homeGroups: 'Grupos familiares', prayerMinistry: 'Ministerio de Oración',
       howToGet: '¿Cómo llegar?', howToGetTitle: '¿Cómo llegar?',
       howToGetDesc: '¡Si quieres venir pero no tienes transporte — escribe a uno de los miembros o en el grupo de Telegram para ver si tienen lugar en su auto!',
       howToGetOk: 'Entendido', willAttend: 'Asistiré', willAttendConfirm: '✓ ¡Asistiré!', invite: 'Invitar',

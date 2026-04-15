@@ -6,7 +6,7 @@ export interface ServiceItem {
   day: Localized;
   time: string;
   address: string;
-  type: 'service' | 'youth' | 'children' | 'group';
+  type: 'service' | 'youth' | 'children' | 'prayer' | 'group';
   leader?: string;
   phone?: string;
   city?: string;
@@ -127,9 +127,23 @@ export const homeGroups: ServiceItem[] = [
   },
 ];
 
+export const prayerMeetings: ServiceItem[] = [
+  {
+    id: 'pm-1',
+    title: { ua: 'Нічна молитва', ru: 'Ночная молитва', en: 'Night Prayer', nl: 'Nachtgebed', es: 'Oración nocturna' },
+    day: { ua: 'Уточнюється', ru: 'Уточняется', en: 'TBD', nl: 'Nader te bepalen', es: 'Por confirmar' },
+    time: '—',
+    address: 'Javastraat 118, Amsterdam',
+    type: 'prayer',
+    brandName: 'NIGHT\nPRAYER',
+    brandGradient: 'linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #2d2d6b 100%)',
+  },
+];
+
 export const typeColors: Record<string, string> = {
   service: '#5E9ED6',
   youth: '#7c4dff',
   children: '#4CAF82',
+  prayer: '#9B7FD4',
   group: '#9B7FD4',
 };
