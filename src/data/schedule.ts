@@ -37,16 +37,7 @@ export const services: ServiceItem[] = [
     brandName: 'EMMANUIL\nYOUTH',
     brandGradient: 'linear-gradient(135deg, #2d1b4e 0%, #4a2d7a 50%, #7c4dff 100%)',
   },
-  {
-    id: 'srv-3',
-    title: { ua: 'Дитяче служіння', ru: 'Детское служение', en: 'Children\'s Ministry', nl: 'Kinderdienst', es: 'Ministerio Infantil' },
-    day: { ua: 'Неділя', ru: 'Воскресенье', en: 'Sunday', nl: 'Zondag', es: 'Domingo' },
-    time: '17:00',
-    address: 'Javastraat 118, Amsterdam',
-    type: 'children',
-    brandName: 'EMMANUIL\nKIDS',
-    brandGradient: 'linear-gradient(135deg, #1a4a2e 0%, #2d7a4a 50%, #4CAF82 100%)',
-  },
+
 ];
 
 export const homeGroups: ServiceItem[] = [

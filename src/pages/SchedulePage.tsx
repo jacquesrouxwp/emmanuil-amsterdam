@@ -499,51 +499,75 @@ export function SchedulePage() {
         </div>
       </div>
 
-      {/* Prayer Ministry */}
+      {/* Prayer Ministry — same card format as home groups */}
       <div style={{ marginTop: 20 }}>
         <h3 className="section-title" style={{ marginBottom: 10 }}>{t.schedule.prayerMinistry}</h3>
-        <div style={{ display: 'flex', gap: 6 }}>
-          {prayerMeetings.map((s, i) => {
-            const color = typeColors[s.type] || '#9B7FD4';
-            return (
-              <motion.div key={s.id} className="card" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} style={{ padding: 0, overflow: 'hidden', flex: 1, minWidth: 0 }}>
-                {s.brandName && (
-                  <div style={{ height: 50, background: s.brandGradient, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                    <div style={{ textAlign: 'center', color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          {prayerMeetings.map((s, i) => (
+            <motion.div
+              key={s.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.04 }}
+            >
+              <div
+                className="card"
+                style={{
+                  padding: 0, overflow: 'hidden', width: '100%',
+                  background: s.brandGradient || 'linear-gradient(135deg, #0a0a1a 0%, #2d2d6b 100%)',
+                  position: 'relative',
+                  borderTop: 'none',
+                }}
+              >
+                <div style={{ padding: '12px 10px', position: 'relative', zIndex: 2 }}>
+                  {/* Brand name */}
+                  {s.brandName && (
+                    <div style={{ marginBottom: 6 }}>
                       {s.brandName.split('\n').map((line, li) => (
-                        <div key={li} style={{ fontSize: li === 0 ? 11 : 9, fontWeight: 800, letterSpacing: li === 0 ? 1.5 : 1, lineHeight: 1.3 }}>{line}</div>
+                        <div key={li} style={{
+                          fontSize: li === 0 ? 11 : 9, fontWeight: 800,
+                          letterSpacing: li === 0 ? 1.5 : 1, lineHeight: 1.3,
+                          color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.5)',
+                        }}>{line}</div>
                       ))}
                     </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); hapticFeedback('light'); openLink(`https://maps.google.com/?q=${encodeURIComponent(s.address)}`); }}
-                      style={{
-                        position: 'absolute', top: 5, right: 5,
-                        width: 22, height: 22, borderRadius: 6,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        background: 'rgba(255,255,255,0.15)',
-                        border: '1px solid rgba(255,255,255,0.25)',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <Navigation size={10} color="#fff" />
-                    </button>
+                  )}
+                  {/* Title */}
+                  <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 6, color: '#fff' }}>
+                    {loc(s.title, lang)}
+                  </h4>
+                  {/* Day & time */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'rgba(255,255,255,0.75)', marginBottom: 4 }}>
+                    <Clock size={11} color="rgba(255,255,255,0.75)" />
+                    {loc(s.day, lang)}{s.time !== '—' ? `, ${s.time}` : ''}
                   </div>
-                )}
-                <div style={{ padding: '8px 8px 10px' }}>
-                  <h4 style={{ fontSize: 11, fontWeight: 600, marginBottom: 4, lineHeight: 1.25 }}>{loc(s.title, lang)}</h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, color: 'var(--text-secondary)' }}>
-                      <Clock size={9} color={color} />{loc(s.day, lang)}, {s.time}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, color: 'var(--text-secondary)' }}>
-                      <MapPin size={9} color={color} />
+                  {/* Address */}
+                  {s.address && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'rgba(255,255,255,0.65)' }}>
+                      <MapPin size={11} color="rgba(255,255,255,0.65)" />
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.address}</span>
                     </div>
-                  </div>
+                  )}
                 </div>
-              </motion.div>
-            );
-          })}
+                {/* Navigation button */}
+                {s.address && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); hapticFeedback('light'); openLink(`https://maps.google.com/?q=${encodeURIComponent(s.address)}`); }}
+                    style={{
+                      position: 'absolute', top: 8, right: 8,
+                      width: 26, height: 26, borderRadius: 8,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'rgba(255,255,255,0.15)',
+                      border: '1px solid rgba(255,255,255,0.25)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <Navigation size={12} color="#fff" />
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
 
