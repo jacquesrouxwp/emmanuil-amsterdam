@@ -8,6 +8,7 @@ import {
   fetchApiEvents, createEvent, updateEvent, deleteEvent,
   fetchStats, updateStats,
   fetchApiHomeGroups, createHomeGroup, updateHomeGroup, deleteHomeGroup,
+  checkAdminAuth,
   type ApiPost,
 } from '@/lib/api';
 import { blogPosts } from '@/data/blog';
@@ -127,15 +128,32 @@ export function AdminPage() {
   async function tryAuth(s: string) {
     setLoading(true);
     try {
-      const res = await fetch('/api/posts', { headers: { 'x-admin-secret': s } });
-      if (res.ok) {
+      // Use real auth endpoint that requires the secret
+      const ok = await checkAdminAuth(s);
+      if (ok) {
         localStorage.setItem(ADMIN_SECRET_KEY, s);
         localStorage.setItem(ADMIN_MODE_KEY, 'true');
         setSecret(s); setAuthed(true);
-      } else { setAuthError('Неверный пароль'); }
+      } else {
+        setAuthError('Неверный пароль');
+      }
     } catch { setAuthError('Ошибка подключения'); }
     setLoading(false);
   }
+
+  // Re-verify saved secret on mount — kicks bad tokens out
+  useEffect(() => {
+    if (!authed || !secret) return;
+    checkAdminAuth(secret).then(ok => {
+      if (!ok) {
+        localStorage.removeItem(ADMIN_SECRET_KEY);
+        localStorage.removeItem(ADMIN_MODE_KEY);
+        setAuthed(false); setSecret('');
+        setAuthError('Сессия истекла, войдите снова');
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function logout() {
     localStorage.removeItem(ADMIN_SECRET_KEY);
@@ -187,7 +205,9 @@ export function AdminPage() {
                 setPosts(p => [c, ...p]);
               }
               setEditingPost(null);
-            } catch {}
+            } catch (err: any) {
+              window.alert('Ошибка сохранения: ' + (err?.message || 'unknown'));
+            }
             setSavingPost(false);
           }} disabled={savingPost || !canSave} style={{ ...BTN_GOLD, opacity: canSave ? 1 : 0.4 }}>
             {savingPost ? '...' : 'Сохранить'}
@@ -289,7 +309,9 @@ export function AdminPage() {
                 setEvents(e => [...e, c]);
               }
               setEditingEvent(null);
-            } catch {}
+            } catch (err: any) {
+              window.alert('Ошибка сохранения: ' + (err?.message || 'unknown'));
+            }
             setSavingEvent(false);
           }} disabled={savingEvent || !canSave} style={{ ...BTN_GOLD, opacity: canSave ? 1 : 0.4 }}>
             {savingEvent ? '...' : 'Сохранить'}
@@ -367,7 +389,9 @@ export function AdminPage() {
                 setGroups(g => [...g, c]);
               }
               setEditingGroup(null);
-            } catch {}
+            } catch (err: any) {
+              window.alert('Ошибка сохранения: ' + (err?.message || 'unknown'));
+            }
             setSavingGroup(false);
           }} disabled={savingGroup || !canSave} style={{ ...BTN_GOLD, opacity: canSave ? 1 : 0.4 }}>
             {savingGroup ? '...' : 'Сохранить'}
@@ -476,7 +500,16 @@ export function AdminPage() {
                       <button onClick={() => { setPostLang('ru'); setEditingPost({ ...post }); }} style={{ background: 'var(--bg-secondary)', border: 'none', borderRadius: 8, padding: '7px 8px', cursor: 'pointer' }}>
                         <Edit2 size={13} color="var(--text-secondary)" />
                       </button>
-                      <button onClick={async () => { if (!window.confirm('Удалить пост?')) return; await deletePost(secret, post._id); setPosts(p => p.filter(x => x._id !== post._id)); }}
+                      <button onClick={async () => {
+                        if (!window.confirm('Удалить пост?')) return;
+                        try {
+                          await deletePost(secret, post._id);
+                          setPosts(p => p.filter(x => x._id !== post._id));
+                          hapticFeedback('medium');
+                        } catch (err: any) {
+                          window.alert('Ошибка удаления: ' + (err?.message || 'unknown'));
+                        }
+                      }}
                         style={{ background: 'rgba(255,59,92,0.1)', border: 'none', borderRadius: 8, padding: '7px 8px', cursor: 'pointer' }}>
                         <Trash2 size={13} color="#ff3b5c" />
                       </button>
@@ -512,7 +545,16 @@ export function AdminPage() {
                       <button onClick={() => { setEventLang('ru'); setEditingEvent({ ...ev }); }} style={{ background: 'var(--bg-secondary)', border: 'none', borderRadius: 8, padding: '7px 8px', cursor: 'pointer' }}>
                         <Edit2 size={13} color="var(--text-secondary)" />
                       </button>
-                      <button onClick={async () => { if (!window.confirm('Удалить событие?')) return; await deleteEvent(secret, ev._id); setEvents(e => e.filter(x => x._id !== ev._id)); }}
+                      <button onClick={async () => {
+                        if (!window.confirm('Удалить событие?')) return;
+                        try {
+                          await deleteEvent(secret, ev._id);
+                          setEvents(e => e.filter(x => x._id !== ev._id));
+                          hapticFeedback('medium');
+                        } catch (err: any) {
+                          window.alert('Ошибка удаления: ' + (err?.message || 'unknown'));
+                        }
+                      }}
                         style={{ background: 'rgba(255,59,92,0.1)', border: 'none', borderRadius: 8, padding: '7px 8px', cursor: 'pointer' }}>
                         <Trash2 size={13} color="#ff3b5c" />
                       </button>
@@ -555,8 +597,13 @@ export function AdminPage() {
                       <button onClick={async () => {
                         if (!window.confirm('Удалить группу?')) return;
                         const id = g._id || g.id;
-                        await deleteHomeGroup(secret, id);
-                        setGroups(gs => gs.filter(x => (x._id || x.id) !== id));
+                        try {
+                          await deleteHomeGroup(secret, id);
+                          setGroups(gs => gs.filter(x => (x._id || x.id) !== id));
+                          hapticFeedback('medium');
+                        } catch (err: any) {
+                          window.alert('Ошибка удаления: ' + (err?.message || 'unknown'));
+                        }
                       }} style={{ background: 'rgba(255,59,92,0.1)', border: 'none', borderRadius: 8, padding: '7px 8px', cursor: 'pointer' }}>
                         <Trash2 size={13} color="#ff3b5c" />
                       </button>
@@ -587,9 +634,14 @@ export function AdminPage() {
             ))}
             <button onClick={async () => {
               setSavingStats(true); hapticFeedback('medium');
-              await updateStats(secret, stats);
-              setSavingStats(false); setStatsSaved(true);
-              setTimeout(() => setStatsSaved(false), 2000);
+              try {
+                await updateStats(secret, stats);
+                setStatsSaved(true);
+                setTimeout(() => setStatsSaved(false), 2000);
+              } catch (err: any) {
+                window.alert('Ошибка сохранения статистики: ' + (err?.message || 'unknown'));
+              }
+              setSavingStats(false);
             }} style={{ ...BTN_GOLD, padding: 14, fontSize: 15, marginTop: 4 }}>
               {statsSaved ? '✓ Сохранено' : savingStats ? 'Сохранение...' : 'Сохранить статистику'}
             </button>

@@ -306,6 +306,12 @@ function isAdmin(req) {
   return process.env.ADMIN_SECRET && secret === process.env.ADMIN_SECRET;
 }
 
+// Real auth check — returns 200 only when secret matches
+app.get('/api/admin/auth', (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  res.json({ ok: true });
+});
+
 app.get('/api/posts', async (_req, res) => {
   try {
     const posts = db

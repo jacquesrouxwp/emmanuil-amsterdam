@@ -155,10 +155,23 @@ export async function updatePost(secret: string, id: string, data: Partial<ApiPo
 }
 
 export async function deletePost(secret: string, id: string): Promise<void> {
-  await fetch(`${API_URL}/api/posts/${id}`, {
+  const res = await fetch(`${API_URL}/api/posts/${id}`, {
     method: 'DELETE',
     headers: { 'x-admin-secret': secret },
   });
+  if (!res.ok) throw new Error(`delete failed (${res.status})`);
+}
+
+// Real admin auth check — uses dedicated endpoint that requires secret
+export async function checkAdminAuth(secret: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_URL}/api/admin/auth`, {
+      headers: { 'x-admin-secret': secret },
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
 }
 
 export async function seedPosts(secret: string, posts: ApiPost[]): Promise<{ inserted: number }> {
@@ -222,6 +235,7 @@ export async function createEvent(secret: string, data: any): Promise<any> {
     method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
     body: JSON.stringify(data),
   });
+  if (!res.ok) throw new Error(`create event failed (${res.status})`);
   return res.json();
 }
 export async function updateEvent(secret: string, id: string, data: any): Promise<any> {
@@ -229,12 +243,14 @@ export async function updateEvent(secret: string, id: string, data: any): Promis
     method: 'PUT', headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
     body: JSON.stringify(data),
   });
+  if (!res.ok) throw new Error(`update event failed (${res.status})`);
   return res.json();
 }
 export async function deleteEvent(secret: string, id: string): Promise<void> {
-  await fetch(`${API_URL}/api/events/${id}`, {
+  const res = await fetch(`${API_URL}/api/events/${id}`, {
     method: 'DELETE', headers: { 'x-admin-secret': secret },
   });
+  if (!res.ok) throw new Error(`delete event failed (${res.status})`);
 }
 
 // ── Stats ───────────────────────────────────────────────────
@@ -250,6 +266,7 @@ export async function updateStats(secret: string, data: Record<string, number>):
     method: 'PUT', headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
     body: JSON.stringify(data),
   });
+  if (!res.ok) throw new Error(`update stats failed (${res.status})`);
   return res.json();
 }
 
@@ -266,6 +283,7 @@ export async function createHomeGroup(secret: string, data: any): Promise<any> {
     method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
     body: JSON.stringify(data),
   });
+  if (!res.ok) throw new Error(`create group failed (${res.status})`);
   return res.json();
 }
 export async function updateHomeGroup(secret: string, id: string, data: any): Promise<any> {
@@ -273,10 +291,12 @@ export async function updateHomeGroup(secret: string, id: string, data: any): Pr
     method: 'PUT', headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
     body: JSON.stringify(data),
   });
+  if (!res.ok) throw new Error(`update group failed (${res.status})`);
   return res.json();
 }
 export async function deleteHomeGroup(secret: string, id: string): Promise<void> {
-  await fetch(`${API_URL}/api/homegroups/${id}`, {
+  const res = await fetch(`${API_URL}/api/homegroups/${id}`, {
     method: 'DELETE', headers: { 'x-admin-secret': secret },
   });
+  if (!res.ok) throw new Error(`delete group failed (${res.status})`);
 }
