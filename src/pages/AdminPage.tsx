@@ -141,7 +141,8 @@ export function AdminPage() {
     localStorage.removeItem(ADMIN_SECRET_KEY);
     localStorage.removeItem(ADMIN_MODE_KEY);
     setAuthed(false); setSecret('');
-    navigate('/');
+    // Replace so back button won't land back on admin; full navigation forces remount
+    navigate('/more', { replace: true });
   }
 
   // ── Auth screen ──────────────────────────────────────────

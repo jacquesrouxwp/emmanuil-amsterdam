@@ -16,6 +16,9 @@ const stagger = {
   show: { transition: { staggerChildren: 0.06 } },
 };
 
+const TAP_TARGET = 5;      // taps to unlock
+const TAP_WINDOW = 1500;   // ms — time between taps before reset
+
 export function MorePage() {
   const navigate = useNavigate();
   const t = useT();
@@ -23,36 +26,67 @@ export function MorePage() {
   // ── Admin tap counter — persists across renders via refs ──────────────────
   const tapCount = useRef(0);
   const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [tapProgress, setTapProgress] = useState(0); // triggers re-render for visual feedback
 
-  // ── Admin mode state — read from localStorage ─────────────────────────────
-  const [isAdminMode, setIsAdminMode] = useState(() => {
-    return localStorage.getItem(ADMIN_MODE_KEY) === 'true';
-  });
+  // ── Admin mode state — read from localStorage on every mount ──────────────
+  const [isAdminMode, setIsAdminMode] = useState(
+    () => localStorage.getItem(ADMIN_MODE_KEY) === 'true',
+  );
 
-  // Keep in sync if AdminPage activates/deactivates admin mode in another tab
+  // Reset tap counter + re-read admin mode every mount (fresh state)
   useEffect(() => {
+    tapCount.current = 0;
+    setTapProgress(0);
+    setIsAdminMode(localStorage.getItem(ADMIN_MODE_KEY) === 'true');
+
+    // Cross-tab sync
     const onStorage = (e: StorageEvent) => {
-      if (e.key === ADMIN_MODE_KEY) setIsAdminMode(e.newValue === 'true');
+      if (e.key === ADMIN_MODE_KEY) {
+        setIsAdminMode(e.newValue === 'true');
+      }
     };
+    // Same-tab sync (return from AdminPage)
+    const onFocus = () => {
+      setIsAdminMode(localStorage.getItem(ADMIN_MODE_KEY) === 'true');
+    };
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') onFocus();
+    };
+
     window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, []);
-
-  // Re-check on focus (same tab, came back from AdminPage)
-  useEffect(() => {
-    const onFocus = () => setIsAdminMode(localStorage.getItem(ADMIN_MODE_KEY) === 'true');
     window.addEventListener('focus', onFocus);
-    return () => window.removeEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVisible);
+
+    return () => {
+      if (tapTimer.current) clearTimeout(tapTimer.current);
+      tapTimer.current = null;
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, []);
 
-  const handleVersionTap = () => {
+  const registerTap = () => {
     tapCount.current += 1;
+    setTapProgress(tapCount.current);
+    hapticFeedback('light');
+
     if (tapTimer.current) clearTimeout(tapTimer.current);
-    tapTimer.current = setTimeout(() => { tapCount.current = 0; }, 800);
-    if (tapCount.current >= 5) {
+    tapTimer.current = setTimeout(() => {
       tapCount.current = 0;
+      setTapProgress(0);
+    }, TAP_WINDOW);
+
+    if (tapCount.current >= TAP_TARGET) {
+      if (tapTimer.current) {
+        clearTimeout(tapTimer.current);
+        tapTimer.current = null;
+      }
+      tapCount.current = 0;
+      setTapProgress(0);
       hapticFeedback('medium');
-      navigate('/admin');
+      // Small delay so user sees the final haptic before nav
+      setTimeout(() => navigate('/admin'), 50);
     }
   };
 
@@ -63,7 +97,10 @@ export function MorePage() {
 
   return (
     <motion.div className="page" variants={stagger} initial="hidden" animate="show">
-      <motion.div variants={fadeUp} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <motion.div
+        variants={fadeUp}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+      >
         <h1 className="page-title" style={{ margin: 0 }}>{t.more.title}</h1>
         {isAdminMode && (
           <span style={{
@@ -182,16 +219,54 @@ export function MorePage() {
         </button>
       </motion.div>
 
-      {/* Version footer — 5 quick taps to open admin */}
-      <motion.div variants={fadeUp} style={{ textAlign: 'center', padding: '28px 0 16px', color: 'var(--text-tertiary)' }}>
+      {/* Version footer — 5 quick taps on the tap zone to open admin */}
+      <motion.div
+        variants={fadeUp}
+        style={{ textAlign: 'center', padding: '28px 0 16px', color: 'var(--text-tertiary)' }}
+      >
         <Info size={16} style={{ marginBottom: 4, opacity: 0.5 }} />
         <p style={{ fontSize: 12 }}>Emmanuil Amsterdam v1.0.0</p>
-        <p
-          style={{ fontSize: 11, marginTop: 2, userSelect: 'none' }}
-          onClick={handleVersionTap}
+
+        {/* Entire tap zone — use pointerDown for reliable mobile touch */}
+        <div
+          onPointerDown={(e) => { e.preventDefault(); registerTap(); }}
+          style={{
+            display: 'inline-block',
+            marginTop: 2,
+            padding: '8px 14px',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            WebkitTapHighlightColor: 'transparent',
+            touchAction: 'manipulation',
+            cursor: 'pointer',
+          }}
         >
-          {t.more.version}
-        </p>
+          <p style={{ fontSize: 11, margin: 0 }}>{t.more.version}</p>
+          {/* Progress dots — appear after 2nd tap */}
+          {tapProgress > 0 && (
+            <div style={{
+              display: 'flex',
+              gap: 4,
+              justifyContent: 'center',
+              marginTop: 4,
+              opacity: tapProgress >= 2 ? 1 : 0,
+              transition: 'opacity 0.15s',
+            }}>
+              {Array.from({ length: TAP_TARGET }).map((_, i) => (
+                <span
+                  key={i}
+                  style={{
+                    width: 5,
+                    height: 5,
+                    borderRadius: '50%',
+                    background: i < tapProgress ? '#C9A96E' : 'rgba(255,255,255,0.15)',
+                    transition: 'background 0.1s',
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </motion.div>
     </motion.div>
   );
