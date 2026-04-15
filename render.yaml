@@ -9,8 +9,8 @@ services:
       - key: NODE_ENV
         value: production
       - key: BOT_TOKEN
-        value: "8612275134:AAGLNpLaZfwsYViazsO2XMUVyVeMtQKXXrg"
+        sync: false
       - key: MONGODB_URI
-        value: "mongodb+srv://emmanuil:cLrqTaNwGehZZ0ZP@cluster0.bvwryhq.mongodb.net/emmanuil?appName=Cluster0"
+        sync: false
       - key: ADMIN_SECRET
-        value: "emmanuil2025admin"
+        sync: false
