@@ -255,11 +255,11 @@ function getLiked(): Set<string> { try { return new Set(JSON.parse(localStorage.
 function setLiked(s: Set<string>) { localStorage.setItem(LIKED_KEY, JSON.stringify([...s])); }
 
 const TAG_LABELS: Record<string, Record<BlogTag | 'all', string>> = {
-  ua: { all: 'Всі', general: 'Загальне', youth: 'Молодь' },
-  ru: { all: 'Все', general: 'Общее', youth: 'Молодёжь' },
-  en: { all: 'All', general: 'General', youth: 'Youth' },
-  nl: { all: 'Alle', general: 'Algemeen', youth: 'Jongeren' },
-  es: { all: 'Todo', general: 'General', youth: 'Jóvenes' },
+  ua: { all: 'Всі', general: 'Загальне', youth: 'Молодь', recordings: 'Записи' },
+  ru: { all: 'Все', general: 'Общее', youth: 'Молодёжь', recordings: 'Записи' },
+  en: { all: 'All', general: 'General', youth: 'Youth', recordings: 'Recordings' },
+  nl: { all: 'Alle', general: 'Algemeen', youth: 'Jongeren', recordings: 'Opnames' },
+  es: { all: 'Todo', general: 'General', youth: 'Jóvenes', recordings: 'Grabaciones' },
 };
 
 const COMMENT_LABELS: Record<string, { placeholder: string; comments: string; noComments: string }> = {
@@ -425,7 +425,7 @@ export function BlogFeed({ title }: { title: string }) {
 
       {/* Tag filter pills */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 14, overflowX: 'auto', paddingBottom: 2 }}>
-        {(['all', 'general', 'youth'] as const).map((tag) => {
+        {(['all', 'general', 'youth', 'recordings'] as const).map((tag) => {
           const active = activeTag === tag;
           return (
             <button

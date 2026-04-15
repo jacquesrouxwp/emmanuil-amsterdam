@@ -1,6 +1,6 @@
 import type { Localized } from '@/i18n/translations';
 
-export type BlogTag = 'general' | 'youth';
+export type BlogTag = 'general' | 'youth' | 'recordings';
 
 export interface BlogPost {
   id: string;
@@ -38,7 +38,7 @@ export const blogPosts: BlogPost[] = [
   },
   {
     id: 'blog-picnic-2026-07-06',
-    date: '2026-07-06',
+    date: '2026-04-06',
     tags: ['general'],
     photos: [
       'https://i.ibb.co/WvMWFRLG/image.jpg',
