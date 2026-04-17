@@ -52,29 +52,46 @@ export function openTelegramLink(url: string) {
 }
 
 export function openLink(url: string) {
-  tg?.openLink(url);
+  if (tg) {
+    tg.openLink(url);
+  } else {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
 }
 
 export function shareUrl(url: string, text?: string) {
-  const shareLink = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text || '')}`;
-  tg?.openTelegramLink(shareLink);
+  if (tg) {
+    const shareLink = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text || '')}`;
+    tg.openTelegramLink(shareLink);
+  } else if (navigator.share) {
+    navigator.share({ url, text }).catch(() => {});
+  } else {
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text || '')}`, '_blank', 'noopener,noreferrer');
+  }
+}
+
+function applyTheme(isDark: boolean) {
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
 }
 
 function applyTelegramTheme() {
-  if (!tg?.themeParams) return;
-  const root = document.documentElement;
-  const tp = tg.themeParams;
-
-  if (tp.bg_color) root.style.setProperty('--tg-bg', tp.bg_color);
-  if (tp.text_color) root.style.setProperty('--tg-text', tp.text_color);
-  if (tp.hint_color) root.style.setProperty('--tg-hint', tp.hint_color);
-  if (tp.link_color) root.style.setProperty('--tg-link', tp.link_color);
-  if (tp.button_color) root.style.setProperty('--tg-button', tp.button_color);
-  if (tp.button_text_color) root.style.setProperty('--tg-button-text', tp.button_text_color);
-  if (tp.secondary_bg_color) root.style.setProperty('--tg-secondary-bg', tp.secondary_bg_color);
-
-  const isDark = tg.colorScheme === 'dark';
-  root.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  if (tg?.themeParams) {
+    const root = document.documentElement;
+    const tp = tg.themeParams;
+    if (tp.bg_color) root.style.setProperty('--tg-bg', tp.bg_color);
+    if (tp.text_color) root.style.setProperty('--tg-text', tp.text_color);
+    if (tp.hint_color) root.style.setProperty('--tg-hint', tp.hint_color);
+    if (tp.link_color) root.style.setProperty('--tg-link', tp.link_color);
+    if (tp.button_color) root.style.setProperty('--tg-button', tp.button_color);
+    if (tp.button_text_color) root.style.setProperty('--tg-button-text', tp.button_text_color);
+    if (tp.secondary_bg_color) root.style.setProperty('--tg-secondary-bg', tp.secondary_bg_color);
+    applyTheme(tg.colorScheme === 'dark');
+  } else {
+    // Web browser: use system preference
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    applyTheme(mq.matches);
+    mq.addEventListener('change', (e) => applyTheme(e.matches));
+  }
 }
 
 export function isTelegramEnv(): boolean {

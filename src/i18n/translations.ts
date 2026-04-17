@@ -18,7 +18,7 @@ export function useLang(): Lang {
 
 const t = {
   ua: {
-    nav: { home: 'Головна', schedule: 'Розклад', events: 'Події', donate: 'Пожертва', more: 'Ще' },
+    nav: { home: 'Головна', schedule: 'Розклад', events: 'Події', donate: 'Пожертва', more: 'Церква' },
     home: {
       greetingMorning: 'Доброго ранку', greetingDay: 'Добрий день', greetingEvening: 'Добрий вечір',
       subtitle: 'Міні-апп усіх важливих подій церкви',
@@ -53,7 +53,7 @@ const t = {
       gospel: 'Євангеліє по всьому світу', gospelDesc: 'Ми віримо, що Євангеліє буде поширене по всьому світу, як обіцяє Писання. У нашій церкві є перекладачі з багатьох іноземних мов, а також сурдоперекладачі — ті, хто служать жестовою мовою для глухих та глухонімих людей. Ніхто не залишиться поза досяжністю Слова Божого.',
     },
     contacts: { title: 'Контакти', subtitle: 'Зв\'яжіться з нами', pastor: 'Пастор', socials: 'Соцмережі' },
-    more: { title: 'Ще', aboutChurch: 'Про церкву', contacts: 'Контакти', volunteer: 'Записатися у служіння', share: 'Поділитися додатком', version: 'Створено з любов\'ю та вірою', language: 'Мова', bible: 'Біблія' },
+    more: { title: 'Церква', aboutChurch: 'Про церкву', contacts: 'Контакти', volunteer: 'Записатися у служіння', share: 'Поділитися додатком', version: 'Створено з любов\'ю та вірою', language: 'Мова', bible: 'Біблія' },
     bible: { title: 'Біблія', oldTestament: 'Старий Заповіт', newTestament: 'Новий Заповіт', chapter: 'Розділ', translation: 'Синодальний переклад', shareVerse: 'Поділитися', tapToShare: 'Натисніть на вірш' },
     person: { write: 'Написати', call: 'Зателефонувати' },
     volunteer: {
@@ -76,7 +76,7 @@ const t = {
     guest: 'Гість',
   },
   ru: {
-    nav: { home: 'Главная', schedule: 'Расписание', events: 'События', donate: 'Пожертвование', more: 'Ещё' },
+    nav: { home: 'Главная', schedule: 'Расписание', events: 'События', donate: 'Пожертвование', more: 'Церковь' },
     home: {
       greetingMorning: 'Доброе утро', greetingDay: 'Добрый день', greetingEvening: 'Добрый вечер',
       subtitle: 'Мини-апп всех важных событий церкви',
@@ -111,7 +111,7 @@ const t = {
       gospel: 'Евангелие по всему миру', gospelDesc: 'Мы верим, что Евангелие будет распространено по всему миру, как обещает Писание. В нашей церкви есть переводчики со многих иностранных языков, а также сурдопереводчики — те, кто служат языком жестов для глухих и глухонемых людей. Никто не останется вне досягаемости Слова Божьего.',
     },
     contacts: { title: 'Контакты', subtitle: 'Свяжитесь с нами', pastor: 'Пастор', socials: 'Соцсети' },
-    more: { title: 'Ещё', aboutChurch: 'О церкви', contacts: 'Контакты', volunteer: 'Записаться в служение', share: 'Поделиться приложением', version: 'Создано с любовью и верой', language: 'Язык', bible: 'Библия' },
+    more: { title: 'Церковь', aboutChurch: 'О церкви', contacts: 'Контакты', volunteer: 'Записаться в служение', share: 'Поделиться приложением', version: 'Создано с любовью и верой', language: 'Язык', bible: 'Библия' },
     bible: { title: 'Библия', oldTestament: 'Ветхий Завет', newTestament: 'Новый Завет', chapter: 'Глава', translation: 'Синодальный перевод', shareVerse: 'Поделиться', tapToShare: 'Нажмите на стих' },
     person: { write: 'Написать', call: 'Позвонить' },
     volunteer: {
@@ -134,7 +134,7 @@ const t = {
     guest: 'Гость',
   },
   en: {
-    nav: { home: 'Home', schedule: 'Schedule', events: 'Events', donate: 'Donate', more: 'More' },
+    nav: { home: 'Home', schedule: 'Schedule', events: 'Events', donate: 'Donate', more: 'Church' },
     home: {
       greetingMorning: 'Good morning', greetingDay: 'Good afternoon', greetingEvening: 'Good evening',
       subtitle: 'Mini-app for all important church events',
@@ -169,7 +169,7 @@ const t = {
       gospel: 'The Gospel to All the World', gospelDesc: 'We believe the Gospel will be spread throughout the whole world, as Scripture promises. Our church has translators from many foreign languages, as well as sign language interpreters who serve deaf and deaf-mute people. No one will be beyond the reach of God\'s Word.',
     },
     contacts: { title: 'Contacts', subtitle: 'Get in touch', pastor: 'Pastor', socials: 'Social media' },
-    more: { title: 'More', aboutChurch: 'About church', contacts: 'Contacts', volunteer: 'Join a ministry', share: 'Share the app', version: 'Made with love and faith', language: 'Language', bible: 'Bible' },
+    more: { title: 'Church', aboutChurch: 'About church', contacts: 'Contacts', volunteer: 'Join a ministry', share: 'Share the app', version: 'Made with love and faith', language: 'Language', bible: 'Bible' },
     bible: { title: 'Bible', oldTestament: 'Old Testament', newTestament: 'New Testament', chapter: 'Chapter', translation: 'Synodal Translation (Russian)', shareVerse: 'Share', tapToShare: 'Tap a verse to share' },
     person: { write: 'Message', call: 'Call' },
     volunteer: {
@@ -192,7 +192,7 @@ const t = {
     guest: 'Guest',
   },
   nl: {
-    nav: { home: 'Home', schedule: 'Schema', events: 'Agenda', donate: 'Donatie', more: 'Meer' },
+    nav: { home: 'Home', schedule: 'Schema', events: 'Agenda', donate: 'Donatie', more: 'Kerk' },
     home: {
       greetingMorning: 'Goedemorgen', greetingDay: 'Goedemiddag', greetingEvening: 'Goedenavond',
       subtitle: 'Mini-app voor alle belangrijke kerkgebeurtenissen',
@@ -227,7 +227,7 @@ const t = {
       gospel: 'Het Evangelie naar de hele wereld', gospelDesc: 'Wij geloven dat het Evangelie over de hele wereld zal worden verspreid, zoals de Schrift belooft. Onze kerk heeft tolken van vele vreemde talen, evenals gebarentaaltolken die doven en slechthorenden bedienen. Niemand zal buiten het bereik van Gods Woord blijven.',
     },
     contacts: { title: 'Contact', subtitle: 'Neem contact op', pastor: 'Pastor', socials: 'Sociale media' },
-    more: { title: 'Meer', aboutChurch: 'Over de kerk', contacts: 'Contact', volunteer: 'Word vrijwilliger', share: 'Deel de app', version: 'Gemaakt met liefde en geloof', language: 'Taal', bible: 'Bijbel' },
+    more: { title: 'Kerk', aboutChurch: 'Over de kerk', contacts: 'Contact', volunteer: 'Word vrijwilliger', share: 'Deel de app', version: 'Gemaakt met liefde en geloof', language: 'Taal', bible: 'Bijbel' },
     bible: { title: 'Bijbel', oldTestament: 'Oude Testament', newTestament: 'Nieuwe Testament', chapter: 'Hoofdstuk', translation: 'Synodale vertaling (Russisch)', shareVerse: 'Delen', tapToShare: 'Tik op een vers' },
     person: { write: 'Bericht', call: 'Bellen' },
     volunteer: {
@@ -250,7 +250,7 @@ const t = {
     guest: 'Gast',
   },
   es: {
-    nav: { home: 'Inicio', schedule: 'Horario', events: 'Eventos', donate: 'Donación', more: 'Más' },
+    nav: { home: 'Inicio', schedule: 'Horario', events: 'Eventos', donate: 'Donación', more: 'Iglesia' },
     home: {
       greetingMorning: 'Buenos días', greetingDay: 'Buenas tardes', greetingEvening: 'Buenas noches',
       subtitle: 'Mini-app de todos los eventos importantes de la iglesia',
@@ -285,7 +285,7 @@ const t = {
       gospel: 'El Evangelio al mundo entero', gospelDesc: 'Creemos que el Evangelio se extenderá por todo el mundo, como promete la Escritura. Nuestra iglesia cuenta con intérpretes de muchos idiomas extranjeros, así como intérpretes de lengua de señas para personas sordas. Nadie quedará fuera del alcance de la Palabra de Dios.',
     },
     contacts: { title: 'Contactos', subtitle: 'Contáctenos', pastor: 'Pastor', socials: 'Redes sociales' },
-    more: { title: 'Más', aboutChurch: 'Sobre la iglesia', contacts: 'Contactos', volunteer: 'Unirse al ministerio', share: 'Compartir la app', version: 'Hecho con amor y fe', language: 'Idioma', bible: 'Biblia' },
+    more: { title: 'Iglesia', aboutChurch: 'Sobre la iglesia', contacts: 'Contactos', volunteer: 'Unirse al ministerio', share: 'Compartir la app', version: 'Hecho con amor y fe', language: 'Idioma', bible: 'Biblia' },
     bible: { title: 'Biblia', oldTestament: 'Antiguo Testamento', newTestament: 'Nuevo Testamento', chapter: 'Capítulo', translation: 'Traducción Sinodal (Ruso)', shareVerse: 'Compartir', tapToShare: 'Toca un versículo' },
     person: { write: 'Mensaje', call: 'Llamar' },
     volunteer: {

@@ -616,3 +616,284 @@ img {
 .animate-in {
   animation: fadeInUp 0.4s ease-out;
 }
+
+/* ================================================================
+   DESKTOP MODE  (class added to <body> by App.tsx on screens ≥900px)
+   ================================================================ */
+
+body.desktop-mode {
+  position: static;
+  height: auto;
+  overflow: auto;
+  overscroll-behavior: auto;
+}
+
+body.desktop-mode #root {
+  height: auto;
+  overflow: visible;
+  flex-direction: row;
+}
+
+/* Shell */
+.desktop-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────── */
+.desktop-sidebar {
+  width: 272px;
+  min-width: 272px;
+  height: 100vh;
+  position: fixed;
+  left: 0; top: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border-right: 1px solid var(--border);
+  z-index: 100;
+  overflow: hidden;
+}
+
+/* brand header */
+.desktop-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 28px 22px 22px;
+  background: linear-gradient(160deg, #1a3a5c 0%, #1E3A5F 40%, #122840 100%);
+  flex-shrink: 0;
+}
+
+.desktop-brand-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+
+.desktop-brand-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+
+.desktop-brand-sub {
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+  margin-top: 1px;
+}
+
+/* nav */
+.desktop-nav {
+  padding: 16px 12px 8px;
+  flex: 0 0 auto;
+}
+
+.desktop-nav-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  padding: 0 10px;
+  margin-bottom: 6px;
+}
+
+.desktop-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 10px;
+  margin-bottom: 2px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  transition: background 0.15s, color 0.15s;
+}
+
+.desktop-nav-item:hover {
+  background: var(--bg-secondary);
+  color: var(--text);
+}
+
+.desktop-nav-item--active {
+  background: var(--primary-bg) !important;
+  color: var(--primary) !important;
+  font-weight: 600;
+}
+
+/* bottom controls */
+.desktop-sidebar-bottom {
+  padding: 12px 14px 20px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.desktop-lang-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-secondary);
+  transition: background 0.15s;
+}
+
+.desktop-lang-btn:hover {
+  background: var(--bg-input);
+}
+
+.desktop-lang-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-bg);
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+
+.desktop-lang-dropdown {
+  position: absolute;
+  bottom: 110%;
+  left: 0;
+  right: 0;
+  background: var(--bg-elevated);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  z-index: 200;
+}
+
+.desktop-lang-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  width: 100%;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 400;
+  transition: background 0.12s;
+}
+
+.desktop-lang-option:hover {
+  background: var(--bg-secondary);
+}
+
+.desktop-lang-option--active {
+  background: var(--primary-bg);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.desktop-tg-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #1a3a5c 0%, #2d5a8e 100%);
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: opacity 0.15s;
+}
+
+.desktop-tg-btn:hover {
+  opacity: 0.88;
+}
+
+/* ── Main content area ───────────────────────────────────────── */
+.desktop-main {
+  margin-left: 272px;
+  flex: 1;
+  min-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.desktop-content {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 44px 40px 80px;
+}
+
+/* ── Page overrides on desktop ───────────────────────────────── */
+body.desktop-mode .page {
+  padding: 0;
+  overflow: visible;
+  max-width: 100%;
+  -webkit-overflow-scrolling: auto;
+}
+
+body.desktop-mode .page-title {
+  font-size: 32px;
+  letter-spacing: -0.8px;
+}
+
+body.desktop-mode .page-subtitle {
+  font-size: 15px;
+  margin-bottom: 28px;
+}
+
+/* Cards hover on desktop */
+body.desktop-mode .card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+body.desktop-mode .card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Two-column grids where applicable */
+body.desktop-mode .desktop-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+body.desktop-mode .desktop-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
+}
+
+/* Scrollbar (subtle) on desktop */
+body.desktop-mode ::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+body.desktop-mode ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+body.desktop-mode ::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 100px;
+}
+
+body.desktop-mode ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
