@@ -223,7 +223,7 @@ export function WorldPage() {
             width={dimensions.w}
             height={dimensions.h}
             // Earth texture
-            globeImageUrl="//unpkg.com/three-globe/example/img/earth-dark.jpg"
+            globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
             bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
             backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
             // Atmosphere glow
