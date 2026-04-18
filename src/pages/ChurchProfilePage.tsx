@@ -106,7 +106,7 @@ export function ChurchProfilePage() {
             onClick={() => {
               hapticFeedback('light');
               shareUrl(
-                `https://emmanuil-amsterdam.onrender.com/church/${church.id}`,
+                `${window.location.origin}/church/${church.id}`,
                 church.name,
               );
             }}

@@ -301,15 +301,43 @@ app.post('/api/volunteer', async (req, res) => {
 
 // --- Posts CRUD ---
 
+// Returns churchId if secret matches any church admin, null otherwise.
+// - Global ADMIN_SECRET (env) → founder / super-admin, full access to all churches
+// - Per-church adminSecret in churches collection → that church only
+async function adminChurchId(req) {
+  const secret = req.headers['x-admin-secret'] || req.query.secret;
+  if (!secret) return null;
+  // Global/founder admin
+  if (process.env.ADMIN_SECRET && secret === process.env.ADMIN_SECRET) {
+    return '*'; // wildcard = all churches
+  }
+  // Per-church admin
+  if (!db) return null;
+  const church = await db.collection('churches').findOne({ adminSecret: secret });
+  return church ? church.slug : null;
+}
+
+// Legacy sync check — kept for endpoints that don't need churchId scope.
 function isAdmin(req) {
   const secret = req.headers['x-admin-secret'] || req.query.secret;
   return process.env.ADMIN_SECRET && secret === process.env.ADMIN_SECRET;
 }
 
-// Real auth check — returns 200 only when secret matches
-app.get('/api/admin/auth', (req, res) => {
-  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
-  res.json({ ok: true });
+// Checks if caller can mutate a post belonging to the given churchId.
+// Global admin ('*') can mutate any; per-church admin only their own.
+function canMutatePost(callerChurchId, postChurchId) {
+  if (!callerChurchId) return false;
+  if (callerChurchId === '*') return true;
+  // Treat legacy posts without churchId as belonging to founder (emmanuil-amsterdam)
+  const effective = postChurchId || 'emmanuil-amsterdam';
+  return callerChurchId === effective;
+}
+
+// Real auth check — returns 200 + caller's churchId when secret matches
+app.get('/api/admin/auth', async (req, res) => {
+  const callerChurch = await adminChurchId(req);
+  if (!callerChurch) return res.status(403).json({ error: 'Forbidden' });
+  res.json({ ok: true, churchId: callerChurch, isGlobal: callerChurch === '*' });
 });
 
 app.get('/api/posts', async (req, res) => {
@@ -338,15 +366,21 @@ app.get('/api/posts', async (req, res) => {
 });
 
 app.post('/api/posts', async (req, res) => {
-  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  const callerChurch = await adminChurchId(req);
+  if (!callerChurch) return res.status(403).json({ error: 'Forbidden' });
   try {
     const { title, body, photos, videos, tags, date } = req.body;
     if (!title || !body) return res.status(400).json({ error: 'title and body required' });
     if (!db) return res.status(503).json({ error: 'DB not connected' });
 
+    // Post is created in the admin's church; global admin can specify any churchId.
+    const postChurchId = callerChurch === '*'
+      ? (req.body.churchId || process.env.CHURCH_ID || 'emmanuil-amsterdam')
+      : callerChurch;
+
     const post = {
       _id: 'blog-' + Date.now().toString(36),
-      churchId: req.body.churchId || process.env.CHURCH_ID || 'emmanuil-amsterdam',
+      churchId: postChurchId,
       date: date || new Date().toISOString().slice(0, 10),
       tags: tags || ['general'],
       photos: photos || [],
@@ -365,10 +399,18 @@ app.post('/api/posts', async (req, res) => {
 });
 
 app.put('/api/posts/:id', async (req, res) => {
-  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  const callerChurch = await adminChurchId(req);
+  if (!callerChurch) return res.status(403).json({ error: 'Forbidden' });
   try {
     const { title, body, photos, videos, tags, date } = req.body;
     if (!db) return res.status(503).json({ error: 'DB not connected' });
+
+    // Verify post belongs to caller's church (or caller is global admin).
+    const existing = await db.collection('posts').findOne({ _id: req.params.id });
+    if (!existing) return res.status(404).json({ error: 'Post not found' });
+    if (!canMutatePost(callerChurch, existing.churchId)) {
+      return res.status(403).json({ error: 'Not your church\'s post' });
+    }
 
     const update = {};
     if (title) update.title = title;
@@ -384,7 +426,6 @@ app.put('/api/posts/:id', async (req, res) => {
       { $set: update },
       { returnDocument: 'after' }
     );
-    if (!result) return res.status(404).json({ error: 'Post not found' });
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
@@ -392,9 +433,15 @@ app.put('/api/posts/:id', async (req, res) => {
 });
 
 app.delete('/api/posts/:id', async (req, res) => {
-  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  const callerChurch = await adminChurchId(req);
+  if (!callerChurch) return res.status(403).json({ error: 'Forbidden' });
   try {
     if (!db) return res.status(503).json({ error: 'DB not connected' });
+    const existing = await db.collection('posts').findOne({ _id: req.params.id });
+    if (!existing) return res.json({ ok: true }); // idempotent
+    if (!canMutatePost(callerChurch, existing.churchId)) {
+      return res.status(403).json({ error: 'Not your church\'s post' });
+    }
     await db.collection('posts').deleteOne({ _id: req.params.id });
     res.json({ ok: true });
   } catch (err) {
@@ -482,6 +529,241 @@ app.put('/api/stats', async (req, res) => {
     );
     res.json({ ok: true, attendees, youth, children, homeGroups, ministries });
   } catch { res.status(500).json({ error: 'Server error' }); }
+});
+
+// ── Churches (public directory) ────────────────────────────────────────────
+// GET /api/churches → list (public). Admin secret is never returned.
+app.get('/api/churches', async (_req, res) => {
+  try {
+    if (!db) return res.json([]);
+    const churches = await db.collection('churches')
+      .find({}, { projection: { adminSecret: 0 } })
+      .sort({ createdAt: 1 })
+      .toArray();
+    res.json(churches);
+  } catch {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /api/churches/:slug → single church
+app.get('/api/churches/:slug', async (req, res) => {
+  try {
+    if (!db) return res.status(503).json({ error: 'DB not connected' });
+    const church = await db.collection('churches').findOne(
+      { slug: req.params.slug },
+      { projection: { adminSecret: 0 } }
+    );
+    if (!church) return res.status(404).json({ error: 'Not found' });
+    res.json(church);
+  } catch {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Global-admin only: seed churches from static data (one-time migration).
+// POST /api/churches/seed  { churches: [...] }
+app.post('/api/churches/seed', async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  if (!db) return res.status(503).json({ error: 'DB not connected' });
+  try {
+    const { churches } = req.body;
+    if (!Array.isArray(churches)) return res.status(400).json({ error: 'churches array required' });
+    let inserted = 0;
+    for (const c of churches) {
+      const slug = c.id || c.slug;
+      if (!slug) continue;
+      const exists = await db.collection('churches').findOne({ slug });
+      if (exists) continue;
+      const doc = {
+        ...c,
+        slug,
+        verified: c.verified ?? (slug === 'emmanuil-amsterdam'),
+        founder: slug === 'emmanuil-amsterdam',
+        invitedBy: null,
+        createdAt: new Date().toISOString(),
+      };
+      delete doc.id;
+      await db.collection('churches').insertOne(doc);
+      inserted++;
+    }
+    res.json({ inserted });
+  } catch (err) {
+    console.error('[churches/seed]', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ── Invitations (pastor-to-pastor) ─────────────────────────────────────────
+// Generate cryptographically secure random token
+function generateToken() {
+  const bytes = new Uint8Array(24);
+  if (globalThis.crypto && globalThis.crypto.getRandomValues) {
+    globalThis.crypto.getRandomValues(bytes);
+  } else {
+    // Node fallback
+    const { randomBytes } = require('crypto');
+    const buf = randomBytes(24);
+    for (let i = 0; i < 24; i++) bytes[i] = buf[i];
+  }
+  // URL-safe base64-ish
+  return Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+function generateSecret() {
+  // 32-byte admin secret (hex)
+  return generateToken() + generateToken().slice(0, 16);
+}
+
+// POST /api/invitations  — pastor creates an invitation for another pastor.
+// Auth: per-church admin secret (not just global).
+app.post('/api/invitations', async (req, res) => {
+  const callerChurch = await adminChurchId(req);
+  if (!callerChurch) return res.status(403).json({ error: 'Forbidden' });
+  if (!db) return res.status(503).json({ error: 'DB not connected' });
+  try {
+    const { note } = req.body || {};
+    const token = generateToken();
+    const invitation = {
+      _id: token,
+      token,
+      invitedBy: callerChurch, // '*' for founder, or slug
+      note: note || '', // optional private note ("for pastor Ivan in Kyiv")
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
+      usedAt: null,
+      usedBy: null,
+    };
+    await db.collection('invitations').insertOne(invitation);
+    res.json({
+      token,
+      url: `${process.env.PUBLIC_URL || process.env.RENDER_EXTERNAL_URL || ''}/invite/${token}`,
+      expiresAt: invitation.expiresAt,
+    });
+  } catch (err) {
+    console.error('[invitations] create', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /api/invitations/:token  — verify token is valid (public endpoint, no auth).
+// Returns inviter church info so the new pastor sees WHO invited them.
+app.get('/api/invitations/:token', async (req, res) => {
+  if (!db) return res.status(503).json({ error: 'DB not connected' });
+  try {
+    const inv = await db.collection('invitations').findOne({ token: req.params.token });
+    if (!inv) return res.status(404).json({ error: 'Invalid invitation' });
+    if (inv.usedAt) return res.status(410).json({ error: 'Already used' });
+    if (new Date(inv.expiresAt) < new Date()) return res.status(410).json({ error: 'Expired' });
+    // Fetch inviter for display
+    let inviter = null;
+    if (inv.invitedBy && inv.invitedBy !== '*') {
+      inviter = await db.collection('churches').findOne(
+        { slug: inv.invitedBy },
+        { projection: { adminSecret: 0 } }
+      );
+    }
+    res.json({
+      valid: true,
+      invitedBy: inv.invitedBy,
+      inviter: inviter ? { slug: inviter.slug, name: inviter.name, city: inviter.city, country: inviter.country, pastor: inviter.pastor } : null,
+      expiresAt: inv.expiresAt,
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/invitations/:token/redeem  — accept invitation, create church.
+// Body: { slug, name, city, country, address, lat, lng, denomination,
+//         pastor, pastorBio, pastorEmail, language, telegram?, instagram?, website?, schedule? }
+// Returns: { church, adminSecret } — show secret ONCE to pastor.
+app.post('/api/invitations/:token/redeem', async (req, res) => {
+  if (!db) return res.status(503).json({ error: 'DB not connected' });
+  try {
+    const inv = await db.collection('invitations').findOne({ token: req.params.token });
+    if (!inv) return res.status(404).json({ error: 'Invalid invitation' });
+    if (inv.usedAt) return res.status(410).json({ error: 'Already used' });
+    if (new Date(inv.expiresAt) < new Date()) return res.status(410).json({ error: 'Expired' });
+
+    const {
+      slug, name, city, country, address, lat, lng,
+      denomination, pastor, pastorBio, pastorEmail,
+      language, telegram, instagram, website, schedule, coverPhoto, description,
+    } = req.body || {};
+
+    // Validation
+    const missing = [];
+    if (!slug) missing.push('slug');
+    if (!name) missing.push('name');
+    if (!city) missing.push('city');
+    if (!country) missing.push('country');
+    if (!pastor) missing.push('pastor');
+    if (!pastorEmail) missing.push('pastorEmail'); // required for recovery
+    if (!pastorBio) missing.push('pastorBio');      // где служил и т.п.
+    if (typeof lat !== 'number' || typeof lng !== 'number') missing.push('lat/lng');
+    if (missing.length) return res.status(400).json({ error: `Missing: ${missing.join(', ')}` });
+
+    // Slug uniqueness
+    const slugPattern = /^[a-z0-9][a-z0-9-]{2,40}$/;
+    if (!slugPattern.test(slug)) {
+      return res.status(400).json({ error: 'Slug must be 3-40 chars, lowercase, letters/numbers/dashes' });
+    }
+    const slugExists = await db.collection('churches').findOne({ slug });
+    if (slugExists) return res.status(409).json({ error: 'Slug already taken' });
+
+    const adminSecret = generateSecret();
+    const now = new Date().toISOString();
+    const church = {
+      slug, name, city, country,
+      address: address || '',
+      lat, lng,
+      denomination: denomination || '',
+      pastor,
+      pastorBio,        // where he served, ministry history
+      pastorEmail,      // for recovery
+      language: Array.isArray(language) ? language : ['ua'],
+      telegram: telegram || '',
+      instagram: instagram || '',
+      website: website || '',
+      schedule: schedule || '',
+      coverPhoto: coverPhoto || '',
+      description: description || '',
+      verified: false,
+      founder: false,
+      invitedBy: inv.invitedBy,
+      adminSecret,      // server-side only, never returned by GET endpoints
+      createdAt: now,
+    };
+    await db.collection('churches').insertOne(church);
+
+    // Mark invitation as used
+    await db.collection('invitations').updateOne(
+      { token: inv.token },
+      { $set: { usedAt: now, usedBy: slug } }
+    );
+
+    // Don't leak adminSecret back through GET — send it ONCE here.
+    const { adminSecret: secret, ...publicChurch } = church;
+    res.json({ church: publicChurch, adminSecret: secret });
+  } catch (err) {
+    console.error('[invitations] redeem', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /api/invitations  — list invitations created by this church (admin only)
+app.get('/api/invitations', async (req, res) => {
+  const callerChurch = await adminChurchId(req);
+  if (!callerChurch) return res.status(403).json({ error: 'Forbidden' });
+  if (!db) return res.status(503).json({ error: 'DB not connected' });
+  try {
+    const filter = callerChurch === '*' ? {} : { invitedBy: callerChurch };
+    const invites = await db.collection('invitations').find(filter).sort({ createdAt: -1 }).limit(100).toArray();
+    res.json(invites);
+  } catch {
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // ── Home Groups CRUD ───────────────────────────────────────────────────────
@@ -724,13 +1006,16 @@ if (existsSync(DIST_DIR)) {
 async function registerWebhook() {
   const BOT_TOKEN = process.env.BOT_TOKEN;
   if (!BOT_TOKEN) return console.log('[webhook] skipping — BOT_TOKEN not set');
+  // Render provides RENDER_EXTERNAL_URL automatically; PUBLIC_URL is manual override
+  const baseUrl = process.env.PUBLIC_URL || process.env.RENDER_EXTERNAL_URL || 'https://emmanuil-amsterdam.onrender.com';
+  const webhookUrl = `${baseUrl.replace(/\/$/, '')}/api/telegram/webhook`;
   try {
     const r = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: 'https://emmanuil-amsterdam.onrender.com/api/telegram/webhook', allowed_updates: ['inline_query'] }),
+      body: JSON.stringify({ url: webhookUrl, allowed_updates: ['inline_query'] }),
     });
     const data = await r.json();
-    console.log('[webhook]', data.ok ? 'registered' : data.description);
+    console.log('[webhook]', data.ok ? `registered → ${webhookUrl}` : data.description);
   } catch (err) {
     console.log('[webhook] error:', err.message);
   }

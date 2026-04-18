@@ -183,6 +183,164 @@ export async function checkAdminAuth(secret: string): Promise<boolean> {
   }
 }
 
+// Returns caller's churchId (or '*' for founder) + isGlobal flag
+export async function getAdminInfo(secret: string): Promise<{ churchId: string; isGlobal: boolean } | null> {
+  try {
+    const res = await fetch(`${API_URL}/api/admin/auth`, {
+      headers: { 'x-admin-secret': secret },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return { churchId: data.churchId, isGlobal: !!data.isGlobal };
+  } catch {
+    return null;
+  }
+}
+
+// ── Churches directory ─────────────────────────────────────────────────────
+
+export interface ApiChurch {
+  slug: string;
+  name: string;
+  city: string;
+  country: string;
+  address?: string;
+  lat: number;
+  lng: number;
+  schedule?: string;
+  telegram?: string;
+  instagram?: string;
+  website?: string;
+  denomination?: string;
+  pastor?: string;
+  pastorBio?: string;
+  language?: string[];
+  coverPhoto?: string;
+  description?: string;
+  members?: number;
+  founded?: number;
+  verified?: boolean;
+  founder?: boolean;
+  invitedBy?: string | null;
+  createdAt?: string;
+}
+
+export async function fetchChurches(): Promise<ApiChurch[]> {
+  try {
+    const res = await fetch(`${API_URL}/api/churches`);
+    if (!res.ok) return [];
+    return res.json();
+  } catch { return []; }
+}
+
+export async function fetchChurch(slug: string): Promise<ApiChurch | null> {
+  try {
+    const res = await fetch(`${API_URL}/api/churches/${encodeURIComponent(slug)}`);
+    if (!res.ok) return null;
+    return res.json();
+  } catch { return null; }
+}
+
+export async function seedChurches(secret: string, churches: any[]): Promise<{ inserted: number }> {
+  const res = await fetch(`${API_URL}/api/churches/seed`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
+    body: JSON.stringify({ churches }),
+  });
+  if (!res.ok) throw new Error('seed churches failed');
+  return res.json();
+}
+
+// ── Invitations ────────────────────────────────────────────────────────────
+
+export interface Invitation {
+  _id: string;
+  token: string;
+  invitedBy: string;
+  note: string;
+  createdAt: string;
+  expiresAt: string;
+  usedAt: string | null;
+  usedBy: string | null;
+}
+
+export interface InvitationInfo {
+  valid: boolean;
+  invitedBy: string;
+  inviter: { slug: string; name: string; city: string; country: string; pastor?: string } | null;
+  expiresAt: string;
+}
+
+export async function createInvitation(secret: string, note?: string): Promise<{ token: string; url: string; expiresAt: string }> {
+  const res = await fetch(`${API_URL}/api/invitations`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
+    body: JSON.stringify({ note: note || '' }),
+  });
+  if (!res.ok) throw new Error('create invitation failed');
+  return res.json();
+}
+
+export async function fetchInvitationInfo(token: string): Promise<InvitationInfo | { error: string }> {
+  try {
+    const res = await fetch(`${API_URL}/api/invitations/${encodeURIComponent(token)}`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+      return { error: err.error || 'Invalid' };
+    }
+    return res.json();
+  } catch {
+    return { error: 'Network error' };
+  }
+}
+
+export interface RedeemPayload {
+  slug: string;
+  name: string;
+  city: string;
+  country: string;
+  address?: string;
+  lat: number;
+  lng: number;
+  denomination?: string;
+  pastor: string;
+  pastorBio: string;       // required: where he served, ministry history
+  pastorEmail: string;     // required: for recovery
+  language?: string[];
+  telegram?: string;
+  instagram?: string;
+  website?: string;
+  schedule?: string;
+  coverPhoto?: string;
+  description?: string;
+}
+
+export async function redeemInvitation(
+  token: string,
+  payload: RedeemPayload,
+): Promise<{ church: ApiChurch; adminSecret: string }> {
+  const res = await fetch(`${API_URL}/api/invitations/${encodeURIComponent(token)}/redeem`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+    throw new Error(err.error || 'redeem failed');
+  }
+  return res.json();
+}
+
+export async function listMyInvitations(secret: string): Promise<Invitation[]> {
+  try {
+    const res = await fetch(`${API_URL}/api/invitations`, {
+      headers: { 'x-admin-secret': secret },
+    });
+    if (!res.ok) return [];
+    return res.json();
+  } catch { return []; }
+}
+
 export async function seedPosts(secret: string, posts: ApiPost[]): Promise<{ inserted: number }> {
   const res = await fetch(`${API_URL}/api/posts/seed`, {
     method: 'POST',
