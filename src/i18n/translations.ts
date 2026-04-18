@@ -18,7 +18,7 @@ export function useLang(): Lang {
 
 const t = {
   ua: {
-    nav: { home: 'Головна', schedule: 'Розклад', events: 'Події', donate: 'Пожертва', more: 'Церква' },
+    nav: { home: 'Головна', schedule: 'Розклад', events: 'Події', donate: 'Пожертва', more: 'Церква', world: 'Світ' },
     home: {
       greetingMorning: 'Доброго ранку', greetingDay: 'Добрий день', greetingEvening: 'Добрий вечір',
       subtitle: 'Міні-апп усіх важливих подій церкви',
@@ -76,7 +76,7 @@ const t = {
     guest: 'Гість',
   },
   ru: {
-    nav: { home: 'Главная', schedule: 'Расписание', events: 'События', donate: 'Пожертвование', more: 'Церковь' },
+    nav: { home: 'Главная', schedule: 'Расписание', events: 'События', donate: 'Пожертвование', more: 'Церковь', world: 'Мир' },
     home: {
       greetingMorning: 'Доброе утро', greetingDay: 'Добрый день', greetingEvening: 'Добрый вечер',
       subtitle: 'Мини-апп всех важных событий церкви',
@@ -134,7 +134,7 @@ const t = {
     guest: 'Гость',
   },
   en: {
-    nav: { home: 'Home', schedule: 'Schedule', events: 'Events', donate: 'Donate', more: 'Church' },
+    nav: { home: 'Home', schedule: 'Schedule', events: 'Events', donate: 'Donate', more: 'Church', world: 'World' },
     home: {
       greetingMorning: 'Good morning', greetingDay: 'Good afternoon', greetingEvening: 'Good evening',
       subtitle: 'Mini-app for all important church events',
@@ -192,7 +192,7 @@ const t = {
     guest: 'Guest',
   },
   nl: {
-    nav: { home: 'Home', schedule: 'Schema', events: 'Agenda', donate: 'Donatie', more: 'Kerk' },
+    nav: { home: 'Home', schedule: 'Schema', events: 'Agenda', donate: 'Donatie', more: 'Kerk', world: 'Wereld' },
     home: {
       greetingMorning: 'Goedemorgen', greetingDay: 'Goedemiddag', greetingEvening: 'Goedenavond',
       subtitle: 'Mini-app voor alle belangrijke kerkgebeurtenissen',
@@ -250,7 +250,7 @@ const t = {
     guest: 'Gast',
   },
   es: {
-    nav: { home: 'Inicio', schedule: 'Horario', events: 'Eventos', donate: 'Donación', more: 'Iglesia' },
+    nav: { home: 'Inicio', schedule: 'Horario', events: 'Eventos', donate: 'Donación', more: 'Iglesia', world: 'Mundo' },
     home: {
       greetingMorning: 'Buenos días', greetingDay: 'Buenas tardes', greetingEvening: 'Buenas noches',
       subtitle: 'Mini-app de todos los eventos importantes de la iglesia',

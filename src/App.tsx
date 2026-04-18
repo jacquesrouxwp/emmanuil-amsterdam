@@ -13,6 +13,7 @@ import { MorePage } from '@/pages/MorePage';
 import { VolunteerPage } from '@/pages/VolunteerPage';
 import { AdminPage } from '@/pages/AdminPage';
 import { BiblePage } from '@/pages/BiblePage';
+import { WorldPage } from '@/pages/WorldPage';
 
 function AppRoutes() {
   return (
@@ -27,6 +28,7 @@ function AppRoutes() {
       <Route path="/volunteer" element={<VolunteerPage />} />
       <Route path="/admin" element={<AdminPage />} />
       <Route path="/bible" element={<BiblePage />} />
+      <Route path="/world" element={<WorldPage />} />
     </Routes>
   );
 }
