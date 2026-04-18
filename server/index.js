@@ -312,10 +312,24 @@ app.get('/api/admin/auth', (req, res) => {
   res.json({ ok: true });
 });
 
-app.get('/api/posts', async (_req, res) => {
+app.get('/api/posts', async (req, res) => {
   try {
+    const { churchId } = req.query;
+    // churchId=* or no param → all churches (world feed)
+    // churchId=emmanuil-amsterdam → only that church
+    const filter = churchId && churchId !== '*'
+      ? { $or: [{ churchId }, { churchId: { $exists: false } }].concat(
+          churchId === 'emmanuil-amsterdam' ? [] : []
+        )}
+      : {};
+    // Simpler: if churchId specified, return that church + legacy posts without churchId
+    const finalFilter = churchId && churchId !== '*'
+      ? churchId === 'emmanuil-amsterdam'
+        ? { $or: [{ churchId: 'emmanuil-amsterdam' }, { churchId: { $exists: false } }] }
+        : { churchId }
+      : {};
     const posts = db
-      ? await db.collection('posts').find({}).sort({ date: -1 }).toArray()
+      ? await db.collection('posts').find(finalFilter).sort({ date: -1 }).toArray()
       : [];
     res.json(posts);
   } catch (err) {
@@ -332,6 +346,7 @@ app.post('/api/posts', async (req, res) => {
 
     const post = {
       _id: 'blog-' + Date.now().toString(36),
+      churchId: req.body.churchId || process.env.CHURCH_ID || 'emmanuil-amsterdam',
       date: date || new Date().toISOString().slice(0, 10),
       tags: tags || ['general'],
       photos: photos || [],

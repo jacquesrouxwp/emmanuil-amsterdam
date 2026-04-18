@@ -1,9 +1,133 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, MapPin, Clock, ExternalLink, Globe2, ChevronRight, User } from 'lucide-react';
+import { Search, X, MapPin, Clock, ExternalLink, Globe2, ChevronRight, User, Rss, Heart, MessageCircle, Church } from 'lucide-react';
 import { hapticFeedback, openLink } from '@/lib/telegram';
+import { useLang, loc } from '@/i18n/translations';
+import { fetchPosts, type ApiPost } from '@/lib/api';
 import { churchLocations, type ChurchLocation } from '@/data/churches';
+
+// ── World feed ────────────────────────────────────────────────────────────────
+function WorldFeed() {
+  const lang = useLang();
+  const navigate = useNavigate();
+  const [posts, setPosts] = useState<ApiPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchPosts('*').then((p) => { setPosts(p); setLoading(false); });
+  }, []);
+
+  const getChurch = (churchId?: string) =>
+    churchLocations.find((c) => c.id === (churchId || 'emmanuil-amsterdam'));
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '16px 16px 0' }}>
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="card" style={{ padding: 16 }}>
+            <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+              <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--bg-secondary)' }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ height: 12, background: 'var(--bg-secondary)', borderRadius: 6, width: '60%', marginBottom: 6 }} />
+                <div style={{ height: 10, background: 'var(--bg-secondary)', borderRadius: 6, width: '40%' }} />
+              </div>
+            </div>
+            <div style={{ height: 12, background: 'var(--bg-secondary)', borderRadius: 6, marginBottom: 6 }} />
+            <div style={{ height: 12, background: 'var(--bg-secondary)', borderRadius: 6, width: '80%' }} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (posts.length === 0) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: 12 }}>
+        <Rss size={40} color="var(--text-tertiary)" />
+        <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Поки що немає публікацій</p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: '12px 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {posts.map((post) => {
+        const church = getChurch(post.churchId);
+        const title = loc(post.title, lang);
+        const body = loc(post.body, lang);
+        const date = new Date(post.date).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' });
+
+        return (
+          <motion.div
+            key={post._id}
+            className="card"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{ padding: 0, overflow: 'hidden', cursor: 'pointer' }}
+            onClick={() => church && navigate(`/church/${church.id}`)}
+          >
+            {/* Church header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px 10px' }}>
+              <div style={{
+                width: 38, height: 38, borderRadius: '50%',
+                background: 'linear-gradient(135deg, #1a3a5c, #2d5a8e)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}>
+                <Church size={18} color="#fff" />
+              </div>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: 13, fontWeight: 700 }}>
+                  {church?.name || 'Церква'}
+                </p>
+                <p style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
+                  {church?.city && `${church.city} · `}{date}
+                </p>
+              </div>
+              {church && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); hapticFeedback('light'); navigate(`/church/${church.id}`); }}
+                  style={{
+                    fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 20,
+                    background: 'var(--primary-bg)', color: 'var(--primary)', cursor: 'pointer',
+                  }}
+                >
+                  Профіль
+                </button>
+              )}
+            </div>
+
+            {/* Photo */}
+            {post.photos?.[0] && (
+              <img src={post.photos[0]} alt="" style={{ width: '100%', maxHeight: 220, objectFit: 'cover', display: 'block' }} />
+            )}
+
+            {/* Content */}
+            <div style={{ padding: '10px 14px 14px' }}>
+              <p style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>{title}</p>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.55, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' as any, overflow: 'hidden' }}>
+                {body}
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div style={{
+              display: 'flex', gap: 16, padding: '0 14px 12px',
+              borderTop: '1px solid var(--border-light)', paddingTop: 10,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--text-tertiary)', fontSize: 12 }}>
+                <Heart size={14} /> <span>0</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--text-tertiary)', fontSize: 12 }}>
+                <MessageCircle size={14} /> <span>0</span>
+              </div>
+            </div>
+          </motion.div>
+        );
+      })}
+    </div>
+  );
+}
 
 // ── Clustering ────────────────────────────────────────────────────────────────
 const CLUSTER_RADIUS = 2.5; // degrees — tune this for zoom feel
@@ -47,6 +171,7 @@ function buildClusters(churches: ChurchLocation[]): Cluster[] {
 // ── Component ─────────────────────────────────────────────────────────────────
 export function WorldPage() {
   const navigate = useNavigate();
+  const [view, setView] = useState<'globe' | 'feed'>('globe');
   const globeRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [globeLoaded, setGlobeLoaded] = useState(false);
@@ -55,6 +180,7 @@ export function WorldPage() {
   const [selectedChurch, setSelectedChurch] = useState<ChurchLocation | null>(null);
   const [search, setSearch] = useState('');
   const [dimensions, setDimensions] = useState({ w: 0, h: 0 });
+  const [countries, setCountries] = useState<any[]>([]);
 
   const clusters = buildClusters(churchLocations);
 
@@ -84,6 +210,11 @@ export function WorldPage() {
       setGlobeEl(() => mod.default);
       setGlobeLoaded(true);
     });
+    // Load country borders GeoJSON for realistic globe
+    fetch('https://raw.githubusercontent.com/vasturiano/react-globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson')
+      .then((r) => r.json())
+      .then((data) => setCountries(data.features || []))
+      .catch(() => {}); // silently fail — borders are enhancement only
   }, []);
 
   useEffect(() => {
@@ -155,81 +286,122 @@ export function WorldPage() {
     }}>
 
       {/* ── Top bar ──────────────────────────────────────────────── */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 20, padding: '14px 16px 10px' }}>
-        {/* Title */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-          <Globe2 size={17} color="rgba(255,255,255,0.6)" />
-          <span style={{ fontSize: 15, fontWeight: 700, color: '#fff', letterSpacing: -0.3 }}>
-            Церкви світу
-          </span>
-          <span style={{
-            fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 100,
-            background: 'rgba(94,158,214,0.2)', color: '#89BBE5',
-            border: '1px solid rgba(94,158,214,0.25)',
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, zIndex: 20, padding: '14px 16px 10px',
+        background: view === 'feed' ? 'var(--bg)' : 'transparent',
+        borderBottom: view === 'feed' ? '1px solid var(--border)' : 'none',
+      }}>
+        {/* Title row + toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Globe2 size={17} color={view === 'feed' ? 'var(--primary)' : 'rgba(255,255,255,0.6)'} />
+            <span style={{ fontSize: 15, fontWeight: 700, color: view === 'feed' ? 'var(--text)' : '#fff', letterSpacing: -0.3 }}>
+              Церкви світу
+            </span>
+            <span style={{
+              fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 100,
+              background: 'rgba(94,158,214,0.2)', color: '#89BBE5',
+              border: '1px solid rgba(94,158,214,0.25)',
+            }}>
+              {churchLocations.length}
+            </span>
+          </div>
+
+          {/* Toggle: Глобус | Лента */}
+          <div style={{
+            display: 'flex', borderRadius: 20, overflow: 'hidden',
+            background: view === 'feed' ? 'var(--bg-secondary)' : 'rgba(255,255,255,0.12)',
+            border: view === 'feed' ? '1px solid var(--border)' : '1px solid rgba(255,255,255,0.15)',
           }}>
-            {churchLocations.length}
-          </span>
+            {(['globe', 'feed'] as const).map((v) => (
+              <button
+                key={v}
+                onClick={() => { hapticFeedback('light'); setView(v); }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  padding: '6px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                  background: view === v
+                    ? (view === 'feed' ? 'var(--primary)' : 'rgba(255,255,255,0.25)')
+                    : 'transparent',
+                  color: view === v ? '#fff' : (view === 'feed' ? 'var(--text-secondary)' : 'rgba(255,255,255,0.55)'),
+                  transition: 'all 0.15s',
+                }}
+              >
+                {v === 'globe' ? <><Globe2 size={12} /> Глобус</> : <><Rss size={12} /> Лента</>}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Search */}
-        <div style={{ position: 'relative' }}>
-          <Search size={14} color="rgba(255,255,255,0.35)"
-            style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Пошук міста або церкви..."
-            style={{
-              width: '100%', padding: '10px 36px 10px 34px',
-              background: 'rgba(255,255,255,0.09)',
-              border: '1px solid rgba(255,255,255,0.13)',
-              borderRadius: 12, color: '#fff', fontSize: 14,
-            }}
-          />
-          {search && (
-            <button onClick={() => setSearch('')}
-              style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', padding: 4 }}>
-              <X size={14} color="rgba(255,255,255,0.45)" />
-            </button>
-          )}
-        </div>
-
-        {/* Search results */}
-        <AnimatePresence>
-          {search && (
-            <motion.div
-              initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
-              style={{
-                marginTop: 6, background: 'rgba(10,18,35,0.97)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: 12, overflow: 'hidden', maxHeight: 260, overflowY: 'auto',
-              }}
-            >
-              {filtered.length === 0 ? (
-                <p style={{ padding: '14px 16px', fontSize: 13, color: 'rgba(255,255,255,0.35)', textAlign: 'center' }}>
-                  Нічого не знайдено
-                </p>
-              ) : filtered.map((c) => (
-                <button key={c.id} onClick={() => selectFromSearch(c)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 10,
-                    padding: '11px 14px', width: '100%', textAlign: 'left',
-                    borderBottom: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer',
-                  }}>
-                  <MapPin size={13} color="#5E9ED6" />
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>{c.name}</p>
-                    <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 1 }}>{c.city}, {c.country}</p>
-                  </div>
+        {/* Search — only on globe view */}
+        {view === 'globe' && (
+          <>
+            <div style={{ position: 'relative' }}>
+              <Search size={14} color="rgba(255,255,255,0.35)"
+                style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Пошук міста або церкви..."
+                style={{
+                  width: '100%', padding: '10px 36px 10px 34px',
+                  background: 'rgba(255,255,255,0.09)',
+                  border: '1px solid rgba(255,255,255,0.13)',
+                  borderRadius: 12, color: '#fff', fontSize: 14,
+                }}
+              />
+              {search && (
+                <button onClick={() => setSearch('')}
+                  style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', padding: 4 }}>
+                  <X size={14} color="rgba(255,255,255,0.45)" />
                 </button>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+              )}
+            </div>
+            <AnimatePresence>
+              {search && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+                  style={{
+                    marginTop: 6, background: 'rgba(10,18,35,0.97)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: 12, overflow: 'hidden', maxHeight: 260, overflowY: 'auto',
+                  }}
+                >
+                  {filtered.length === 0 ? (
+                    <p style={{ padding: '14px 16px', fontSize: 13, color: 'rgba(255,255,255,0.35)', textAlign: 'center' }}>
+                      Нічого не знайдено
+                    </p>
+                  ) : filtered.map((c: ChurchLocation) => (
+                    <button key={c.id} onClick={() => selectFromSearch(c)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        padding: '11px 14px', width: '100%', textAlign: 'left',
+                        borderBottom: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer',
+                      }}>
+                      <MapPin size={13} color="#5E9ED6" />
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>{c.name}</p>
+                        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 1 }}>{c.city}, {c.country}</p>
+                      </div>
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        )}
+
       </div>
 
+      {/* ── Feed view ────────────────────────────────────────────── */}
+      {view === 'feed' && (
+        <div style={{ position: 'absolute', inset: 0, top: 110, bottom: 0, overflowY: 'auto', background: 'var(--bg)', zIndex: 10 }}>
+          <WorldFeed />
+        </div>
+      )}
+
       {/* ── Globe ────────────────────────────────────────────────── */}
-      <div ref={containerRef} style={{ flex: 1, width: '100%' }}>
+      <div ref={containerRef} style={{ flex: 1, width: '100%', opacity: view === 'globe' ? 1 : 0, pointerEvents: view === 'globe' ? 'auto' : 'none' }}>
         {globeLoaded && GlobeEl && dimensions.w > 0 ? (
           <GlobeEl
             ref={globeRef}
@@ -264,6 +436,12 @@ export function WorldPage() {
               </div>
             `}
             onPointClick={handleClusterClick}
+            // Country borders
+            polygonsData={countries}
+            polygonCapColor={() => 'rgba(255,255,255,0.03)'}
+            polygonSideColor={() => 'transparent'}
+            polygonStrokeColor={() => 'rgba(180,210,255,0.22)'}
+            polygonAltitude={0.002}
             // Subtle pulse rings
             ringsData={globePoints}
             ringLat="lat"

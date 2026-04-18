@@ -118,6 +118,7 @@ export async function addComment(postId: string, params: {
 
 export interface ApiPost {
   _id: string;
+  churchId?: string;
   date: string;
   tags: string[];
   photos: string[];
@@ -126,9 +127,17 @@ export interface ApiPost {
   body: { ua: string; ru: string; en: string; nl?: string; es?: string };
 }
 
-export async function fetchPosts(): Promise<ApiPost[]> {
+// CHURCH_ID for this instance — each church sets this env var
+export const CHURCH_ID = import.meta.env.VITE_CHURCH_ID || 'emmanuil-amsterdam';
+
+// churchId='*' → all churches (world feed); churchId=X → that church only
+export async function fetchPosts(churchId?: string): Promise<ApiPost[]> {
   try {
-    const res = await fetch(`${API_URL}/api/posts`);
+    const id = churchId ?? CHURCH_ID;
+    const url = id === '*'
+      ? `${API_URL}/api/posts`
+      : `${API_URL}/api/posts?churchId=${encodeURIComponent(id)}`;
+    const res = await fetch(url);
     if (!res.ok) return [];
     return res.json();
   } catch { return []; }
