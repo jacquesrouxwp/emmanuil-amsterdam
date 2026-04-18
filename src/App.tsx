@@ -14,6 +14,7 @@ import { VolunteerPage } from '@/pages/VolunteerPage';
 import { AdminPage } from '@/pages/AdminPage';
 import { BiblePage } from '@/pages/BiblePage';
 import { WorldPage } from '@/pages/WorldPage';
+import { ChurchProfilePage } from '@/pages/ChurchProfilePage';
 
 function AppRoutes() {
   return (
@@ -29,6 +30,7 @@ function AppRoutes() {
       <Route path="/admin" element={<AdminPage />} />
       <Route path="/bible" element={<BiblePage />} />
       <Route path="/world" element={<WorldPage />} />
+      <Route path="/church/:id" element={<ChurchProfilePage />} />
     </Routes>
   );
 }

@@ -11,6 +11,18 @@ export interface ChurchLocation {
   telegram?: string;
   language: string[];
   photo?: string;
+  // Profile fields
+  coverPhoto?: string;
+  description?: string;
+  denomination?: string;
+  pastor?: string;
+  pastorPhoto?: string;
+  website?: string;
+  instagram?: string;
+  youtube?: string;
+  members?: number;
+  founded?: number;
+  verified?: boolean;
 }
 
 export const churchLocations: ChurchLocation[] = [
@@ -24,6 +36,16 @@ export const churchLocations: ChurchLocation[] = [
     schedule: 'Неділя 17:00',
     telegram: 'https://t.me/myconclaw_bot/app',
     language: ['ua', 'ru', 'en', 'nl'],
+    // Profile
+    coverPhoto: 'https://i.ibb.co/HfHyBkxm/amster.jpg',
+    description: 'Євангельська церква в Амстердамі для українців та всіх народів. Богослужіння, молодіжні зустрічі, домашні групи по всій країні.',
+    denomination: 'Євангельська',
+    pastor: 'Сергій',
+    instagram: 'https://www.instagram.com/emmanuil.amsterdam',
+    website: 'https://emmanuil-amsterdam.onrender.com',
+    members: 402,
+    founded: 2015,
+    verified: true,
   },
   {
     id: 'grace-amsterdam',

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, MapPin, Clock, ExternalLink, Globe2, ChevronRight } from 'lucide-react';
+import { Search, X, MapPin, Clock, ExternalLink, Globe2, ChevronRight, User } from 'lucide-react';
 import { hapticFeedback, openLink } from '@/lib/telegram';
 import { churchLocations, type ChurchLocation } from '@/data/churches';
 
@@ -45,6 +46,7 @@ function buildClusters(churches: ChurchLocation[]): Cluster[] {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export function WorldPage() {
+  const navigate = useNavigate();
   const globeRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [globeLoaded, setGlobeLoaded] = useState(false);
@@ -392,27 +394,37 @@ export function WorldPage() {
               )}
             </div>
 
-            <div style={{ display: 'flex', gap: 10 }}>
+            <div style={{ display: 'flex', gap: 8 }}>
               <button
                 onClick={() => openLink(`https://maps.google.com/?q=${selectedChurch.lat},${selectedChurch.lng}`)}
                 style={{
-                  flex: 1, padding: '12px', borderRadius: 12,
+                  flex: 1, padding: '11px 8px', borderRadius: 12,
                   background: 'rgba(94,158,214,0.12)', border: '1px solid rgba(94,158,214,0.25)',
-                  color: '#5E9ED6', fontSize: 14, fontWeight: 600,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer',
+                  color: '#5E9ED6', fontSize: 13, fontWeight: 600,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, cursor: 'pointer',
                 }}>
-                <MapPin size={14} /> Навігатор
+                <MapPin size={13} /> Навігатор
+              </button>
+              <button
+                onClick={() => { hapticFeedback('medium'); navigate(`/church/${selectedChurch.id}`); }}
+                style={{
+                  flex: 1, padding: '11px 8px', borderRadius: 12,
+                  background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)',
+                  color: '#fff', fontSize: 13, fontWeight: 600,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, cursor: 'pointer',
+                }}>
+                <User size={13} /> Профіль
               </button>
               {selectedChurch.telegram && (
                 <button
                   onClick={() => openLink(selectedChurch.telegram!)}
                   style={{
-                    flex: 1, padding: '12px', borderRadius: 12,
+                    flex: 1, padding: '11px 8px', borderRadius: 12,
                     background: 'linear-gradient(135deg, #1a3a5c, #2d5a8e)',
-                    color: '#fff', fontSize: 14, fontWeight: 600,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer',
+                    color: '#fff', fontSize: 13, fontWeight: 600,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, cursor: 'pointer',
                   }}>
-                  <ExternalLink size={14} /> Відкрити
+                  <ExternalLink size={13} /> Mini App
                 </button>
               )}
             </div>
