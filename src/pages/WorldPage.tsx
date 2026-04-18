@@ -262,14 +262,14 @@ export function WorldPage() {
               </div>
             `}
             onPointClick={handleClusterClick}
-            // Rings on all points
+            // Subtle pulse rings
             ringsData={globePoints}
             ringLat="lat"
             ringLng="lng"
-            ringColor={() => () => 'rgba(94,158,214,0.4)'}
-            ringMaxRadius={3.5}
-            ringPropagationSpeed={2}
-            ringRepeatPeriod={1400}
+            ringColor={() => () => 'rgba(94,158,214,0.25)'}
+            ringMaxRadius={0.8}
+            ringPropagationSpeed={1.2}
+            ringRepeatPeriod={2000}
           />
         ) : (
           <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
