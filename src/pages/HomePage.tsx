@@ -294,44 +294,82 @@ export function HomePage() {
     return <DesktopHomeContent />;
   }
 
-  // Mobile: original layout
+  // Mobile: beautiful layout
   return (
-    <motion.div className="page" variants={stagger} initial="hidden" animate="show">
-      {/* Header */}
-      <motion.div variants={fadeUp} style={{ marginBottom: 12 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{greeting},</p>
-            <h1 style={{ fontSize: 22, fontWeight: 700, marginTop: 2 }}>Emmanuil Amsterdam</h1>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
-            <span style={{ fontSize: 12, color: 'var(--text-tertiary)', maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'right' }}>
-              {userName}
-            </span>
+    <motion.div
+      style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}
+      variants={stagger} initial="hidden" animate="show"
+    >
+      {/* ── Hero cover ─────────────────────────────────────────── */}
+      <motion.div variants={fadeUp} style={{ position: 'relative', marginBottom: 0 }}>
+        {/* Cover photo */}
+        <div style={{
+          height: 220, width: '100%',
+          background: 'url(https://i.ibb.co/HfHyBkxm/amster.jpg) center/cover no-repeat',
+          position: 'relative',
+        }}>
+          {/* Dark gradient overlay */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.72) 100%)',
+          }} />
+
+          {/* Lang picker — top right */}
+          <div style={{ position: 'absolute', top: 14, right: 16 }}>
             <button
               onClick={() => { hapticFeedback('light'); setLangModalOpen(true); }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 5,
-                padding: '4px 10px', borderRadius: 20,
-                background: 'var(--primary-bg)', border: '1px solid var(--primary)', cursor: 'pointer',
+                padding: '5px 11px', borderRadius: 20,
+                background: 'rgba(255,255,255,0.15)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                cursor: 'pointer',
               }}
             >
-              <Globe size={12} color="var(--primary)" />
-              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--primary)', letterSpacing: 0.5 }}>
+              <Globe size={11} color="#fff" />
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#fff', letterSpacing: 0.5 }}>
                 {currentLang.native}
               </span>
             </button>
           </div>
+
+          {/* Church name + greeting — bottom left */}
+          <div style={{ position: 'absolute', bottom: 18, left: 18, right: 60 }}>
+            <p style={{
+              fontSize: 12, color: 'rgba(255,255,255,0.65)',
+              fontWeight: 500, marginBottom: 4, letterSpacing: 0.2,
+            }}>
+              {greeting}{userName ? `, ${userName}` : ''}
+            </p>
+            <h1 style={{
+              fontSize: 24, fontWeight: 800, color: '#fff',
+              letterSpacing: -0.5, lineHeight: 1.1, marginBottom: 6,
+            }}>
+              Emmanuil Amsterdam
+            </h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <MapPin size={11} color="rgba(255,255,255,0.55)" />
+              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', fontWeight: 500 }}>
+                Amsterdam · Неділя 17:00
+              </span>
+            </div>
+          </div>
         </div>
       </motion.div>
 
-      <motion.div variants={fadeUp} style={{ marginBottom: 12 }}>
-        <ScriptureQuote compact />
-      </motion.div>
+      {/* ── Content ────────────────────────────────────────────── */}
+      <div style={{ padding: '16px 16px 0', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* Scripture */}
+        <motion.div variants={fadeUp}>
+          <ScriptureQuote compact />
+        </motion.div>
 
-      <motion.div variants={fadeUp}>
-        <BlogFeed title={t.home.churchLife} />
-      </motion.div>
+        {/* Blog feed */}
+        <motion.div variants={fadeUp}>
+          <BlogFeed title={t.home.churchLife} />
+        </motion.div>
+      </div>
 
       <AnimatePresence>
         {langModalOpen && (
