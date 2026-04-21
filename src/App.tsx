@@ -17,11 +17,20 @@ import { WorldPage } from '@/pages/WorldPage';
 import { ChurchProfilePage } from '@/pages/ChurchProfilePage';
 import { WelcomePage } from '@/pages/WelcomePage';
 import { InviteFlowPage } from '@/pages/InviteFlowPage';
-import { useUserStore } from '@/store/userStore';
+import { MyChurchPage } from '@/pages/MyChurchPage';
+import { MinisterAccessPage } from '@/pages/MinisterAccessPage';
+import { useUserStore, hasAdminAccess } from '@/store/userStore';
 
 function OnboardingGate({ children }: { children: React.ReactNode }) {
   const { onboarded } = useUserStore();
   if (!onboarded) return <Navigate to="/welcome" replace />;
+  return <>{children}</>;
+}
+
+function AdminGate({ children }: { children: React.ReactNode }) {
+  const { onboarded, role } = useUserStore();
+  if (!onboarded) return <Navigate to="/welcome" replace />;
+  if (!hasAdminAccess(role)) return <Navigate to="/" replace />;
   return <>{children}</>;
 }
 
@@ -32,6 +41,7 @@ function AppRoutes() {
       <Route path="/welcome" element={<WelcomePage />} />
       <Route path="/invite-flow" element={<InviteFlowPage />} />
       <Route path="/invite/:token" element={<InviteFlowPage />} />
+      <Route path="/join/:token" element={<MinisterAccessPage />} />
 
       {/* App — gated behind onboarding */}
       <Route path="/" element={<OnboardingGate><HomePage /></OnboardingGate>} />
@@ -43,6 +53,8 @@ function AppRoutes() {
       <Route path="/more" element={<OnboardingGate><MorePage /></OnboardingGate>} />
       <Route path="/volunteer" element={<OnboardingGate><VolunteerPage /></OnboardingGate>} />
       <Route path="/admin" element={<AdminPage />} />
+      <Route path="/my-church" element={<AdminGate><MyChurchPage /></AdminGate>} />
+      <Route path="/my-church/*" element={<AdminGate><MyChurchPage /></AdminGate>} />
       <Route path="/bible" element={<OnboardingGate><BiblePage /></OnboardingGate>} />
       <Route path="/world" element={<OnboardingGate><WorldPage /></OnboardingGate>} />
       <Route path="/church/:id" element={<OnboardingGate><ChurchProfilePage /></OnboardingGate>} />
@@ -50,7 +62,7 @@ function AppRoutes() {
   );
 }
 
-const NO_NAV_ROUTES = ['/welcome', '/invite-flow', '/invite'];
+const NO_NAV_ROUTES = ['/welcome', '/invite-flow', '/invite', '/join'];
 
 function MobileShell() {
   const location = useLocation();

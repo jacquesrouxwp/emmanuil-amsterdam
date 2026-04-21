@@ -1,7 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type UserRole = 'visitor' | 'member' | 'pastor';
+// visitor  — просто дивиться, без церкви
+// member   — член конкретної церкви
+// minister — служитель: має доступ до адмінки своєї церкви (пости, події, домашки)
+// pastor   — пастор: повний доступ + може запрошувати інших пасторів і служителів
+export type UserRole = 'visitor' | 'member' | 'minister' | 'pastor';
 
 interface UserState {
   role: UserRole | null;
@@ -32,3 +36,20 @@ export const useUserStore = create<UserState>()(
     { name: 'kairos_user' },
   ),
 );
+
+// ── Хелпери перевірки прав ──────────────────────────────────────────────────
+
+/** Чи може редагувати контент церкви (пости, події, домашки) */
+export function canEdit(role: UserRole | null): boolean {
+  return role === 'pastor' || role === 'minister';
+}
+
+/** Чи може запрошувати інших пасторів або керувати служителями */
+export function canInvite(role: UserRole | null): boolean {
+  return role === 'pastor';
+}
+
+/** Чи має доступ до адмінської панелі */
+export function hasAdminAccess(role: UserRole | null): boolean {
+  return role === 'pastor' || role === 'minister';
+}

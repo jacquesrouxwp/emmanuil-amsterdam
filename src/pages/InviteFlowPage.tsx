@@ -79,7 +79,7 @@ export function InviteFlowPage() {
       if (secret) localStorage.setItem('emmanuil_admin_secret', secret);
       const cId = (result as any).church?.slug || (result as any).churchId || 'emmanuil-amsterdam';
       completeOnboarding('pastor', cId);
-      setStep('success');
+      setStep('success'); // після success → /my-church (кнопка в success step)
     } catch {
       setErrorMsg('Не вдалося зареєструвати церкву. Спробуйте ще раз.');
       setStep('error');
@@ -306,13 +306,13 @@ export function InviteFlowPage() {
               </p>
             </div>
             <button
-              onClick={() => { hapticFeedback('medium'); navigate('/'); }}
+              onClick={() => { hapticFeedback('medium'); navigate('/my-church'); }}
               style={{
                 padding: '14px 32px', borderRadius: 14, fontSize: 15, fontWeight: 700,
                 background: 'var(--primary)', color: '#fff', cursor: 'pointer',
               }}
             >
-              Перейти до додатку
+              Налаштувати церкву →
             </button>
           </motion.div>
         )}
