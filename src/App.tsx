@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { DesktopLayout } from '@/components/layout/DesktopLayout';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
@@ -50,7 +50,12 @@ function AppRoutes() {
   );
 }
 
+const NO_NAV_ROUTES = ['/welcome', '/invite-flow', '/invite'];
+
 function MobileShell() {
+  const location = useLocation();
+  const hideNav = NO_NAV_ROUTES.some((r) => location.pathname.startsWith(r));
+
   return (
     <div style={{
       display: 'flex', flexDirection: 'column',
@@ -58,7 +63,7 @@ function MobileShell() {
       maxWidth: 480, margin: '0 auto', overflow: 'hidden',
     }}>
       <AppRoutes />
-      <BottomNav />
+      {!hideNav && <BottomNav />}
     </div>
   );
 }
