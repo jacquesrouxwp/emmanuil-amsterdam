@@ -161,99 +161,104 @@ export function WelcomePage() {
             </motion.div>
 
             {/* Options */}
-            <motion.div variants={fadeUp} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <motion.div variants={fadeUp} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-              {/* Invitation — pastor */}
+              {/* ── Invitation — pastor ── */}
               <button
                 onClick={handleInvite}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 14,
-                  padding: '16px 18px', borderRadius: 16, cursor: 'pointer',
+                  display: 'flex', alignItems: 'flex-start', gap: 14,
+                  padding: '18px 18px', borderRadius: 18, cursor: 'pointer',
                   background: 'linear-gradient(135deg, #0d1f33 0%, #1a3a5c 100%)',
-                  border: '1px solid rgba(94,158,214,0.25)',
+                  border: '1px solid rgba(94,158,214,0.3)',
                   textAlign: 'left', width: '100%',
                 }}
               >
                 <div style={{
-                  width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                  width: 44, height: 44, borderRadius: 12, flexShrink: 0, marginTop: 2,
                   background: 'rgba(94,158,214,0.15)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   <span style={{ fontSize: 22 }}>🎟️</span>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 3 }}>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 5 }}>
                     У мене є запрошення
                   </p>
-                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.4 }}>
-                    Я пастор — отримав посилання від колеги
+                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', lineHeight: 1.55 }}>
+                    Пастор запрошує пастора — особисто, напряму. Це не просто доступ до додатку, це знак довіри між служителями. Ми знаємо одне одного, і тому можемо разом будувати.
                   </p>
                 </div>
-                <ChevronRight size={16} color="rgba(255,255,255,0.3)" />
+                <ChevronRight size={16} color="rgba(255,255,255,0.25)" style={{ flexShrink: 0, marginTop: 3 }} />
               </button>
 
-              {/* My church — member */}
+              {/* ── My church — member ── */}
               <button
                 onClick={handleMember}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 14,
-                  padding: '16px 18px', borderRadius: 16, cursor: 'pointer',
+                  display: 'flex', alignItems: 'flex-start', gap: 14,
+                  padding: '18px 18px', borderRadius: 18, cursor: 'pointer',
                   background: 'var(--bg-secondary)',
                   border: '1px solid var(--border-light)',
                   textAlign: 'left', width: '100%',
                 }}
               >
                 <div style={{
-                  width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-                  background: 'var(--primary-bg)',
+                  width: 44, height: 44, borderRadius: 12, flexShrink: 0, marginTop: 2,
+                  background: 'rgba(94,158,214,0.08)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   <span style={{ fontSize: 22 }}>⛪</span>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 3 }}>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 5 }}>
                     Я з конкретної церкви
                   </p>
-                  <p style={{ fontSize: 12, color: 'var(--text-tertiary)', lineHeight: 1.4 }}>
-                    Хочу слідкувати за своєю спільнотою
+                  <p style={{ fontSize: 12, color: 'var(--text-tertiary)', lineHeight: 1.55 }}>
+                    Слідкуй за своєю громадою — розклад, події, пости пастора. Живи в курсі того, чим живе твоя церква, навіть якщо ти далеко.
                   </p>
                 </div>
-                <ChevronRight size={16} color="var(--text-tertiary)" />
+                <ChevronRight size={16} color="var(--text-tertiary)" style={{ flexShrink: 0, marginTop: 3 }} />
               </button>
 
-              {/* Visitor / browse */}
+              {/* ── Visitor / browse ── */}
               <button
                 onClick={handleVisitor}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 14,
-                  padding: '16px 18px', borderRadius: 16, cursor: 'pointer',
+                  display: 'flex', alignItems: 'flex-start', gap: 14,
+                  padding: '18px 18px', borderRadius: 18, cursor: 'pointer',
                   background: 'var(--bg-secondary)',
                   border: '1px solid var(--border-light)',
                   textAlign: 'left', width: '100%',
                 }}
               >
                 <div style={{
-                  width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-                  background: 'rgba(201,169,110,0.1)',
+                  width: 44, height: 44, borderRadius: 12, flexShrink: 0, marginTop: 2,
+                  background: 'rgba(201,169,110,0.08)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   <span style={{ fontSize: 22 }}>🌍</span>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 3 }}>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 5 }}>
                     Просто дивлюся
                   </p>
-                  <p style={{ fontSize: 12, color: 'var(--text-tertiary)', lineHeight: 1.4 }}>
-                    Хочу познайомитись із церквами світу
+                  <p style={{ fontSize: 12, color: 'var(--text-tertiary)', lineHeight: 1.55 }}>
+                    Подивись як живуть церкви у різних країнах. Можливо, щось відгукнеться. Kairos відкритий для тих, хто шукає.
                   </p>
                 </div>
-                <ChevronRight size={16} color="var(--text-tertiary)" />
+                <ChevronRight size={16} color="var(--text-tertiary)" style={{ flexShrink: 0, marginTop: 3 }} />
               </button>
             </motion.div>
 
-            <motion.p variants={fadeUp} style={{ fontSize: 11, color: 'var(--text-tertiary)', textAlign: 'center', lineHeight: 1.5 }}>
-              Kairos — мережа лише за запрошенням.{'\n'}Кожна церква з'являється через особисте знайомство.
-            </motion.p>
+            <motion.div variants={fadeUp} style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: 12, color: 'var(--text-tertiary)', lineHeight: 1.65, maxWidth: 300, margin: '0 auto' }}>
+                Kairos — мережа лише за особистим знайомством.{'\n'}
+                <span style={{ color: 'rgba(201,169,110,0.7)' }}>
+                  Різні деномінації, одне підґрунтя — Христос.
+                </span>
+              </p>
+            </motion.div>
           </motion.div>
         )}
 

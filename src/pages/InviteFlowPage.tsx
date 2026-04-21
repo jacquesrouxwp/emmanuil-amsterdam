@@ -107,11 +107,14 @@ export function InviteFlowPage() {
                 style={{ fontSize: 13, color: 'var(--primary)', fontWeight: 600, cursor: 'pointer', marginBottom: 24 }}>
                 ← Назад
               </button>
-              <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: -0.5, marginBottom: 8 }}>
-                🎟️ Запрошення
+              <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: -0.5, marginBottom: 10 }}>
+                🎟️ Запрошення пастора
               </h1>
-              <p style={{ fontSize: 14, color: 'var(--text-tertiary)', lineHeight: 1.55 }}>
-                Вставте посилання або введіть код запрошення від пастора, який вас запросив.
+              <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: 10 }}>
+                Кожна церква в Kairos з'являється через особисте запрошення від іншого пастора.
+              </p>
+              <p style={{ fontSize: 13, color: 'var(--text-tertiary)', lineHeight: 1.65 }}>
+                Це не формальність — це ланцюжок довіри. Ми будуємо мости між служителями по всьому світу, щоб знати одне одного особисто, ділитися досвідом і бачити як тепло Христове діє в різних народах і культурах. Пряме знайомство — наш захист від ізоляції та помилок.
               </p>
             </div>
 
