@@ -241,6 +241,23 @@ export async function fetchChurch(slug: string): Promise<ApiChurch | null> {
   } catch { return null; }
 }
 
+export async function updateChurch(
+  secret: string,
+  slug: string,
+  data: Partial<Omit<ApiChurch, 'slug'>>,
+): Promise<ApiChurch> {
+  const res = await fetch(`${API_URL}/api/churches/${encodeURIComponent(slug)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+    throw new Error(err.error || 'update church failed');
+  }
+  return res.json();
+}
+
 export async function seedChurches(secret: string, churches: any[]): Promise<{ inserted: number }> {
   const res = await fetch(`${API_URL}/api/churches/seed`, {
     method: 'POST',

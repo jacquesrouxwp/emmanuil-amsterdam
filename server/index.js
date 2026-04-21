@@ -561,6 +561,43 @@ app.get('/api/churches/:slug', async (req, res) => {
   }
 });
 
+// PUT /api/churches/:slug  — pastor updates their own church profile
+app.put('/api/churches/:slug', async (req, res) => {
+  if (!db) return res.status(503).json({ error: 'DB not connected' });
+  try {
+    const callerChurch = await adminChurchId(req);
+    if (!callerChurch) return res.status(403).json({ error: 'Forbidden' });
+    const { slug } = req.params;
+    // Must be either global admin or the church's own admin
+    if (callerChurch !== '*' && callerChurch !== slug) {
+      return res.status(403).json({ error: 'You can only edit your own church' });
+    }
+    // Fields the pastor is allowed to change (never overwrite slug or adminSecret)
+    const ALLOWED = [
+      'name','city','country','address','denomination','description',
+      'schedule','pastor','pastorBio','coverPhoto',
+      'telegram','instagram','website','language',
+    ];
+    const update = {};
+    for (const key of ALLOWED) {
+      if (req.body[key] !== undefined) update[key] = req.body[key];
+    }
+    if (Object.keys(update).length === 0) {
+      return res.status(400).json({ error: 'No updatable fields provided' });
+    }
+    const result = await db.collection('churches').findOneAndUpdate(
+      { slug },
+      { $set: update },
+      { returnDocument: 'after', projection: { adminSecret: 0 } }
+    );
+    if (!result) return res.status(404).json({ error: 'Church not found' });
+    res.json(result);
+  } catch (e) {
+    console.error('PUT /api/churches/:slug', e);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Global-admin only: seed churches from static data (one-time migration).
 // POST /api/churches/seed  { churches: [...] }
 app.post('/api/churches/seed', async (req, res) => {
