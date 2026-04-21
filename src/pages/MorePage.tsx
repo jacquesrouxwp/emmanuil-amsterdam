@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Church, Phone, Share2, Info, ChevronDown, Heart, Shield,
   CreditCard, Landmark, ExternalLink, MapPin, Instagram,
-  Eye, BookOpen, Globe,
+  Eye, BookOpen, Globe, RefreshCw,
 } from 'lucide-react';
 import { hapticFeedback, shareUrl, openLink } from '@/lib/telegram';
 import { useT } from '@/i18n/translations';
@@ -12,6 +12,7 @@ import { ChurchStats } from '@/components/shared/ChurchStats';
 import { PersonCard } from '@/components/shared/PersonCard';
 import { pastors } from '@/data/people';
 import { ADMIN_MODE_KEY } from './AdminPage';
+import { useUserStore } from '@/store/userStore';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
@@ -100,6 +101,7 @@ function AccordionRow({
 export function MorePage() {
   const navigate = useNavigate();
   const t = useT();
+  const { reset, role, churchId } = useUserStore();
 
   // ── Admin tap counter ─────────────────────────────────────────────────────
   const tapCount = useRef(0);
@@ -478,6 +480,44 @@ export function MorePage() {
               ))}
             </div>
           )}
+        </div>
+      </motion.div>
+
+      {/* ── Role switcher (for testing) ─────────────────────────── */}
+      <motion.div variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}
+        style={{ padding: '4px 16px 32px' }}>
+        <div style={{
+          padding: '12px 14px', borderRadius: 12,
+          background: 'var(--bg-secondary)',
+          border: '1px solid var(--border-light)',
+          display: 'flex', alignItems: 'center', gap: 12,
+        }}>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: 11, color: 'var(--text-tertiary)', marginBottom: 2 }}>
+              Поточна роль
+            </p>
+            <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>
+              {role === 'pastor' ? '👨‍💼 Пастор' : role === 'member' ? '⛪ Прихожанин' : '🌍 Гість'}
+              {churchId ? ` · ${churchId}` : ''}
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              hapticFeedback('medium');
+              reset();
+              navigate('/welcome');
+            }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '8px 12px', borderRadius: 10,
+              background: 'var(--bg)', border: '1px solid var(--border)',
+              fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)',
+              cursor: 'pointer',
+            }}
+          >
+            <RefreshCw size={13} />
+            Змінити роль
+          </button>
         </div>
       </motion.div>
 

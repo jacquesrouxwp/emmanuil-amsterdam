@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { DesktopLayout } from '@/components/layout/DesktopLayout';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
@@ -15,22 +15,37 @@ import { AdminPage } from '@/pages/AdminPage';
 import { BiblePage } from '@/pages/BiblePage';
 import { WorldPage } from '@/pages/WorldPage';
 import { ChurchProfilePage } from '@/pages/ChurchProfilePage';
+import { WelcomePage } from '@/pages/WelcomePage';
+import { InviteFlowPage } from '@/pages/InviteFlowPage';
+import { useUserStore } from '@/store/userStore';
+
+function OnboardingGate({ children }: { children: React.ReactNode }) {
+  const { onboarded } = useUserStore();
+  if (!onboarded) return <Navigate to="/welcome" replace />;
+  return <>{children}</>;
+}
 
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/schedule" element={<SchedulePage />} />
-      <Route path="/events" element={<EventsPage />} />
-      <Route path="/about" element={<AboutPage />} />
-      <Route path="/contacts" element={<ContactsPage />} />
-      <Route path="/donate" element={<DonatePage />} />
-      <Route path="/more" element={<MorePage />} />
-      <Route path="/volunteer" element={<VolunteerPage />} />
+      {/* Onboarding — no gate */}
+      <Route path="/welcome" element={<WelcomePage />} />
+      <Route path="/invite-flow" element={<InviteFlowPage />} />
+      <Route path="/invite/:token" element={<InviteFlowPage />} />
+
+      {/* App — gated behind onboarding */}
+      <Route path="/" element={<OnboardingGate><HomePage /></OnboardingGate>} />
+      <Route path="/schedule" element={<OnboardingGate><SchedulePage /></OnboardingGate>} />
+      <Route path="/events" element={<OnboardingGate><EventsPage /></OnboardingGate>} />
+      <Route path="/about" element={<OnboardingGate><AboutPage /></OnboardingGate>} />
+      <Route path="/contacts" element={<OnboardingGate><ContactsPage /></OnboardingGate>} />
+      <Route path="/donate" element={<OnboardingGate><DonatePage /></OnboardingGate>} />
+      <Route path="/more" element={<OnboardingGate><MorePage /></OnboardingGate>} />
+      <Route path="/volunteer" element={<OnboardingGate><VolunteerPage /></OnboardingGate>} />
       <Route path="/admin" element={<AdminPage />} />
-      <Route path="/bible" element={<BiblePage />} />
-      <Route path="/world" element={<WorldPage />} />
-      <Route path="/church/:id" element={<ChurchProfilePage />} />
+      <Route path="/bible" element={<OnboardingGate><BiblePage /></OnboardingGate>} />
+      <Route path="/world" element={<OnboardingGate><WorldPage /></OnboardingGate>} />
+      <Route path="/church/:id" element={<OnboardingGate><ChurchProfilePage /></OnboardingGate>} />
     </Routes>
   );
 }
@@ -51,7 +66,6 @@ function MobileShell() {
 export default function App() {
   const isDesktop = useIsDesktop();
 
-  // Toggle body class so CSS can adapt
   useEffect(() => {
     if (isDesktop) {
       document.body.classList.add('desktop-mode');

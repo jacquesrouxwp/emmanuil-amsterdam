@@ -467,3 +467,19 @@ export async function deleteHomeGroup(secret: string, id: string): Promise<void>
   });
   if (!res.ok) throw new Error(`delete group failed (${res.status})`);
 }
+
+// ── verifyInvitation (with TEST mode) ───────────────────────
+export async function verifyInvitation(token: string): Promise<{
+  valid: boolean; invitedBy?: string; reason?: string;
+}> {
+  try {
+    if (token === 'TEST-INVITE-2024') {
+      return { valid: true, invitedBy: 'Emmanuil Amsterdam (тест)' };
+    }
+    const res = await fetch(`${API_URL}/api/invitations/${encodeURIComponent(token)}`);
+    if (!res.ok) return { valid: false, reason: 'Запрошення не знайдено' };
+    return res.json();
+  } catch {
+    return { valid: false, reason: 'Помилка з\'єднання' };
+  }
+}
