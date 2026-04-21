@@ -19,6 +19,7 @@ import { WelcomePage } from '@/pages/WelcomePage';
 import { InviteFlowPage } from '@/pages/InviteFlowPage';
 import { MyChurchPage } from '@/pages/MyChurchPage';
 import { MyChurchProfileEditor } from '@/pages/MyChurchProfileEditor';
+import { MyChurchPostsManager } from '@/pages/MyChurchPostsManager';
 import { MinisterAccessPage } from '@/pages/MinisterAccessPage';
 import { useUserStore, hasAdminAccess } from '@/store/userStore';
 
@@ -56,6 +57,7 @@ function AppRoutes() {
       <Route path="/admin" element={<AdminPage />} />
       <Route path="/my-church" element={<AdminGate><MyChurchPage /></AdminGate>} />
       <Route path="/my-church/profile" element={<AdminGate><MyChurchProfileEditor /></AdminGate>} />
+      <Route path="/my-church/posts" element={<AdminGate><MyChurchPostsManager /></AdminGate>} />
       <Route path="/bible" element={<OnboardingGate><BiblePage /></OnboardingGate>} />
       <Route path="/world" element={<OnboardingGate><WorldPage /></OnboardingGate>} />
       <Route path="/church/:id" element={<OnboardingGate><ChurchProfilePage /></OnboardingGate>} />
