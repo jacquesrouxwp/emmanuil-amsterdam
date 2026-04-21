@@ -7,12 +7,249 @@ import { useLang, loc } from '@/i18n/translations';
 import { fetchPosts, type ApiPost } from '@/lib/api';
 import { churchLocations, type ChurchLocation } from '@/data/churches';
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const AVATAR_GRADIENTS = [
+  ['#1a3a5c', '#2d5a8e'],
+  ['#2d5a8e', '#4a7ab5'],
+  ['#5E9ED6', '#89BBE5'],
+  ['#C9A96E', '#D9BA7C'],
+  ['#1a5c3a', '#2d8e5a'],
+  ['#5c1a3a', '#8e2d5a'],
+];
+
+function churchInitials(name: string) {
+  return name.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+}
+
+function timeAgo(dateStr: string) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const h = Math.floor(diff / 3600000);
+  const d = Math.floor(diff / 86400000);
+  if (h < 1) return 'щойно';
+  if (h < 24) return `${h}г тому`;
+  if (d < 7) return `${d}д тому`;
+  return new Date(dateStr).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' });
+}
+
+// ── Stories row ───────────────────────────────────────────────────────────────
+function StoriesRow({ onInvite }: { onInvite: () => void }) {
+  const navigate = useNavigate();
+  const connected = churchLocations.slice(0, 8);
+
+  return (
+    <div style={{
+      display: 'flex', gap: 14, overflowX: 'auto', padding: '4px 16px 12px',
+      scrollbarWidth: 'none',
+    }}>
+      {/* Invite "+" */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+        <button
+          onClick={() => { hapticFeedback('light'); onInvite(); }}
+          style={{
+            width: 52, height: 52, borderRadius: '50%',
+            border: '2px dashed var(--border)',
+            background: 'var(--bg-secondary)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer',
+          }}
+        >
+          <span style={{ fontSize: 22, color: 'var(--text-tertiary)', lineHeight: 1 }}>+</span>
+        </button>
+        <span style={{ fontSize: 10, color: 'var(--text-tertiary)', maxWidth: 52, textAlign: 'center', lineHeight: 1.2 }}>
+          Запросити
+        </span>
+      </div>
+
+      {/* Church circles */}
+      {connected.map((c, i) => {
+        const [from, to] = AVATAR_GRADIENTS[i % AVATAR_GRADIENTS.length];
+        return (
+          <div
+            key={c.id}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, flexShrink: 0, cursor: 'pointer' }}
+            onClick={() => { hapticFeedback('light'); navigate(`/church/${c.id}`); }}
+          >
+            <div style={{
+              width: 52, height: 52, borderRadius: '50%',
+              background: `linear-gradient(135deg, ${from}, ${to})`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              border: '2px solid var(--bg)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            }}>
+              <span style={{ fontSize: 15, fontWeight: 700, color: '#fff', letterSpacing: -0.5 }}>
+                {churchInitials(c.name)}
+              </span>
+            </div>
+            <span style={{ fontSize: 10, color: 'var(--text-secondary)', maxWidth: 54, textAlign: 'center', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {c.name.split(' ')[0]}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Invite pastor dark card ───────────────────────────────────────────────────
+function InvitePastorCard({ onInvite }: { onInvite: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      style={{
+        margin: '0 16px',
+        borderRadius: 16,
+        padding: '14px 16px',
+        background: 'linear-gradient(135deg, #0d1f33 0%, #1a3a5c 100%)',
+        border: '1px solid rgba(94,158,214,0.2)',
+        display: 'flex', alignItems: 'center', gap: 12,
+      }}
+    >
+      <div style={{
+        width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+        background: 'rgba(94,158,214,0.15)',
+        border: '1px solid rgba(94,158,214,0.25)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5E9ED6" strokeWidth="2">
+          <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+        </svg>
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontSize: 13, fontWeight: 700, color: '#fff', marginBottom: 2 }}>
+          Запросити пастора
+        </p>
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', lineHeight: 1.3 }}>
+          Тільки за запрошенням — ваше коло довіри
+        </p>
+      </div>
+      <button
+        onClick={() => { hapticFeedback('medium'); onInvite(); }}
+        style={{
+          padding: '8px 14px', borderRadius: 20, flexShrink: 0,
+          background: '#5E9ED6', color: '#fff',
+          fontSize: 12, fontWeight: 700, cursor: 'pointer',
+        }}
+      >
+        Запросити
+      </button>
+    </motion.div>
+  );
+}
+
+// ── Post card ─────────────────────────────────────────────────────────────────
+function PostCard({ post, church, lang, onChurchClick }: {
+  post: ApiPost;
+  church: ChurchLocation | undefined;
+  lang: string;
+  onChurchClick: () => void;
+}) {
+  const [liked, setLiked] = useState(false);
+  const title = loc(post.title, lang as any);
+  const body = loc(post.body, lang as any);
+  const idx = churchLocations.findIndex((c) => c.id === church?.id);
+  const [from, to] = AVATAR_GRADIENTS[Math.max(0, idx) % AVATAR_GRADIENTS.length];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="card"
+      style={{ margin: '0 16px', padding: 0, overflow: 'hidden' }}
+    >
+      {/* Header */}
+      <div
+        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px 10px', cursor: 'pointer' }}
+        onClick={onChurchClick}
+      >
+        <div style={{
+          width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+          background: `linear-gradient(135deg, ${from}, ${to})`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>
+            {churchInitials(church?.name || 'CH')}
+          </span>
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
+            {church?.pastor || church?.name || 'Пастор'}
+          </p>
+          <p style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
+            {church?.name}{church?.city ? ` · ${church.city}` : ''}
+          </p>
+        </div>
+        <span style={{ fontSize: 11, color: 'var(--text-tertiary)', flexShrink: 0 }}>
+          {timeAgo(post.date)}
+        </span>
+      </div>
+
+      {/* Photo */}
+      {post.photos?.[0] && (
+        <img
+          src={post.photos[0]} alt=""
+          style={{ width: '100%', maxHeight: 240, objectFit: 'cover', display: 'block' }}
+        />
+      )}
+
+      {/* Body */}
+      <div style={{ padding: '10px 14px 12px' }}>
+        {title && (
+          <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>
+            {title}
+          </p>
+        )}
+        {body && (
+          <p style={{
+            fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6,
+            display: '-webkit-box', WebkitLineClamp: 4,
+            WebkitBoxOrient: 'vertical' as any, overflow: 'hidden',
+          }}>
+            {body}
+          </p>
+        )}
+      </div>
+
+      {/* Actions */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 18,
+        padding: '8px 14px 12px',
+        borderTop: '1px solid var(--border-light)',
+      }}>
+        <button
+          onClick={() => { hapticFeedback('light'); setLiked((v) => !v); }}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 5,
+            color: liked ? '#e05' : 'var(--text-tertiary)', fontSize: 12, fontWeight: 500, cursor: 'pointer',
+          }}
+        >
+          <Heart size={15} fill={liked ? '#e05' : 'none'} stroke={liked ? '#e05' : 'currentColor'} />
+          <span>{liked ? 1 : 0}</span>
+        </button>
+        <button style={{
+          display: 'flex', alignItems: 'center', gap: 5,
+          color: 'var(--text-tertiary)', fontSize: 12, fontWeight: 500, cursor: 'pointer',
+        }}>
+          <MessageCircle size={15} /> <span>0</span>
+        </button>
+        <div style={{ flex: 1 }} />
+        <button style={{ color: 'var(--text-tertiary)', cursor: 'pointer' }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/>
+          </svg>
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
 // ── World feed ────────────────────────────────────────────────────────────────
 function WorldFeed() {
   const lang = useLang();
   const navigate = useNavigate();
   const [posts, setPosts] = useState<ApiPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showInviteHint, setShowInviteHint] = useState(false);
 
   useEffect(() => {
     fetchPosts('*').then((p) => { setPosts(p); setLoading(false); });
@@ -21,110 +258,106 @@ function WorldFeed() {
   const getChurch = (churchId?: string) =>
     churchLocations.find((c) => c.id === (churchId || 'emmanuil-amsterdam'));
 
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '16px 16px 0' }}>
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="card" style={{ padding: 16 }}>
-            <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
-              <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--bg-secondary)' }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ height: 12, background: 'var(--bg-secondary)', borderRadius: 6, width: '60%', marginBottom: 6 }} />
-                <div style={{ height: 10, background: 'var(--bg-secondary)', borderRadius: 6, width: '40%' }} />
-              </div>
-            </div>
-            <div style={{ height: 12, background: 'var(--bg-secondary)', borderRadius: 6, marginBottom: 6 }} />
-            <div style={{ height: 12, background: 'var(--bg-secondary)', borderRadius: 6, width: '80%' }} />
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  if (posts.length === 0) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: 12 }}>
-        <Rss size={40} color="var(--text-tertiary)" />
-        <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Поки що немає публікацій</p>
-      </div>
-    );
-  }
-
   return (
-    <div style={{ padding: '12px 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {posts.map((post) => {
-        const church = getChurch(post.churchId);
-        const title = loc(post.title, lang);
-        const body = loc(post.body, lang);
-        const date = new Date(post.date).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' });
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 20 }}>
+      {/* Platform header */}
+      <div style={{ padding: '14px 16px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div>
+          <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: -0.8, color: 'var(--text-primary)' }}>
+            Kairos
+          </h1>
+          <p style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 1 }}>
+            Мережа церков · {churchLocations.length} спільнот
+          </p>
+        </div>
+        <div style={{
+          width: 8, height: 8, borderRadius: '50%',
+          background: '#34C759',
+          boxShadow: '0 0 0 3px rgba(52,199,89,0.2)',
+        }} />
+      </div>
 
-        return (
+      {/* Stories */}
+      <StoriesRow onInvite={() => setShowInviteHint(true)} />
+
+      {/* Invite hint */}
+      <AnimatePresence>
+        {showInviteHint && (
           <motion.div
-            key={post._id}
-            className="card"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            style={{ padding: 0, overflow: 'hidden', cursor: 'pointer' }}
-            onClick={() => church && navigate(`/church/${church.id}`)}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            style={{ overflow: 'hidden' }}
           >
-            {/* Church header */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px 10px' }}>
+            <div style={{ padding: '0 16px' }}>
               <div style={{
-                width: 38, height: 38, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #1a3a5c, #2d5a8e)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                padding: '12px 14px', borderRadius: 12,
+                background: 'var(--primary-bg)',
+                border: '1px solid rgba(94,158,214,0.2)',
+                fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5,
               }}>
-                <Church size={18} color="#fff" />
-              </div>
-              <div style={{ flex: 1 }}>
-                <p style={{ fontSize: 13, fontWeight: 700 }}>
-                  {church?.name || 'Церква'}
-                </p>
-                <p style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
-                  {church?.city && `${church.city} · `}{date}
-                </p>
-              </div>
-              {church && (
+                💡 Щоб запросити пастора — надішліть йому посилання або QR-код. Доступно в адмін-панелі після підключення.
                 <button
-                  onClick={(e) => { e.stopPropagation(); hapticFeedback('light'); navigate(`/church/${church.id}`); }}
-                  style={{
-                    fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 20,
-                    background: 'var(--primary-bg)', color: 'var(--primary)', cursor: 'pointer',
-                  }}
+                  onClick={() => setShowInviteHint(false)}
+                  style={{ marginLeft: 8, fontSize: 12, color: 'var(--primary)', fontWeight: 600, cursor: 'pointer' }}
                 >
-                  Профіль
+                  Зрозуміло
                 </button>
-              )}
-            </div>
-
-            {/* Photo */}
-            {post.photos?.[0] && (
-              <img src={post.photos[0]} alt="" style={{ width: '100%', maxHeight: 220, objectFit: 'cover', display: 'block' }} />
-            )}
-
-            {/* Content */}
-            <div style={{ padding: '10px 14px 14px' }}>
-              <p style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>{title}</p>
-              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.55, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' as any, overflow: 'hidden' }}>
-                {body}
-              </p>
-            </div>
-
-            {/* Actions */}
-            <div style={{
-              display: 'flex', gap: 16, padding: '0 14px 12px',
-              borderTop: '1px solid var(--border-light)', paddingTop: 10,
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--text-tertiary)', fontSize: 12 }}>
-                <Heart size={14} /> <span>0</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--text-tertiary)', fontSize: 12 }}>
-                <MessageCircle size={14} /> <span>0</span>
               </div>
             </div>
           </motion.div>
-        );
-      })}
+        )}
+      </AnimatePresence>
+
+      {/* Section label */}
+      <div style={{ padding: '0 16px' }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.2, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>
+          Лента
+        </p>
+      </div>
+
+      {/* Invite card */}
+      <InvitePastorCard onInvite={() => setShowInviteHint(true)} />
+
+      {/* Posts */}
+      {loading ? (
+        [1, 2, 3].map((i) => (
+          <div key={i} className="card" style={{ margin: '0 16px', padding: 16 }}>
+            <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+              <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--bg-secondary)' }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ height: 12, background: 'var(--bg-secondary)', borderRadius: 6, width: '55%', marginBottom: 6 }} />
+                <div style={{ height: 10, background: 'var(--bg-secondary)', borderRadius: 6, width: '35%' }} />
+              </div>
+            </div>
+            <div style={{ height: 11, background: 'var(--bg-secondary)', borderRadius: 6, marginBottom: 6 }} />
+            <div style={{ height: 11, background: 'var(--bg-secondary)', borderRadius: 6, width: '75%' }} />
+          </div>
+        ))
+      ) : posts.length === 0 ? (
+        <div style={{ padding: '40px 16px', textAlign: 'center' }}>
+          <p style={{ fontSize: 32, marginBottom: 12 }}>🕊️</p>
+          <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
+            Поки тут порожньо
+          </p>
+          <p style={{ fontSize: 13, color: 'var(--text-tertiary)', lineHeight: 1.5 }}>
+            Перші публікації з'являться коли церкви почнуть ділитися своїм життям
+          </p>
+        </div>
+      ) : (
+        posts.map((post) => (
+          <PostCard
+            key={post._id}
+            post={post}
+            church={getChurch(post.churchId)}
+            lang={lang}
+            onChurchClick={() => {
+              const church = getChurch(post.churchId);
+              if (church) { hapticFeedback('light'); navigate(`/church/${church.id}`); }
+            }}
+          />
+        ))
+      )}
     </div>
   );
 }
@@ -285,27 +518,30 @@ export function WorldPage() {
       display: 'flex', flexDirection: 'column', overflow: 'hidden',
     }}>
 
-      {/* ── Top bar ──────────────────────────────────────────────── */}
+      {/* ── Top bar (globe only) ─────────────────────────────────── */}
       <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, zIndex: 20, padding: '14px 16px 10px',
+        position: 'absolute', top: 0, left: 0, right: 0, zIndex: 20,
+        padding: view === 'feed' ? '14px 16px 8px' : '14px 16px 10px',
         background: view === 'feed' ? 'var(--bg)' : 'transparent',
         borderBottom: view === 'feed' ? '1px solid var(--border)' : 'none',
       }}>
-        {/* Title row + toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Globe2 size={17} color={view === 'feed' ? 'var(--primary)' : 'rgba(255,255,255,0.6)'} />
-            <span style={{ fontSize: 15, fontWeight: 700, color: view === 'feed' ? 'var(--text)' : '#fff', letterSpacing: -0.3 }}>
-              Церкви світу
-            </span>
-            <span style={{
-              fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 100,
-              background: 'rgba(94,158,214,0.2)', color: '#89BBE5',
-              border: '1px solid rgba(94,158,214,0.25)',
-            }}>
-              {churchLocations.length}
-            </span>
-          </div>
+        {/* Toggle row */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: view === 'feed' ? 'flex-end' : 'space-between', marginBottom: view === 'globe' ? 10 : 0 }}>
+          {view === 'globe' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Globe2 size={17} color="rgba(255,255,255,0.6)" />
+              <span style={{ fontSize: 15, fontWeight: 700, color: '#fff', letterSpacing: -0.3 }}>
+                Kairos
+              </span>
+              <span style={{
+                fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 100,
+                background: 'rgba(94,158,214,0.2)', color: '#89BBE5',
+                border: '1px solid rgba(94,158,214,0.25)',
+              }}>
+                {churchLocations.length}
+              </span>
+            </div>
+          )}
 
           {/* Toggle: Глобус | Лента */}
           <div style={{
@@ -395,7 +631,7 @@ export function WorldPage() {
 
       {/* ── Feed view ────────────────────────────────────────────── */}
       {view === 'feed' && (
-        <div style={{ position: 'absolute', inset: 0, top: 110, bottom: 0, overflowY: 'auto', background: 'var(--bg)', zIndex: 10 }}>
+        <div style={{ position: 'absolute', inset: 0, top: 52, bottom: 0, overflowY: 'auto', background: 'var(--bg)', zIndex: 10 }}>
           <WorldFeed />
         </div>
       )}

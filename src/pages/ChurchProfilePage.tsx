@@ -1,14 +1,16 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, MapPin, CheckCircle2, Globe, Instagram,
-  Users, Calendar, Church, ExternalLink, Share2,
+  Users, Church, ExternalLink, Share2,
+  HandHeart, ChevronDown, Plus, UserCircle2,
 } from 'lucide-react';
 import { hapticFeedback, openLink, shareUrl } from '@/lib/telegram';
 import { BlogFeed } from '@/components/shared/BlogFeed';
-import { ChurchStats } from '@/components/shared/ChurchStats';
 import { churchLocations } from '@/data/churches';
 import { useT } from '@/i18n/translations';
+import { useAdminChurch, canEditChurch } from '@/hooks/useAdminChurch';
 
 const fadeUp = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } };
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
@@ -50,8 +52,11 @@ export function ChurchProfilePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const t = useT();
+  const { churchId: adminChurchId } = useAdminChurch();
+  const [moreOpen, setMoreOpen] = useState(false);
 
   const church = churchLocations.find((c) => c.id === id);
+  const canEdit = church ? canEditChurch(adminChurchId, church.id) : false;
 
   if (!church) {
     return (
@@ -167,27 +172,63 @@ export function ChurchProfilePage() {
           </p>
         )}
 
-        {/* Quick facts row */}
-        <div style={{ display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
-          {church.members && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <Users size={13} color="var(--primary)" />
-              <span style={{ fontSize: 13, fontWeight: 600 }}>{church.members}</span>
-              <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>прихожан</span>
-            </div>
-          )}
-          {church.founded && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <Calendar size={13} color="var(--primary)" />
-              <span style={{ fontSize: 13, fontWeight: 600 }}>з {church.founded}</span>
-            </div>
-          )}
+        {/* ── Key people cards: Pastor + Ministers ──────────────── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+          {/* Pastor card */}
           {church.pastor && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <Church size={13} color="var(--primary)" />
-              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Пастор: <strong>{church.pastor}</strong></span>
+            <div className="card" style={{
+              padding: 14, display: 'flex', alignItems: 'center', gap: 12,
+              background: 'linear-gradient(135deg, rgba(94,158,214,0.08) 0%, rgba(94,158,214,0.02) 100%)',
+              border: '1px solid rgba(94,158,214,0.18)',
+            }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: '50%',
+                background: 'linear-gradient(135deg, #5E9ED6, #89BBE5)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                overflow: 'hidden',
+              }}>
+                {church.pastorPhoto ? (
+                  <img src={church.pastorPhoto} alt={church.pastor} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <UserCircle2 size={26} color="#fff" />
+                )}
+              </div>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: 0.5, color: 'var(--text-tertiary)', textTransform: 'uppercase', marginBottom: 2 }}>
+                  Пастор
+                </p>
+                <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {church.pastor}
+                </p>
+              </div>
             </div>
           )}
+
+          {/* Ministers card (placeholder: 4 for Emmanuil, empty for others) */}
+          <div className="card" style={{
+            padding: 14, display: 'flex', alignItems: 'center', gap: 12,
+            background: 'linear-gradient(135deg, rgba(201,169,110,0.08) 0%, rgba(201,169,110,0.02) 100%)',
+            border: '1px solid rgba(201,169,110,0.18)',
+          }}>
+            <div style={{
+              width: 44, height: 44, borderRadius: 12,
+              background: 'linear-gradient(135deg, #C9A96E, #D9BA7C)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              <HandHeart size={22} color="#fff" />
+            </div>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: 0.5, color: 'var(--text-tertiary)', textTransform: 'uppercase', marginBottom: 2 }}>
+                Служителі
+              </p>
+              <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>
+                {church.id === 'emmanuil-amsterdam' ? '12' : '—'}
+                <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-tertiary)', marginLeft: 4 }}>
+                  осіб
+                </span>
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Social links */}
@@ -240,40 +281,127 @@ export function ChurchProfilePage() {
           )}
         </div>
 
-        {/* Schedule pill */}
-        {church.schedule && (
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            padding: '6px 12px', borderRadius: 20,
-            background: 'var(--primary-bg)', border: '1px solid rgba(94,158,214,0.2)',
-            marginBottom: 20,
-          }}>
-            <Calendar size={13} color="var(--primary)" />
-            <span style={{ fontSize: 13, color: 'var(--primary)', fontWeight: 500 }}>
-              {church.schedule}
-            </span>
-          </div>
-        )}
+        <div style={{ marginBottom: 16 }} />
       </motion.div>
 
-      {/* ── Stats (only for our church with real data) ────────────── */}
+      {/* ── "More about church" expandable section ──────────────── */}
       {isOurChurch && (
-        <motion.div variants={fadeUp} style={{ padding: '0 16px 20px' }}>
-          <ChurchStats />
+        <motion.div variants={fadeUp} style={{ padding: '0 16px 16px' }}>
+          <button
+            onClick={() => { hapticFeedback('light'); setMoreOpen((v) => !v); }}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              width: '100%', padding: '12px 14px',
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-light)',
+              borderRadius: 12, cursor: 'pointer',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: 8,
+                background: 'var(--primary-bg)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Users size={15} color="var(--primary)" />
+              </div>
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
+                Більше про церкву
+              </span>
+            </div>
+            <motion.div animate={{ rotate: moreOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+              <ChevronDown size={16} color="var(--text-tertiary)" />
+            </motion.div>
+          </button>
+
+          <AnimatePresence initial={false}>
+            {moreOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                style={{ overflow: 'hidden' }}
+              >
+                <div style={{ paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {/* Attendees — the only remaining stat */}
+                  {church.members && (
+                    <div className="card" style={{
+                      padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12,
+                    }}>
+                      <div style={{
+                        width: 38, height: 38, borderRadius: 10,
+                        background: 'var(--primary-bg)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                      }}>
+                        <Users size={18} color="var(--primary)" />
+                      </div>
+                      <div>
+                        <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: 0.5, color: 'var(--text-tertiary)', textTransform: 'uppercase', marginBottom: 2 }}>
+                          Прихожан
+                        </p>
+                        <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>
+                          {church.members}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* About the church — self description */}
+                  <div className="card" style={{ padding: 14 }}>
+                    <p style={{
+                      fontSize: 10, fontWeight: 700, letterSpacing: 1,
+                      color: 'var(--text-tertiary)', textTransform: 'uppercase', marginBottom: 8,
+                    }}>
+                      Про церкву
+                    </p>
+                    <p style={{
+                      fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6,
+                      whiteSpace: 'pre-wrap',
+                    }}>
+                      {church.description || 'Церква ще не додала опис про себе.'}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       )}
 
       {/* ── Divider ──────────────────────────────────────────────── */}
-      <div style={{ height: 1, background: 'var(--border-light)', margin: '0 0 20px' }} />
+      <div style={{ height: 1, background: 'var(--border-light)', margin: '4px 0 20px' }} />
 
       {/* ── Feed ─────────────────────────────────────────────────── */}
       <motion.div variants={fadeUp} style={{ padding: '0 16px' }}>
-        <p style={{
-          fontSize: 11, fontWeight: 700, letterSpacing: 1,
-          color: 'var(--text-tertiary)', textTransform: 'uppercase', marginBottom: 14,
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          marginBottom: 14,
         }}>
-          Публікації
-        </p>
+          <p style={{
+            fontSize: 11, fontWeight: 700, letterSpacing: 1,
+            color: 'var(--text-tertiary)', textTransform: 'uppercase',
+          }}>
+            Публікації
+          </p>
+          {canEdit && (
+            <button
+              onClick={() => { hapticFeedback('medium'); navigate('/admin'); }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                padding: '6px 12px', borderRadius: 20,
+                background: 'var(--primary)',
+                border: 'none',
+                color: '#fff', fontSize: 12, fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(94,158,214,0.3)',
+              }}
+            >
+              <Plus size={13} strokeWidth={2.5} />
+              Публікація
+            </button>
+          )}
+        </div>
 
         {isOurChurch ? (
           <BlogFeed title="" />

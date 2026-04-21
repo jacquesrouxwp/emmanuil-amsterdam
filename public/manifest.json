@@ -1,7 +1,7 @@
 {
-  "name": "Emmanuil Amsterdam",
-  "short_name": "Emmanuil",
-  "description": "Церква Еммануїл Амстердам — розклад, події, домашні групи",
+  "name": "Kairos",
+  "short_name": "Kairos",
+  "description": "Kairos — мережа церков. Діліться життям, знаходьте один одного.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
