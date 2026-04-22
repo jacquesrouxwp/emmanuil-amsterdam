@@ -28,8 +28,10 @@ import { MinisterAccessPage } from '@/pages/MinisterAccessPage';
 import { useUserStore, hasAdminAccess } from '@/store/userStore';
 
 function OnboardingGate({ children }: { children: React.ReactNode }) {
-  const { onboarded } = useUserStore();
+  const { onboarded, role } = useUserStore();
   if (!onboarded) return <Navigate to="/welcome" replace />;
+  // Visitor has no church — redirect home (/) to world feed
+  if (role === 'visitor') return <Navigate to="/world" replace />;
   return <>{children}</>;
 }
 
