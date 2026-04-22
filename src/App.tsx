@@ -28,11 +28,16 @@ import { MinisterAccessPage } from '@/pages/MinisterAccessPage';
 import { useUserStore, hasAdminAccess } from '@/store/userStore';
 
 function OnboardingGate({ children }: { children: React.ReactNode }) {
-  const { onboarded, role } = useUserStore();
+  const { onboarded } = useUserStore();
   if (!onboarded) return <Navigate to="/welcome" replace />;
-  // Visitor has no church — redirect home (/) to world feed
-  if (role === 'visitor') return <Navigate to="/world" replace />;
   return <>{children}</>;
+}
+
+// Для маршруту "/" — гість іде на /world, решта бачать HomePage
+function HomeRoute() {
+  const { role } = useUserStore();
+  if (role === 'visitor') return <Navigate to="/world" replace />;
+  return <HomePage />;
 }
 
 function AdminGate({ children }: { children: React.ReactNode }) {
@@ -52,7 +57,7 @@ function AppRoutes() {
       <Route path="/join/:token" element={<MinisterAccessPage />} />
 
       {/* App — gated behind onboarding */}
-      <Route path="/" element={<OnboardingGate><HomePage /></OnboardingGate>} />
+      <Route path="/" element={<OnboardingGate><HomeRoute /></OnboardingGate>} />
       <Route path="/schedule" element={<OnboardingGate><SchedulePage /></OnboardingGate>} />
       <Route path="/events" element={<OnboardingGate><EventsPage /></OnboardingGate>} />
       <Route path="/about" element={<OnboardingGate><AboutPage /></OnboardingGate>} />
