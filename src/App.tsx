@@ -20,6 +20,9 @@ import { InviteFlowPage } from '@/pages/InviteFlowPage';
 import { MyChurchPage } from '@/pages/MyChurchPage';
 import { MyChurchProfileEditor } from '@/pages/MyChurchProfileEditor';
 import { MyChurchPostsManager } from '@/pages/MyChurchPostsManager';
+import { MyChurchEventsManager } from '@/pages/MyChurchEventsManager';
+import { MyChurchGroupsManager } from '@/pages/MyChurchGroupsManager';
+import { MyChurchInvitePastorPage } from '@/pages/MyChurchInvitePastorPage';
 import { MinisterAccessPage } from '@/pages/MinisterAccessPage';
 import { useUserStore, hasAdminAccess } from '@/store/userStore';
 
@@ -58,6 +61,9 @@ function AppRoutes() {
       <Route path="/my-church" element={<AdminGate><MyChurchPage /></AdminGate>} />
       <Route path="/my-church/profile" element={<AdminGate><MyChurchProfileEditor /></AdminGate>} />
       <Route path="/my-church/posts" element={<AdminGate><MyChurchPostsManager /></AdminGate>} />
+      <Route path="/my-church/events" element={<AdminGate><MyChurchEventsManager /></AdminGate>} />
+      <Route path="/my-church/homegroups" element={<AdminGate><MyChurchGroupsManager /></AdminGate>} />
+      <Route path="/my-church/invite-pastor" element={<AdminGate><MyChurchInvitePastorPage /></AdminGate>} />
       <Route path="/bible" element={<OnboardingGate><BiblePage /></OnboardingGate>} />
       <Route path="/world" element={<OnboardingGate><WorldPage /></OnboardingGate>} />
       <Route path="/church/:id" element={<OnboardingGate><ChurchProfilePage /></OnboardingGate>} />
@@ -65,7 +71,7 @@ function AppRoutes() {
   );
 }
 
-const NO_NAV_ROUTES = ['/welcome', '/invite-flow', '/invite', '/join'];
+const NO_NAV_ROUTES = ['/welcome', '/invite-flow', '/invite', '/join', '/my-church'];
 
 function MobileShell() {
   const location = useLocation();
