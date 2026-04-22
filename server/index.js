@@ -736,9 +736,6 @@ app.post('/api/invitations/:token/redeem', async (req, res) => {
     if (!city) missing.push('city');
     if (!country) missing.push('country');
     if (!pastor) missing.push('pastor');
-    if (!pastorEmail) missing.push('pastorEmail'); // required for recovery
-    if (!pastorBio) missing.push('pastorBio');      // где служил и т.п.
-    if (typeof lat !== 'number' || typeof lng !== 'number') missing.push('lat/lng');
     if (missing.length) return res.status(400).json({ error: `Missing: ${missing.join(', ')}` });
 
     // Slug uniqueness
@@ -754,11 +751,12 @@ app.post('/api/invitations/:token/redeem', async (req, res) => {
     const church = {
       slug, name, city, country,
       address: address || '',
-      lat, lng,
+      lat: typeof lat === 'number' ? lat : 0,
+      lng: typeof lng === 'number' ? lng : 0,
       denomination: denomination || '',
       pastor,
-      pastorBio,        // where he served, ministry history
-      pastorEmail,      // for recovery
+      pastorBio: pastorBio || '',
+      pastorEmail: pastorEmail || '',
       language: Array.isArray(language) ? language : ['ua'],
       telegram: telegram || '',
       instagram: instagram || '',

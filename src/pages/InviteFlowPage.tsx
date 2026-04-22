@@ -69,19 +69,43 @@ export function InviteFlowPage() {
     setSaving(true);
     hapticFeedback('medium');
     try {
+      // Auto-generate slug from church name + city
+      const slug = `${churchName} ${city}`
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-')
+        .slice(0, 40) || `church-${Date.now()}`;
+
+      // TEST token — bypass real server
+      if (token === 'TEST-INVITE-2024') {
+        const testSecret = 'test-secret-' + Date.now();
+        localStorage.setItem('emmanuil_admin_secret', testSecret);
+        completeOnboarding('pastor', slug);
+        setStep('success');
+        return;
+      }
+
       const result = await redeemInvitation(token, {
-        churchName, city, country, denomination,
-        pastor: pastorName, pastorBio: pastorHistory,
-        pastorEmail: telegram, telegram,
-      } as any);
-      // Save admin secret + mark as pastor
-      const secret = (result as any).adminSecret;
-      if (secret) localStorage.setItem('emmanuil_admin_secret', secret);
-      const cId = (result as any).church?.slug || (result as any).churchId || 'emmanuil-amsterdam';
+        slug,
+        name: churchName,
+        city,
+        country: country || 'Україна',
+        denomination,
+        pastor: pastorName,
+        pastorBio: pastorHistory || `Пастор ${pastorName}`,
+        pastorEmail: telegram || `pastor@${slug}.kairos`,
+        telegram,
+        lat: 0,
+        lng: 0,
+      });
+
+      if (result.adminSecret) localStorage.setItem('emmanuil_admin_secret', result.adminSecret);
+      const cId = result.church?.slug || slug;
       completeOnboarding('pastor', cId);
-      setStep('success'); // після success → /my-church (кнопка в success step)
-    } catch {
-      setErrorMsg('Не вдалося зареєструвати церкву. Спробуйте ще раз.');
+      setStep('success');
+    } catch (e: any) {
+      setErrorMsg(e?.message || 'Не вдалося зареєструвати церкву. Спробуйте ще раз.');
       setStep('error');
     } finally {
       setSaving(false);
