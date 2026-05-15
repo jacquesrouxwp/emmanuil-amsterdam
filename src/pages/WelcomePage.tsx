@@ -1,291 +1,234 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ChevronRight, MapPin } from 'lucide-react';
+import { Users, UserPlus, Crown, ArrowRight, Globe } from 'lucide-react';
 import { hapticFeedback } from '@/lib/telegram';
 import { useUserStore } from '@/store/userStore';
 import { churchLocations } from '@/data/churches';
 
-const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
-const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
-
-// ── Church selector ───────────────────────────────────────────────────────────
-function ChurchSelector({ onSelect }: { onSelect: (id: string) => void }) {
-  const [q, setQ] = useState('');
-  const filtered = churchLocations.filter((c) => {
-    if (!q) return true;
-    const s = q.toLowerCase();
-    return c.name.toLowerCase().includes(s) || c.city.toLowerCase().includes(s);
-  });
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%' }}
-    >
-      <p style={{ fontSize: 16, fontWeight: 700, textAlign: 'center', color: 'var(--text-primary)' }}>
-        Оберіть вашу церкву
-      </p>
-
-      {/* Search */}
-      <div style={{ position: 'relative' }}>
-        <Search size={14} color="var(--text-tertiary)"
-          style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-        <input
-          autoFocus
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Пошук за назвою або містом..."
-          style={{
-            width: '100%', padding: '11px 12px 11px 36px',
-            borderRadius: 12, fontSize: 14,
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border-light)',
-            color: 'var(--text-primary)',
-          }}
-        />
-      </div>
-
-      {/* List */}
-      <div style={{
-        maxHeight: 320, overflowY: 'auto',
-        display: 'flex', flexDirection: 'column', gap: 6,
-      }}>
-        {filtered.slice(0, 20).map((c) => (
-          <button
-            key={c.id}
-            onClick={() => { hapticFeedback('light'); onSelect(c.id); }}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 12,
-              padding: '12px 14px', borderRadius: 12, cursor: 'pointer',
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-light)',
-              textAlign: 'left',
-              transition: 'background 0.12s',
-            }}
-          >
-            <div style={{
-              width: 38, height: 38, borderRadius: 10, flexShrink: 0,
-              background: 'linear-gradient(135deg, #1a3a5c, #2d5a8e)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>
-                {c.name.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase()}
-              </span>
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{c.name}</p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
-                <MapPin size={10} color="var(--text-tertiary)" />
-                <p style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>{c.city}, {c.country}</p>
-              </div>
-            </div>
-            <ChevronRight size={15} color="var(--text-tertiary)" />
-          </button>
-        ))}
-        {filtered.length === 0 && (
-          <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-tertiary)', padding: '24px 0' }}>
-            Церкву не знайдено
-          </p>
-        )}
-      </div>
-    </motion.div>
-  );
-}
-
-// ── Main welcome page ─────────────────────────────────────────────────────────
 export function WelcomePage() {
   const navigate = useNavigate();
   const { completeOnboarding } = useUserStore();
-  const [step, setStep] = useState<'choose' | 'church'>('choose');
+  const [step, setStep] = useState<'welcome' | 'role' | 'church'>('welcome');
+  const [selectedRole, setSelectedRole] = useState<'visitor' | 'member' | 'pastor' | null>(null);
 
-  const handleVisitor = () => {
-    hapticFeedback('light');
-    completeOnboarding('visitor');
-    navigate('/world');
-  };
-
-  const handleMember = () => {
-    hapticFeedback('light');
-    setStep('church');
+  const handleRoleSelect = (role: 'visitor' | 'member' | 'pastor') => {
+    hapticFeedback('medium');
+    setSelectedRole(role);
+    
+    if (role === 'visitor') {
+      completeOnboarding('visitor');
+      navigate('/world');
+    } else if (role === 'pastor') {
+      completeOnboarding('pastor');
+      navigate('/invite-flow');
+    } else {
+      setStep('church');
+    }
   };
 
   const handleChurchSelect = (id: string) => {
+    hapticFeedback('light');
     completeOnboarding('member', id);
     navigate('/');
   };
 
-  const handleInvite = () => {
-    hapticFeedback('medium');
-    completeOnboarding('pastor');
-    navigate('/invite-flow');
-  };
-
   return (
-    <div style={{
-      minHeight: '100%', display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      padding: '32px 24px 48px',
-      background: 'var(--bg)',
-    }}>
-      <AnimatePresence mode="wait">
-
-        {/* ── Step 1: choose role ── */}
-        {step === 'choose' && (
-          <motion.div
-            key="choose"
-            variants={stagger} initial="hidden" animate="show" exit={{ opacity: 0, y: -10 }}
-            style={{ width: '100%', maxWidth: 360, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28 }}
+    <div className="min-h-screen bg-[#0A0F1A] text-white overflow-hidden relative">
+      {/* Background gradient + subtle grid */}
+      <div className="absolute inset-0 bg-[radial-gradient(#1a253f_0.8px,transparent_1px)] bg-[length:4px_4px] opacity-40" />
+      
+      <div className="relative z-10 flex flex-col min-h-screen">
+        {/* Top bar */}
+        <div className="flex justify-between items-center px-6 pt-8 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#5E9ED6] to-[#3A7BC8] flex items-center justify-center">
+              <Globe className="w-5 h-5 text-white" />
+            </div>
+            <span className="font-semibold text-xl tracking-tight">Kairos</span>
+          </div>
+          
+          <button 
+            onClick={() => hapticFeedback('light')}
+            className="text-sm text-white/60 hover:text-white transition-colors flex items-center gap-1.5"
           >
-            {/* Logo + title */}
-            <motion.div variants={fadeUp} style={{ textAlign: 'center' }}>
-              <div style={{
-                width: 72, height: 72, borderRadius: 22, margin: '0 auto 18px',
-                background: 'linear-gradient(135deg, #1a3a5c 0%, #2d5a8e 100%)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 8px 32px rgba(94,158,214,0.3)',
-              }}>
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8">
-                  <circle cx="12" cy="12" r="10"/>
-                  <path d="M12 2a14.5 14.5 0 0 1 0 20 14.5 14.5 0 0 1 0-20"/>
-                  <path d="M2 12h20"/>
-                </svg>
-              </div>
-              <h1 style={{ fontSize: 34, fontWeight: 800, letterSpacing: -1, color: 'var(--text-primary)', marginBottom: 8 }}>
-                Kairos
-              </h1>
-              <p style={{ fontSize: 14, color: 'var(--text-tertiary)', lineHeight: 1.5, maxWidth: 260, margin: '0 auto' }}>
-                Мережа церков. Живіть разом, ростіть разом.
-              </p>
-            </motion.div>
+            <span>EN</span>
+            <span className="text-xs">▼</span>
+          </button>
+        </div>
 
-            {/* Options */}
-            <motion.div variants={fadeUp} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
-
-              {/* ── Invitation — pastor ── */}
-              <button
-                onClick={handleInvite}
-                style={{
-                  display: 'flex', alignItems: 'flex-start', gap: 14,
-                  padding: '18px 18px', borderRadius: 18, cursor: 'pointer',
-                  background: 'linear-gradient(135deg, #0d1f33 0%, #1a3a5c 100%)',
-                  border: '1px solid rgba(94,158,214,0.3)',
-                  textAlign: 'left', width: '100%',
-                }}
+        <div className="flex-1 flex flex-col justify-center px-6 pb-12">
+          <AnimatePresence mode="wait">
+            {/* === WELCOME SCREEN === */}
+            {step === 'welcome' && (
+              <motion.div
+                key="welcome"
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -30 }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="max-w-md mx-auto text-center"
               >
-                <div style={{
-                  width: 44, height: 44, borderRadius: 12, flexShrink: 0, marginTop: 2,
-                  background: 'rgba(94,158,214,0.15)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <span style={{ fontSize: 22 }}>🎟️</span>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 5 }}>
-                    У мене є запрошення
-                  </p>
-                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', lineHeight: 1.55 }}>
-                    Пастор запрошує пастора — особисто, напряму. Це не просто доступ до додатку, це знак довіри між служителями. Ми знаємо одне одного, і тому можемо разом будувати.
-                  </p>
-                </div>
-                <ChevronRight size={16} color="rgba(255,255,255,0.25)" style={{ flexShrink: 0, marginTop: 3 }} />
-              </button>
+                <div className="mb-10">
+                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-[#5E9ED6] via-[#4A8BC8] to-[#3A7BC8] mb-8 shadow-[0_0_60px_-10px_#5E9ED6]">
+                    <div className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur flex items-center justify-center">
+                      <Globe className="w-6 h-6 text-white" />
+                    </div>
+                  </div>
 
-              {/* ── My church — member ── */}
-              <button
-                onClick={handleMember}
-                style={{
-                  display: 'flex', alignItems: 'flex-start', gap: 14,
-                  padding: '18px 18px', borderRadius: 18, cursor: 'pointer',
-                  background: 'var(--bg-secondary)',
-                  border: '1px solid var(--border-light)',
-                  textAlign: 'left', width: '100%',
-                }}
+                  <h1 className="text-6xl font-semibold tracking-tighter mb-4 leading-none">
+                    Церква<br /> для всіх<br /> народів
+                  </h1>
+                  
+                  <p className="text-xl text-white/70 max-w-[280px] mx-auto">
+                    Мережа, де ти можеш рости, служити і жити разом
+                  </p>
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.985 }}
+                  onClick={() => { hapticFeedback('medium'); setStep('role'); }}
+                  className="group w-full bg-white text-[#0A0F1A] font-semibold text-lg py-4 rounded-3xl flex items-center justify-center gap-3 shadow-xl active:scale-[0.985] transition-all"
+                >
+                  Почати
+                  <ArrowRight className="group-hover:-rotate-45 transition-transform" />
+                </motion.button>
+
+                <p className="mt-6 text-xs text-white/40">
+                  Приєднуйся до тисяч віруючих по всьому світу
+                </p>
+              </motion.div>
+            )}
+
+            {/* === ROLE SELECTION === */}
+            {step === 'role' && (
+              <motion.div
+                key="role"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="max-w-md mx-auto w-full"
               >
-                <div style={{
-                  width: 44, height: 44, borderRadius: 12, flexShrink: 0, marginTop: 2,
-                  background: 'rgba(94,158,214,0.08)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <span style={{ fontSize: 22 }}>⛪</span>
+                <div className="text-center mb-10">
+                  <div className="text-sm uppercase tracking-[3px] text-white/50 mb-3">ОБЕРІТЬ СВІЙ ШЛЯХ</div>
+                  <h2 className="text-4xl font-semibold tracking-tight">Як ви хочете приєднатися?</h2>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 5 }}>
-                    Я з конкретної церкви
-                  </p>
-                  <p style={{ fontSize: 12, color: 'var(--text-tertiary)', lineHeight: 1.55 }}>
-                    Слідкуй за своєю громадою — розклад, події, пости пастора. Живи в курсі того, чим живе твоя церква, навіть якщо ти далеко.
-                  </p>
-                </div>
-                <ChevronRight size={16} color="var(--text-tertiary)" style={{ flexShrink: 0, marginTop: 3 }} />
-              </button>
 
-              {/* ── Visitor / browse ── */}
-              <button
-                onClick={handleVisitor}
-                style={{
-                  display: 'flex', alignItems: 'flex-start', gap: 14,
-                  padding: '18px 18px', borderRadius: 18, cursor: 'pointer',
-                  background: 'var(--bg-secondary)',
-                  border: '1px solid var(--border-light)',
-                  textAlign: 'left', width: '100%',
-                }}
+                <div className="space-y-4">
+                  {/* Visitor */}
+                  <motion.button
+                    whileHover={{ scale: 1.01 }}
+                    onClick={() => handleRoleSelect('visitor')}
+                    className="w-full group bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/30 backdrop-blur-xl rounded-3xl p-6 text-left transition-all active:scale-[0.985]"
+                  >
+                    <div className="flex items-start gap-5">
+                      <div className="mt-1 w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                        <Users className="w-6 h-6 text-[#5E9ED6]" />
+                      </div>
+                      <div className="flex-1 pt-1">
+                        <div className="font-semibold text-2xl tracking-tight">Гість</div>
+                        <div className="text-white/60 mt-1 pr-8">Дивитись події, читати Біблію, досліджувати мережу церков</div>
+                      </div>
+                    </div>
+                  </motion.button>
+
+                  {/* Member */}
+                  <motion.button
+                    whileHover={{ scale: 1.01 }}
+                    onClick={() => handleRoleSelect('member')}
+                    className="w-full group bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/30 backdrop-blur-xl rounded-3xl p-6 text-left transition-all active:scale-[0.985]"
+                  >
+                    <div className="flex items-start gap-5">
+                      <div className="mt-1 w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                        <UserPlus className="w-6 h-6 text-[#5E9ED6]" />
+                      </div>
+                      <div className="flex-1 pt-1">
+                        <div className="font-semibold text-2xl tracking-tight">Учасник церкви</div>
+                        <div className="text-white/60 mt-1 pr-8">Повний доступ до розкладу, подій, груп та спільноти</div>
+                      </div>
+                    </div>
+                  </motion.button>
+
+                  {/* Pastor / Leader */}
+                  <motion.button
+                    whileHover={{ scale: 1.01 }}
+                    onClick={() => handleRoleSelect('pastor')}
+                    className="w-full group bg-gradient-to-br from-[#C9A96E] to-[#B38A4F] text-black hover:brightness-105 border border-white/20 rounded-3xl p-6 text-left transition-all active:scale-[0.985] shadow-[0_10px_40px_-15px_#C9A96E]"
+                  >
+                    <div className="flex items-start gap-5">
+                      <div className="mt-1 w-12 h-12 rounded-2xl bg-black/10 flex items-center justify-center">
+                        <Crown className="w-6 h-6" />
+                      </div>
+                      <div className="flex-1 pt-1">
+                        <div className="font-semibold text-2xl tracking-tight">Пастор / Служитель</div>
+                        <div className="text-black/70 mt-1 pr-8">Керуйте церквою, запрошуйте людей, ведіть статистику</div>
+                      </div>
+                    </div>
+                  </motion.button>
+                </div>
+
+                <button 
+                  onClick={() => setStep('welcome')}
+                  className="mt-8 text-white/50 hover:text-white text-sm flex items-center gap-2 mx-auto transition-colors"
+                >
+                  ← Назад
+                </button>
+              </motion.div>
+            )}
+
+            {/* === CHURCH SELECTOR === */}
+            {step === 'church' && (
+              <motion.div
+                key="church"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="max-w-md mx-auto w-full"
               >
-                <div style={{
-                  width: 44, height: 44, borderRadius: 12, flexShrink: 0, marginTop: 2,
-                  background: 'rgba(201,169,110,0.08)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <span style={{ fontSize: 22 }}>🌍</span>
+                <div className="text-center mb-8">
+                  <h2 className="text-4xl font-semibold tracking-tight">Оберіть вашу церкву</h2>
+                  <p className="text-white/60 mt-3">Ми знайдемо найближчу до вас</p>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 5 }}>
-                    Просто дивлюся
-                  </p>
-                  <p style={{ fontSize: 12, color: 'var(--text-tertiary)', lineHeight: 1.55 }}>
-                    Подивись як живуть церкви у різних країнах. Можливо, щось відгукнеться. Kairos відкритий для тих, хто шукає.
-                  </p>
+
+                <div className="bg-white/5 border border-white/10 backdrop-blur-2xl rounded-3xl p-2 max-h-[420px] overflow-y-auto custom-scroll">
+                  {churchLocations.slice(0, 12).map((church, index) => (
+                    <button
+                      key={church.id}
+                      onClick={() => handleChurchSelect(church.id)}
+                      className="w-full flex items-center gap-4 px-5 py-4 hover:bg-white/10 rounded-2xl transition-all text-left active:bg-white/15"
+                    >
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#1a3a5c] to-[#2d5a8e] flex-shrink-0 flex items-center justify-center text-sm font-bold">
+                        {church.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-lg tracking-tight">{church.name}</div>
+                        <div className="text-sm text-white/50 flex items-center gap-1.5">
+                          <span>{church.city}</span>
+                          <span className="text-white/30">•</span>
+                          <span>{church.country}</span>
+                        </div>
+                      </div>
+                      <ArrowRight className="text-white/40" />
+                    </button>
+                  ))}
                 </div>
-                <ChevronRight size={16} color="var(--text-tertiary)" style={{ flexShrink: 0, marginTop: 3 }} />
-              </button>
-            </motion.div>
 
-            <motion.div variants={fadeUp} style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: 12, color: 'var(--text-tertiary)', lineHeight: 1.65, maxWidth: 300, margin: '0 auto' }}>
-                Kairos — мережа лише за особистим знайомством.{'\n'}
-                <span style={{ color: 'rgba(201,169,110,0.7)' }}>
-                  Різні деномінації, одне підґрунтя — Христос.
-                </span>
-              </p>
-            </motion.div>
-          </motion.div>
-        )}
+                <button 
+                  onClick={() => setStep('role')}
+                  className="mt-6 text-white/50 hover:text-white text-sm mx-auto block"
+                >
+                  ← Назад до вибору ролі
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
-        {/* ── Step 2: church selector ── */}
-        {step === 'church' && (
-          <motion.div
-            key="church"
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -30 }}
-            style={{ width: '100%', maxWidth: 360, display: 'flex', flexDirection: 'column', gap: 16 }}
-          >
-            <button
-              onClick={() => setStep('choose')}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                fontSize: 13, color: 'var(--primary)', fontWeight: 600,
-                cursor: 'pointer', alignSelf: 'flex-start',
-              }}
-            >
-              ← Назад
-            </button>
-            <ChurchSelector onSelect={handleChurchSelect} />
-          </motion.div>
-        )}
-
-      </AnimatePresence>
+        {/* Bottom subtle text */}
+        <div className="text-center pb-8 text-[10px] text-white/30 tracking-widest">
+          KAIROS • AMSTERDAM • 2026
+        </div>
+      </div>
     </div>
   );
 }
