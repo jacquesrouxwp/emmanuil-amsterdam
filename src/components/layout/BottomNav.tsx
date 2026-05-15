@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Calendar, Star, Globe2, MoreHorizontal, Settings, Church, Map } from 'lucide-react';
+import { Home, Calendar, Star, Globe2, MoreHorizontal, Settings, Church, User } from 'lucide-react';
 import { hapticFeedback } from '@/lib/telegram';
 import { useT } from '@/i18n/translations';
 import { useUserStore } from '@/store/userStore';
@@ -12,34 +12,29 @@ export function BottomNav() {
   const t = useT();
   const { role, churchId } = useUserStore();
 
-  // ── Набір табів залежно від ролі ──────────────────────────────────────────
-
   let tabs: Tab[];
 
   if (role === 'pastor' || role === 'minister') {
-    // Пастор / служитель — керування + мережа
     tabs = [
-      { path: '/',          icon: Home,          label: t.nav.home },
-      { path: '/my-church', icon: Settings,       label: 'Моя церква' },
-      { path: '/world',     icon: Globe2,         label: 'Мережа' },
-      { path: '/more',      icon: MoreHorizontal, label: t.nav.more },
+      { path: '/', icon: Home, label: t.nav.home },
+      { path: '/my-church', icon: Settings, label: 'Моя церква' },
+      { path: '/world', icon: Globe2, label: 'Мережа' },
+      { path: '/more', icon: MoreHorizontal, label: t.nav.more },
     ];
   } else if (role === 'member' && churchId) {
-    // Член церкви — повний набір своєї церкви
     tabs = [
-      { path: '/',                    icon: Home,          label: t.nav.home },
-      { path: '/schedule',            icon: Calendar,      label: t.nav.schedule },
-      { path: '/events',              icon: Star,          label: t.nav.events },
-      { path: `/church/${churchId}`,  icon: Church,        label: 'Церква' },
-      { path: '/more',                icon: MoreHorizontal, label: t.nav.more },
+      { path: '/', icon: Home, label: t.nav.home },
+      { path: '/schedule', icon: Calendar, label: t.nav.schedule },
+      { path: '/events', icon: Star, label: t.nav.events },
+      { path: `/church/${churchId}`, icon: Church, label: 'Церква' },
+      { path: '/more', icon: MoreHorizontal, label: t.nav.more },
     ];
   } else {
-    // Гість (visitor) або не онбордований — мінімальна навігація без прив'язки до церкви
     tabs = [
-      { path: '/world',  icon: Globe2,         label: 'Лента' },
-      { path: '/events', icon: Star,           label: 'Події' },
-      { path: '/world',  icon: Map,            label: 'Церкви' },  // TODO: окремий /churches каталог
-      { path: '/more',   icon: MoreHorizontal, label: 'Більше' },
+      { path: '/world', icon: Globe2, label: 'Мир' },
+      { path: '/events', icon: Star, label: 'Події' },
+      { path: '/world', icon: Church, label: 'Церкви' },
+      { path: '/more', icon: MoreHorizontal, label: 'Більше' },
     ];
   }
 
@@ -49,20 +44,72 @@ export function BottomNav() {
   };
 
   return (
-    <nav className="bottom-nav">
-      {tabs.map((tab, i) => (
-        <button
-          key={`${tab.path}-${i}`}
-          className={`nav-item ${isActive(tab.path) ? 'nav-item--active' : ''}`}
-          onClick={() => {
-            hapticFeedback('light');
-            navigate(tab.path);
-          }}
-        >
-          <tab.icon size={26} strokeWidth={isActive(tab.path) ? 2.2 : 1.8} />
-          <span className="nav-label">{tab.label}</span>
-        </button>
-      ))}
+    <nav style={{
+      position: 'fixed',
+      bottom: 0,
+      left: '50%',
+      transform: 'translateX(-50%)',
+      width: '100%',
+      maxWidth: 480,
+      background: 'rgba(10, 15, 26, 0.85)',
+      backdropFilter: 'blur(20px)',
+      borderTop: '1px solid rgba(255,255,255,0.06)',
+      padding: '8px 12px 20px',
+      zIndex: 100,
+      boxShadow: '0 -4px 20px rgba(0,0,0,0.3)'
+    }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-around',
+        position: 'relative'
+      }}>
+        {tabs.map((tab, index) => {
+          const active = isActive(tab.path);
+          return (
+            <button
+              key={index}
+              onClick={() => {
+                hapticFeedback(active ? 'light' : 'medium');
+                navigate(tab.path);
+              }}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 4,
+                padding: active ? '8px 18px' : '8px 12px',
+                borderRadius: active ? 999 : 12,
+                background: active 
+                  ? 'linear-gradient(135deg, #5E9ED6, #3A7BC8)' 
+                  : 'transparent',
+                boxShadow: active 
+                  ? '0 4px 20px rgba(94, 158, 214, 0.4)' 
+                  : 'none',
+                transition: 'all 0.2s cubic-bezier(0.23, 1, 0.32, 1)',
+                minWidth: active ? 72 : 52,
+                position: 'relative'
+              }}
+            >
+              <tab.icon 
+                size={active ? 22 : 20} 
+                strokeWidth={active ? 2.5 : 2}
+                color={active ? 'white' : 'rgba(255,255,255,0.7)'} 
+              />
+              
+              <span style={{
+                fontSize: active ? 10 : 9,
+                fontWeight: active ? 600 : 500,
+                color: active ? 'white' : 'rgba(255,255,255,0.55)',
+                letterSpacing: active ? '-0.2px' : '0',
+                whiteSpace: 'nowrap'
+              }}>
+                {tab.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
     </nav>
   );
 }
