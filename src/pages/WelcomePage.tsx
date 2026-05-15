@@ -10,12 +10,9 @@ export function WelcomePage() {
   const navigate = useNavigate();
   const { completeOnboarding } = useUserStore();
   const [step, setStep] = useState<'welcome' | 'role' | 'church'>('welcome');
-  const [selectedRole, setSelectedRole] = useState<'visitor' | 'member' | 'pastor' | null>(null);
 
   const handleRoleSelect = (role: 'visitor' | 'member' | 'pastor') => {
     hapticFeedback('medium');
-    setSelectedRole(role);
-    
     if (role === 'visitor') {
       completeOnboarding('visitor');
       navigate('/world');
@@ -34,188 +31,315 @@ export function WelcomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0F1A] text-white overflow-hidden relative">
-      {/* Background gradient + subtle grid */}
-      <div className="absolute inset-0 bg-[radial-gradient(#1a253f_0.8px,transparent_1px)] bg-[length:4px_4px] opacity-40" />
-      
-      <div className="relative z-10 flex flex-col min-h-screen">
+    <div style={{
+      minHeight: '100vh',
+      background: '#0A0F1A',
+      color: 'white',
+      overflow: 'hidden',
+      position: 'relative',
+      fontFamily: 'Inter, system-ui, sans-serif'
+    }}>
+      {/* Subtle background grid */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        backgroundImage: 'radial-gradient(#1a253f 0.8px, transparent 1px)',
+        backgroundSize: '4px 4px',
+        opacity: 0.4
+      }} />
+
+      <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         {/* Top bar */}
-        <div className="flex justify-between items-center px-6 pt-8 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#5E9ED6] to-[#3A7BC8] flex items-center justify-center">
-              <Globe className="w-5 h-5 text-white" />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '32px 24px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{
+              width: 36,
+              height: 36,
+              borderRadius: 16,
+              background: 'linear-gradient(135deg, #5E9ED6, #3A7BC8)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Globe size={18} color="white" />
             </div>
-            <span className="font-semibold text-xl tracking-tight">Kairos</span>
+            <span style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.5px' }}>Kairos</span>
           </div>
-          
-          <button 
-            onClick={() => hapticFeedback('light')}
-            className="text-sm text-white/60 hover:text-white transition-colors flex items-center gap-1.5"
-          >
-            <span>EN</span>
-            <span className="text-xs">▼</span>
-          </button>
+
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>EN</div>
         </div>
 
-        <div className="flex-1 flex flex-col justify-center px-6 pb-12">
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 24px 48px' }}>
           <AnimatePresence mode="wait">
-            {/* === WELCOME SCREEN === */}
+            {/* WELCOME SCREEN */}
             {step === 'welcome' && (
               <motion.div
                 key="welcome"
-                initial={{ opacity: 0, y: 40 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -30 }}
-                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                className="max-w-md mx-auto text-center"
+                exit={{ opacity: 0, y: -20 }}
+                style={{ maxWidth: 380, margin: '0 auto', textAlign: 'center' }}
               >
-                <div className="mb-10">
-                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-[#5E9ED6] via-[#4A8BC8] to-[#3A7BC8] mb-8 shadow-[0_0_60px_-10px_#5E9ED6]">
-                    <div className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur flex items-center justify-center">
-                      <Globe className="w-6 h-6 text-white" />
+                <div style={{ marginBottom: 48 }}>
+                  <div style={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: 24,
+                    background: 'linear-gradient(135deg, #5E9ED6, #3A7BC8)',
+                    margin: '0 auto 32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 0 60px -10px #5E9ED6'
+                  }}>
+                    <div style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 16,
+                      background: 'rgba(255,255,255,0.15)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <Globe size={24} color="white" />
                     </div>
                   </div>
 
-                  <h1 className="text-6xl font-semibold tracking-tighter mb-4 leading-none">
-                    Церква<br /> для всіх<br /> народів
+                  <h1 style={{
+                    fontSize: 42,
+                    fontWeight: 700,
+                    lineHeight: 1.05,
+                    letterSpacing: '-1.5px',
+                    marginBottom: 16
+                  }}>
+                    Церква<br />для всіх<br />народів
                   </h1>
-                  
-                  <p className="text-xl text-white/70 max-w-[280px] mx-auto">
+
+                  <p style={{
+                    fontSize: 17,
+                    color: 'rgba(255,255,255,0.65)',
+                    maxWidth: 260,
+                    margin: '0 auto',
+                    lineHeight: 1.4
+                  }}>
                     Мережа, де ти можеш рости, служити і жити разом
                   </p>
                 </div>
 
-                <motion.button
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.985 }}
+                <button
                   onClick={() => { hapticFeedback('medium'); setStep('role'); }}
-                  className="group w-full bg-white text-[#0A0F1A] font-semibold text-lg py-4 rounded-3xl flex items-center justify-center gap-3 shadow-xl active:scale-[0.985] transition-all"
+                  style={{
+                    width: '100%',
+                    background: 'white',
+                    color: '#0A0F1A',
+                    fontSize: 17,
+                    fontWeight: 600,
+                    padding: '18px 24px',
+                    borderRadius: 20,
+                    border: 'none',
+                    cursor: 'pointer',
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+                  }}
                 >
                   Почати
-                  <ArrowRight className="group-hover:-rotate-45 transition-transform" />
-                </motion.button>
+                </button>
 
-                <p className="mt-6 text-xs text-white/40">
+                <p style={{ marginTop: 20, fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>
                   Приєднуйся до тисяч віруючих по всьому світу
                 </p>
               </motion.div>
             )}
 
-            {/* === ROLE SELECTION === */}
+            {/* ROLE SELECTION */}
             {step === 'role' && (
               <motion.div
                 key="role"
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="max-w-md mx-auto w-full"
+                style={{ maxWidth: 380, margin: '0 auto', width: '100%' }}
               >
-                <div className="text-center mb-10">
-                  <div className="text-sm uppercase tracking-[3px] text-white/50 mb-3">ОБЕРІТЬ СВІЙ ШЛЯХ</div>
-                  <h2 className="text-4xl font-semibold tracking-tight">Як ви хочете приєднатися?</h2>
+                <div style={{ textAlign: 'center', marginBottom: 32 }}>
+                  <div style={{ fontSize: 11, letterSpacing: '2px', color: 'rgba(255,255,255,0.4)', marginBottom: 8 }}>ОБЕРІТЬ СВІЙ ШЛЯХ</div>
+                  <h2 style={{ fontSize: 28, fontWeight: 600, letterSpacing: '-0.5px' }}>Як ви хочете приєднатися?</h2>
                 </div>
 
-                <div className="space-y-4">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                   {/* Visitor */}
-                  <motion.button
-                    whileHover={{ scale: 1.01 }}
+                  <button
                     onClick={() => handleRoleSelect('visitor')}
-                    className="w-full group bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/30 backdrop-blur-xl rounded-3xl p-6 text-left transition-all active:scale-[0.985]"
+                    style={{
+                      width: '100%',
+                      background: 'rgba(255,255,255,0.06)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: 20,
+                      padding: '22px 24px',
+                      textAlign: 'left',
+                      cursor: 'pointer'
+                    }}
                   >
-                    <div className="flex items-start gap-5">
-                      <div className="mt-1 w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                        <Users className="w-6 h-6 text-[#5E9ED6]" />
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+                      <div style={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 14,
+                        background: 'rgba(255,255,255,0.1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        <Users size={22} color="#5E9ED6" />
                       </div>
-                      <div className="flex-1 pt-1">
-                        <div className="font-semibold text-2xl tracking-tight">Гість</div>
-                        <div className="text-white/60 mt-1 pr-8">Дивитись події, читати Біблію, досліджувати мережу церков</div>
+                      <div>
+                        <div style={{ fontSize: 20, fontWeight: 600, marginBottom: 4 }}>Гість</div>
+                        <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', lineHeight: 1.35 }}>Дивитись події, читати Біблію, досліджувати мережу церков</div>
                       </div>
                     </div>
-                  </motion.button>
+                  </button>
 
                   {/* Member */}
-                  <motion.button
-                    whileHover={{ scale: 1.01 }}
+                  <button
                     onClick={() => handleRoleSelect('member')}
-                    className="w-full group bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/30 backdrop-blur-xl rounded-3xl p-6 text-left transition-all active:scale-[0.985]"
+                    style={{
+                      width: '100%',
+                      background: 'rgba(255,255,255,0.06)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: 20,
+                      padding: '22px 24px',
+                      textAlign: 'left',
+                      cursor: 'pointer'
+                    }}
                   >
-                    <div className="flex items-start gap-5">
-                      <div className="mt-1 w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                        <UserPlus className="w-6 h-6 text-[#5E9ED6]" />
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+                      <div style={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 14,
+                        background: 'rgba(255,255,255,0.1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        <UserPlus size={22} color="#5E9ED6" />
                       </div>
-                      <div className="flex-1 pt-1">
-                        <div className="font-semibold text-2xl tracking-tight">Учасник церкви</div>
-                        <div className="text-white/60 mt-1 pr-8">Повний доступ до розкладу, подій, груп та спільноти</div>
+                      <div>
+                        <div style={{ fontSize: 20, fontWeight: 600, marginBottom: 4 }}>Учасник церкви</div>
+                        <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', lineHeight: 1.35 }}>Повний доступ до розкладу, подій та спільноти</div>
                       </div>
                     </div>
-                  </motion.button>
+                  </button>
 
-                  {/* Pastor / Leader */}
-                  <motion.button
-                    whileHover={{ scale: 1.01 }}
+                  {/* Pastor */}
+                  <button
                     onClick={() => handleRoleSelect('pastor')}
-                    className="w-full group bg-gradient-to-br from-[#C9A96E] to-[#B38A4F] text-black hover:brightness-105 border border-white/20 rounded-3xl p-6 text-left transition-all active:scale-[0.985] shadow-[0_10px_40px_-15px_#C9A96E]"
+                    style={{
+                      width: '100%',
+                      background: 'linear-gradient(135deg, #C9A96E, #B38A4F)',
+                      border: 'none',
+                      borderRadius: 20,
+                      padding: '22px 24px',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      color: 'black'
+                    }}
                   >
-                    <div className="flex items-start gap-5">
-                      <div className="mt-1 w-12 h-12 rounded-2xl bg-black/10 flex items-center justify-center">
-                        <Crown className="w-6 h-6" />
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+                      <div style={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 14,
+                        background: 'rgba(0,0,0,0.15)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        <Crown size={22} color="black" />
                       </div>
-                      <div className="flex-1 pt-1">
-                        <div className="font-semibold text-2xl tracking-tight">Пастор / Служитель</div>
-                        <div className="text-black/70 mt-1 pr-8">Керуйте церквою, запрошуйте людей, ведіть статистику</div>
+                      <div>
+                        <div style={{ fontSize: 20, fontWeight: 600, marginBottom: 4 }}>Пастор / Служитель</div>
+                        <div style={{ fontSize: 14, color: 'rgba(0,0,0,0.65)', lineHeight: 1.35 }}>Керуйте церквою, запрошуйте людей, ведіть статистику</div>
                       </div>
                     </div>
-                  </motion.button>
+                  </button>
                 </div>
 
-                <button 
+                <button
                   onClick={() => setStep('welcome')}
-                  className="mt-8 text-white/50 hover:text-white text-sm flex items-center gap-2 mx-auto transition-colors"
+                  style={{ marginTop: 28, color: 'rgba(255,255,255,0.45)', fontSize: 13, background: 'none', border: 'none', cursor: 'pointer' }}
                 >
                   ← Назад
                 </button>
               </motion.div>
             )}
 
-            {/* === CHURCH SELECTOR === */}
+            {/* CHURCH SELECTOR */}
             {step === 'church' && (
               <motion.div
                 key="church"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="max-w-md mx-auto w-full"
+                style={{ maxWidth: 380, margin: '0 auto', width: '100%' }}
               >
-                <div className="text-center mb-8">
-                  <h2 className="text-4xl font-semibold tracking-tight">Оберіть вашу церкву</h2>
-                  <p className="text-white/60 mt-3">Ми знайдемо найближчу до вас</p>
+                <div style={{ textAlign: 'center', marginBottom: 24 }}>
+                  <h2 style={{ fontSize: 26, fontWeight: 600, letterSpacing: '-0.5px' }}>Оберіть вашу церкву</h2>
+                  <p style={{ color: 'rgba(255,255,255,0.55)', marginTop: 8 }}>Ми знайдемо найближчу до вас</p>
                 </div>
 
-                <div className="bg-white/5 border border-white/10 backdrop-blur-2xl rounded-3xl p-2 max-h-[420px] overflow-y-auto custom-scroll">
-                  {churchLocations.slice(0, 12).map((church, index) => (
+                <div style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: 20,
+                  padding: 8,
+                  maxHeight: 380,
+                  overflowY: 'auto'
+                }}>
+                  {churchLocations.slice(0, 10).map((church) => (
                     <button
                       key={church.id}
                       onClick={() => handleChurchSelect(church.id)}
-                      className="w-full flex items-center gap-4 px-5 py-4 hover:bg-white/10 rounded-2xl transition-all text-left active:bg-white/15"
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 14,
+                        padding: '14px 16px',
+                        borderRadius: 14,
+                        background: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
                     >
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#1a3a5c] to-[#2d5a8e] flex-shrink-0 flex items-center justify-center text-sm font-bold">
+                      <div style={{
+                        width: 46,
+                        height: 46,
+                        borderRadius: 12,
+                        background: 'linear-gradient(135deg, #1a3a5c, #2d5a8e)',
+                        flexShrink: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 13,
+                        fontWeight: 700
+                      }}>
                         {church.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-lg tracking-tight">{church.name}</div>
-                        <div className="text-sm text-white/50 flex items-center gap-1.5">
-                          <span>{church.city}</span>
-                          <span className="text-white/30">•</span>
-                          <span>{church.country}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 15, fontWeight: 600 }}>{church.name}</div>
+                        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>
+                          {church.city}, {church.country}
                         </div>
                       </div>
-                      <ArrowRight className="text-white/40" />
+                      <ArrowRight size={18} color="rgba(255,255,255,0.4)" />
                     </button>
                   ))}
                 </div>
 
-                <button 
+                <button
                   onClick={() => setStep('role')}
-                  className="mt-6 text-white/50 hover:text-white text-sm mx-auto block"
+                  style={{ marginTop: 20, color: 'rgba(255,255,255,0.45)', fontSize: 13, background: 'none', border: 'none', cursor: 'pointer' }}
                 >
                   ← Назад до вибору ролі
                 </button>
@@ -224,8 +348,7 @@ export function WelcomePage() {
           </AnimatePresence>
         </div>
 
-        {/* Bottom subtle text */}
-        <div className="text-center pb-8 text-[10px] text-white/30 tracking-widest">
+        <div style={{ textAlign: 'center', paddingBottom: 28, fontSize: 10, color: 'rgba(255,255,255,0.25)', letterSpacing: '1px' }}>
           KAIROS • AMSTERDAM • 2026
         </div>
       </div>
